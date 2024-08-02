@@ -1,0 +1,20 @@
+Package: iSODA
+Title: integrated Simple Omics Data Analysis
+Version: 1.0.2
+Authors@R:
+  c(person(given = "Yassene",
+           family = "Mohammed", 
+           email = "y.mohammed@lumc.nl",
+           role = c("cre", "aut"),
+           comment = c(ORCID = "0000-0003-3265-3332")),
+    person(given = "Rico",
+           family = "Derks",
+           email = "r.j.e.derks@lumc.nl",
+           role = "aut",
+           comment = c(ORCID = "0000-0002-8920-7133")),
+    person(given = "Damien",
+           family = "Olivier-Jimenez",
+           email = "d.olivier@lumc.nl",
+           role = c("cre", "aut"),
+           comment = c(ORCID = "0000-0002-6363-0857"))
+  )

@@ -1,0 +1,9 @@
+iSODA - integrated Simple Omics Data Analysis
+=======================
+This browser was developed as part of the CZI NDCN's Data Science Concierge program. It grew out of a need to enable quick and consistent data exploration, and for researchers to share curated data with colleagues and collaborators.  
+Please visit [this project's](https://ndcn.github.io/omicser/) website for more information.  
+
+CZI NDCN: Neurodegeneration is one of society’s critical issues over the next 50 years. Millions of people worldwide suffer from neurodegenerative diseases, which include Alzheimer’s and Parkinson’s as well as ALS, Multiple Sclerosis, Huntington’s, and a diverse range of other conditions. Neurodegenerative diseases share the common feature that they involve a progressive degeneration and ultimately death of neurons, the key communication lines of our brain and nervous system. These are terrible diseases, ones that deteriorate the brain and body, taking away a person’s independence, cognitive capacities, personality, and sense of self. There are no effective therapies to prevent, cure, or treat most of these disorders.<br><br>
+The CZI Neurodegeneration Challenge Network aims to take a new approach to tackling these diseases. The Challenge Network is an experiment, one we believe can have impact well beyond the investigators included. We recognize that this is not a problem we can solve alone — only when we work together can we truly solve the challenge of neurodegeneration. The Neurodegeneration Challenge Network has two goals. First, create a new collaborative, open-science centered approach to generate new ideas. Second, use those ideas to develop new approaches to make advances in our understanding of the fundamental biology of neurodegeneration.<br><br>
+
+Find out [more](https://cziscience.medium.com/a-new-approach-to-solving-neurodegeneration-2aa50654ed04) about CZI NDCN
