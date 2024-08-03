@@ -240,15 +240,18 @@ ea_dot_plot_events = function(r6, dimensions_obj, color_palette, input, output, 
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "EA dot plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ea_dot_plot_generate,
-             spawn_function = ea_dot_plot_spawn,
-             img_format = input$ea_dot_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ea_dot_plot$update) {
+      try_plot(prefix = "EA dot plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ea_dot_plot_generate,
+               spawn_function = ea_dot_plot_spawn,
+               img_format = input$ea_dot_plot_img_format,
+               toggle_function = "toggle_ea_dot_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -303,15 +306,18 @@ ea_dot_plot_events = function(r6, dimensions_obj, color_palette, input, output, 
       }
 
       # Produce the plot
-      try_plot(prefix = "EA dot plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ea_dot_plot_generate,
-               spawn_function = ea_dot_plot_spawn,
-               img_format = input$ea_dot_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ea_dot_plot$update) {
+        try_plot(prefix = "EA dot plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ea_dot_plot_generate,
+                 spawn_function = ea_dot_plot_spawn,
+                 img_format = input$ea_dot_plot_img_format,
+                 toggle_function = "toggle_ea_dot_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })
@@ -577,15 +583,18 @@ ea_cnet_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "EA CNET plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ea_cnet_plot_generate,
-             spawn_function = ea_cnet_plot_spawn,
-             img_format = input$ea_cnet_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ea_cnet_plot$update) {
+      try_plot(prefix = "EA CNET plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ea_cnet_plot_generate,
+               spawn_function = ea_cnet_plot_spawn,
+               img_format = input$ea_cnet_plot_img_format,
+               toggle_function = "toggle_ea_cnet_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -634,15 +643,18 @@ ea_cnet_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       }
 
       # Produce the plot
-      try_plot(prefix = "EA CNET plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ea_cnet_plot_generate,
-               spawn_function = ea_cnet_plot_spawn,
-               img_format = input$ea_cnet_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ea_cnet_plot$update) {
+        try_plot(prefix = "EA CNET plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ea_cnet_plot_generate,
+                 spawn_function = ea_cnet_plot_spawn,
+                 img_format = input$ea_cnet_plot_img_format,
+                 toggle_function = "toggle_ea_cnet_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })
@@ -882,15 +894,18 @@ ea_ridge_plot_events = function(r6, dimensions_obj, color_palette, input, output
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "EA Ridge plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ea_ridge_plot_generate,
-             spawn_function = ea_ridge_plot_spawn,
-             img_format = input$ea_ridge_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ea_ridge_plot$update) {
+      try_plot(prefix = "EA Ridge plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ea_ridge_plot_generate,
+               spawn_function = ea_ridge_plot_spawn,
+               img_format = input$ea_ridge_plot_img_format,
+               toggle_function = "toggle_ea_ridge_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -938,15 +953,18 @@ ea_ridge_plot_events = function(r6, dimensions_obj, color_palette, input, output
       }
 
       # Produce the plot
-      try_plot(prefix = "EA Ridge plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ea_ridge_plot_generate,
-               spawn_function = ea_ridge_plot_spawn,
-               img_format = input$ea_ridge_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ea_ridge_plot$update) {
+        try_plot(prefix = "EA Ridge plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ea_ridge_plot_generate,
+                 spawn_function = ea_ridge_plot_spawn,
+                 img_format = input$ea_ridge_plot_img_format,
+                 toggle_function = "toggle_ea_ridge_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })
@@ -1273,15 +1291,18 @@ ea_emap_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "EA EMAP plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ea_emap_plot_generate,
-             spawn_function = ea_emap_plot_spawn,
-             img_format = input$ea_emap_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ea_emap_plot$update) {
+      try_plot(prefix = "EA EMAP plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ea_emap_plot_generate,
+               spawn_function = ea_emap_plot_spawn,
+               img_format = input$ea_emap_plot_img_format,
+               toggle_function = "toggle_ea_emap_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -1344,15 +1365,18 @@ ea_emap_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       }
 
       # Produce the plot
-      try_plot(prefix = "EA EMAP plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ea_emap_plot_generate,
-               spawn_function = ea_emap_plot_spawn,
-               img_format = input$ea_emap_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ea_emap_plot$update) {
+        try_plot(prefix = "EA EMAP plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ea_emap_plot_generate,
+                 spawn_function = ea_emap_plot_spawn,
+                 img_format = input$ea_emap_plot_img_format,
+                 toggle_function = "toggle_ea_emap_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })
@@ -1624,15 +1648,18 @@ ora_dot_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "ORA dot plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ora_dot_plot_generate,
-             spawn_function = ora_dot_plot_spawn,
-             img_format = input$ora_dot_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ora_dot_plot$update) {
+      try_plot(prefix = "ORA dot plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ora_dot_plot_generate,
+               spawn_function = ora_dot_plot_spawn,
+               img_format = input$ora_dot_plot_img_format,
+               toggle_function = "toggle_ora_dot_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -1685,15 +1712,18 @@ ora_dot_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       }
 
       # Produce the plot
-      try_plot(prefix = "ORA dot plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ora_dot_plot_generate,
-               spawn_function = ora_dot_plot_spawn,
-               img_format = input$ora_dot_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ora_dot_plot$update) {
+        try_plot(prefix = "ORA dot plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ora_dot_plot_generate,
+                 spawn_function = ora_dot_plot_spawn,
+                 img_format = input$ora_dot_plot_img_format,
+                 toggle_function = "toggle_ora_dot_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })
@@ -1939,15 +1969,18 @@ ora_bar_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "ORA Bar plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ora_bar_plot_generate,
-             spawn_function = ora_bar_plot_spawn,
-             img_format = input$ora_bar_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ora_bar_plot$update) {
+      try_plot(prefix = "ORA Bar plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ora_bar_plot_generate,
+               spawn_function = ora_bar_plot_spawn,
+               img_format = input$ora_bar_plot_img_format,
+               toggle_function = "toggle_ora_bar_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -1995,15 +2028,18 @@ ora_bar_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       }
 
       # Produce the plot
-      try_plot(prefix = "ORA Bar plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ora_bar_plot_generate,
-               spawn_function = ora_bar_plot_spawn,
-               img_format = input$ora_bar_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ora_bar_plot$update) {
+        try_plot(prefix = "ORA Bar plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ora_bar_plot_generate,
+                 spawn_function = ora_bar_plot_spawn,
+                 img_format = input$ora_bar_plot_img_format,
+                 toggle_function = "toggle_ora_bar_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
     })
 
@@ -2268,15 +2304,18 @@ ora_cnet_plot_events = function(r6, dimensions_obj, color_palette, input, output
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "ORA CNET plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ora_cnet_plot_generate,
-             spawn_function = ora_cnet_plot_spawn,
-             img_format = input$ora_cnet_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ora_cnet_plot$update) {
+      try_plot(prefix = "ORA CNET plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ora_cnet_plot_generate,
+               spawn_function = ora_cnet_plot_spawn,
+               img_format = input$ora_cnet_plot_img_format,
+               toggle_function = "toggle_ora_cnet_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -2325,15 +2364,18 @@ ora_cnet_plot_events = function(r6, dimensions_obj, color_palette, input, output
       }
 
       # Produce the plot
-      try_plot(prefix = "ORA CNET plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ora_cnet_plot_generate,
-               spawn_function = ora_cnet_plot_spawn,
-               img_format = input$ora_cnet_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ora_cnet_plot$update) {
+        try_plot(prefix = "ORA CNET plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ora_cnet_plot_generate,
+                 spawn_function = ora_cnet_plot_spawn,
+                 img_format = input$ora_cnet_plot_img_format,
+                 toggle_function = "toggle_ora_cnet_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })
@@ -2653,15 +2695,18 @@ ora_emap_plot_events = function(r6, dimensions_obj, color_palette, input, output
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "ORA EMAP plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = ora_emap_plot_generate,
-             spawn_function = ora_emap_plot_spawn,
-             img_format = input$ora_emap_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$ora_emap_plot$update) {
+      try_plot(prefix = "ORA EMAP plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = ora_emap_plot_generate,
+               spawn_function = ora_emap_plot_spawn,
+               img_format = input$ora_emap_plot_img_format,
+               toggle_function = "toggle_ora_emap_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(c(
@@ -2722,15 +2767,18 @@ ora_emap_plot_events = function(r6, dimensions_obj, color_palette, input, output
       }
 
       # Produce the plot
-      try_plot(prefix = "ORA EMAP plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = ora_emap_plot_generate,
-               spawn_function = ora_emap_plot_spawn,
-               img_format = input$ora_emap_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$ora_emap_plot$update) {
+        try_plot(prefix = "ORA EMAP plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = ora_emap_plot_generate,
+                 spawn_function = ora_emap_plot_spawn,
+                 img_format = input$ora_emap_plot_img_format,
+                 toggle_function = "toggle_ora_emap_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })

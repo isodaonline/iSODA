@@ -13,6 +13,7 @@ explained_variance_generate = function(r6, dimensions_obj, input) {
   r6$plot_explained_variance(width = width,
                              height = height)
 }
+
 explained_variance_spawn = function(r6, format, output) {
   print_tm(r6$name, "Explained variance: spawning plot.")
   output$explained_variance_plot = plotly::renderPlotly({
@@ -25,7 +26,6 @@ explained_variance_spawn = function(r6, format, output) {
   })
 }
 
-
 explained_variance_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "explained_variance",
@@ -34,7 +34,6 @@ explained_variance_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 explained_variance_server = function(r6, output, session) {
 
@@ -134,7 +133,6 @@ explained_variance_server = function(r6, output, session) {
 
 }
 
-
 explained_variance_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -145,15 +143,18 @@ explained_variance_events = function(r6, dimensions_obj, color_palette, input, o
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Explained variance",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = explained_variance_generate,
-             spawn_function = explained_variance_spawn,
-             img_format = input$explained_variance_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$explained_variance$update) {
+      try_plot(prefix = "Explained variance",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = explained_variance_generate,
+               spawn_function = explained_variance_spawn,
+               img_format = input$explained_variance_img_format,
+               toggle_function = "toggle_explained_variance",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -185,15 +186,18 @@ explained_variance_events = function(r6, dimensions_obj, color_palette, input, o
         return()
       }
 
-    try_plot(prefix = "Explained variance",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = explained_variance_generate,
-             spawn_function = explained_variance_spawn,
-             img_format = input$explained_variance_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$explained_variance$update) {
+        try_plot(prefix = "Explained variance",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = explained_variance_generate,
+                 spawn_function = explained_variance_spawn,
+                 img_format = input$explained_variance_img_format,
+                 toggle_function = "toggle_explained_variance",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
   })
 
@@ -226,8 +230,6 @@ explained_variance_events = function(r6, dimensions_obj, color_palette, input, o
   })
 }
 
-
-
 #-------------------------------------------------------------- Factor plot ----
 factor_plot_generate = function(r6, dimensions_obj, input) {
   print_tm(r6$name, "Factor plot: generating plot.")
@@ -243,6 +245,7 @@ factor_plot_generate = function(r6, dimensions_obj, input) {
   r6$plot_factor_plot(width = width,
                       height = height)
 }
+
 factor_plot_spawn = function(r6, format, output) {
   print_tm(r6$name, "Factor plot: spawning plot.")
   output$factor_plot_plot = plotly::renderPlotly({
@@ -255,7 +258,6 @@ factor_plot_spawn = function(r6, format, output) {
   })
 }
 
-
 factor_plot_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "factor_plot",
@@ -264,7 +266,6 @@ factor_plot_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 factor_plot_server = function(r6, output, session) {
 
@@ -427,7 +428,6 @@ factor_plot_server = function(r6, output, session) {
 
 }
 
-
 factor_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -438,15 +438,18 @@ factor_plot_events = function(r6, dimensions_obj, color_palette, input, output, 
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Factor plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = factor_plot_generate,
-             spawn_function = factor_plot_spawn,
-             img_format = input$factor_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$factor_plot$update) {
+      try_plot(prefix = "Factor plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = factor_plot_generate,
+               spawn_function = factor_plot_spawn,
+               img_format = input$factor_plot_img_format,
+               toggle_function = "toggle_factor_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -495,15 +498,18 @@ factor_plot_events = function(r6, dimensions_obj, color_palette, input, output, 
         return()
       }
 
-      try_plot(prefix = "Factor plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = factor_plot_generate,
-               spawn_function = factor_plot_spawn,
-               img_format = input$factor_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$factor_plot$update) {
+        try_plot(prefix = "Factor plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = factor_plot_generate,
+                 spawn_function = factor_plot_spawn,
+                 img_format = input$factor_plot_img_format,
+                 toggle_function = "toggle_factor_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
   })
 
@@ -536,8 +542,6 @@ factor_plot_events = function(r6, dimensions_obj, color_palette, input, output, 
   })
 }
 
-
-
 #---------------------------------------------------- Combined factors plot ----
 combined_factors_plot_generate = function(r6, dimensions_obj, input) {
   print_tm(r6$name, "Combined factors plot: generating plot.")
@@ -552,6 +556,7 @@ combined_factors_plot_generate = function(r6, dimensions_obj, input) {
   r6$plot_combined_factors_plot(width = width,
                                 height = height)
 }
+
 combined_factors_plot_spawn = function(r6, format, output) {
   print_tm(r6$name, "Combined factors plot: spawning plot.")
   output$combined_factors_plot_plot = plotly::renderPlotly({
@@ -564,7 +569,6 @@ combined_factors_plot_spawn = function(r6, format, output) {
   })
 }
 
-
 combined_factors_plot_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "combined_factors_plot",
@@ -573,7 +577,6 @@ combined_factors_plot_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 combined_factors_plot_server = function(r6, output, session) {
 
@@ -729,7 +732,6 @@ combined_factors_plot_server = function(r6, output, session) {
 
 }
 
-
 combined_factors_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -740,15 +742,18 @@ combined_factors_plot_events = function(r6, dimensions_obj, color_palette, input
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Combined factors plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = combined_factors_plot_generate,
-             spawn_function = combined_factors_plot_spawn,
-             img_format = input$combined_factors_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$combined_factors_plot$update) {
+      try_plot(prefix = "Combined factors plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = combined_factors_plot_generate,
+               spawn_function = combined_factors_plot_spawn,
+               img_format = input$combined_factors_plot_img_format,
+               toggle_function = "toggle_combined_factors_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -793,15 +798,18 @@ combined_factors_plot_events = function(r6, dimensions_obj, color_palette, input
         return()
       }
 
-    try_plot(prefix = "Combined factors plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = combined_factors_plot_generate,
-             spawn_function = combined_factors_plot_spawn,
-             img_format = input$combined_factors_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$combined_factors_plot$update) {
+        try_plot(prefix = "Combined factors plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = combined_factors_plot_generate,
+                 spawn_function = combined_factors_plot_spawn,
+                 img_format = input$combined_factors_plot_img_format,
+                 toggle_function = "toggle_combined_factors_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
   })
 
@@ -849,6 +857,7 @@ feature_weights_generate = function(r6, dimensions_obj, input) {
   r6$plot_feature_weights(width = width,
                           height = height)
 }
+
 feature_weights_spawn = function(r6, format, output) {
   print_tm(r6$name, "Feature weights: spawning plot.")
   output$feature_weights_plot = plotly::renderPlotly({
@@ -861,7 +870,6 @@ feature_weights_spawn = function(r6, format, output) {
   })
 }
 
-
 feature_weights_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "feature_weights",
@@ -870,7 +878,6 @@ feature_weights_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 feature_weights_server = function(r6, output, session) {
 
@@ -1034,7 +1041,6 @@ feature_weights_server = function(r6, output, session) {
 
 }
 
-
 feature_weights_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -1045,15 +1051,18 @@ feature_weights_events = function(r6, dimensions_obj, color_palette, input, outp
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Feature weights",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = feature_weights_generate,
-             spawn_function = feature_weights_spawn,
-             img_format = input$feature_weights_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$feature_weights$update) {
+      try_plot(prefix = "Feature weights",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = feature_weights_generate,
+               spawn_function = feature_weights_spawn,
+               img_format = input$feature_weights_img_format,
+               toggle_function = "toggle_feature_weights",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Update on omics
@@ -1110,15 +1119,18 @@ feature_weights_events = function(r6, dimensions_obj, color_palette, input, outp
         return()
       }
 
-    try_plot(prefix = "Feature weights",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = feature_weights_generate,
-             spawn_function = feature_weights_spawn,
-             img_format = input$feature_weights_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$feature_weights$update) {
+        try_plot(prefix = "Feature weights",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = feature_weights_generate,
+                 spawn_function = feature_weights_spawn,
+                 img_format = input$feature_weights_img_format,
+                 toggle_function = "toggle_feature_weights",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
   })
 
@@ -1151,10 +1163,7 @@ feature_weights_events = function(r6, dimensions_obj, color_palette, input, outp
   })
 }
 
-
-
 #------------------------------------------------------ Feature top weights ----
-
 feature_top_weights_generate = function(r6, dimensions_obj, input) {
   print_t("MOFA Feature top weights: generating plot.")
 
@@ -1183,15 +1192,12 @@ feature_top_weights_spawn = function(r6, format, output) {
   })
 }
 
-
-
 feature_top_weights_ui = function(dimensions_obj, session) {
   get_plotly_box(id = "feature_top_weights",
                  label = "Feature top weights",
                  dimensions_obj = dimensions_obj,
                  session = session)
 }
-
 
 feature_top_weights_server = function(r6, output, session) {
 
@@ -1378,15 +1384,18 @@ feature_top_weights_events = function(r6, dimensions_obj, color_palette, input, 
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Feature top weights",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = feature_top_weights_generate,
-             spawn_function = feature_top_weights_spawn,
-             img_format = input$feature_top_weights_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$feature_top_weights$update) {
+      try_plot(prefix = "Feature top weights",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = feature_top_weights_generate,
+               spawn_function = feature_top_weights_spawn,
+               img_format = input$feature_top_weights_img_format,
+               toggle_function = "toggle_feature_top_weights",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Update on omics
@@ -1447,15 +1456,18 @@ feature_top_weights_events = function(r6, dimensions_obj, color_palette, input, 
         return()
       }
 
-    try_plot(prefix = "Feature top weights",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = feature_top_weights_generate,
-             spawn_function = feature_top_weights_spawn,
-             img_format = input$feature_top_weights_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$feature_top_weights$update) {
+        try_plot(prefix = "Feature top weights",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = feature_top_weights_generate,
+                 spawn_function = feature_top_weights_spawn,
+                 img_format = input$feature_top_weights_img_format,
+                 toggle_function = "toggle_feature_top_weights",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
   })
 
   # Download associated table
@@ -1488,7 +1500,6 @@ feature_top_weights_events = function(r6, dimensions_obj, color_palette, input, 
 
 }
 
-
 #------------------------------------------------------------- MOFA heatmap ----
 mofa_heatmap_generate = function(r6, dimensions_obj, input) {
   print_tm(r6$name, "MOFA heatmap: generating plot.")
@@ -1503,6 +1514,7 @@ mofa_heatmap_generate = function(r6, dimensions_obj, input) {
   r6$plot_mofa_heatmap(width = width,
                        height = height)
 }
+
 mofa_heatmap_spawn = function(r6, format, output) {
   print_tm(r6$name, "MOFA heatmap: spawning plot.")
   output$mofa_heatmap_plot = plotly::renderPlotly({
@@ -1515,7 +1527,6 @@ mofa_heatmap_spawn = function(r6, format, output) {
   })
 }
 
-
 mofa_heatmap_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "mofa_heatmap",
@@ -1524,7 +1535,6 @@ mofa_heatmap_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 mofa_heatmap_server = function(r6, output, session) {
 
@@ -1731,7 +1741,6 @@ mofa_heatmap_server = function(r6, output, session) {
 
 }
 
-
 mofa_heatmap_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -1742,15 +1751,18 @@ mofa_heatmap_events = function(r6, dimensions_obj, color_palette, input, output,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "MOFA heatmap",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = mofa_heatmap_generate,
-             spawn_function = mofa_heatmap_spawn,
-             img_format = input$mofa_heatmap_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$mofa_heatmap$update) {
+      try_plot(prefix = "MOFA heatmap",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = mofa_heatmap_generate,
+               spawn_function = mofa_heatmap_spawn,
+               img_format = input$mofa_heatmap_img_format,
+               toggle_function = "toggle_mofa_heatmap",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Update feature table on omics
@@ -1819,15 +1831,18 @@ mofa_heatmap_events = function(r6, dimensions_obj, color_palette, input, output,
         return()
       }
 
-    try_plot(prefix = "MOFA heatmap",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = mofa_heatmap_generate,
-             spawn_function = mofa_heatmap_spawn,
-             img_format = input$mofa_heatmap_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$mofa_heatmap$update) {
+        try_plot(prefix = "MOFA heatmap",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = mofa_heatmap_generate,
+                 spawn_function = mofa_heatmap_spawn,
+                 img_format = input$mofa_heatmap_img_format,
+                 toggle_function = "toggle_mofa_heatmap",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
   })
 
@@ -1860,7 +1875,6 @@ mofa_heatmap_events = function(r6, dimensions_obj, color_palette, input, output,
   })
 }
 
-
 #-------------------------------------------------------------- Scatter plot ----
 scatter_plot_generate = function(r6, dimensions_obj, input) {
   print_tm(r6$name, "Scatter plot: generating plot.")
@@ -1875,6 +1889,7 @@ scatter_plot_generate = function(r6, dimensions_obj, input) {
   r6$plot_scatter_plot(width = width,
                        height = height)
 }
+
 scatter_plot_spawn = function(r6, format, output) {
   print_tm(r6$name, "Scatter plot: spawning plot.")
   output$scatter_plot_plot = plotly::renderPlotly({
@@ -1887,7 +1902,6 @@ scatter_plot_spawn = function(r6, format, output) {
   })
 }
 
-
 scatter_plot_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "scatter_plot",
@@ -1896,7 +1910,6 @@ scatter_plot_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 scatter_plot_server = function(r6, output, session) {
 
@@ -2034,7 +2047,6 @@ scatter_plot_server = function(r6, output, session) {
 
 }
 
-
 scatter_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -2045,15 +2057,18 @@ scatter_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Scatter plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = scatter_plot_generate,
-             spawn_function = scatter_plot_spawn,
-             img_format = input$scatter_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$scatter_plot$update) {
+      try_plot(prefix = "Scatter plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = scatter_plot_generate,
+               spawn_function = scatter_plot_spawn,
+               img_format = input$scatter_plot_img_format,
+               toggle_function = "toggle_scatter_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -2094,15 +2109,18 @@ scatter_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         return()
       }
 
-    try_plot(prefix = "Scatter plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = scatter_plot_generate,
-             spawn_function = scatter_plot_spawn,
-             img_format = input$scatter_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$scatter_plot$update) {
+        try_plot(prefix = "Scatter plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = scatter_plot_generate,
+                 spawn_function = scatter_plot_spawn,
+                 img_format = input$scatter_plot_img_format,
+                 toggle_function = "toggle_scatter_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
   })
 

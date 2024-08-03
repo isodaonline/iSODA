@@ -957,7 +957,7 @@ try_method = function(r6, method_name, ...) {
   })
 }
 
-try_plot = function(prefix, r6, dimensions_obj, gen_function, spawn_function, img_format, input, output, session) {
+try_plot = function(prefix, r6, dimensions_obj, gen_function, spawn_function, img_format, toggle_function = NULL, input, output, session) {
   ns = session$ns
   error_output = paste0(gsub(" ", "_", tolower(prefix)), '_error')
   plot_output = paste0(gsub(" ", "_", tolower(prefix)), '_plot')
@@ -971,6 +971,9 @@ try_plot = function(prefix, r6, dimensions_obj, gen_function, spawn_function, im
     gen_function(r6, dimensions_obj, input)
     output[[error_output]] = shiny::renderUI({NULL})
     spawn_function(r6 = r6, format = img_format, output = output)
+    if (!is.null(toggle_function)) {
+      r6[[toggle_function]]()
+    }
     print_tm(r6$name, paste0(prefix, " Completed"))
     waiter::waiter_hide(
       id = ns(paste0(gsub(" ", "_", tolower(prefix)), '_plot'))

@@ -173,15 +173,18 @@ dendrogram_events = function(r6, dimensions_obj, color_palette, input, output, s
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Dendrogram",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = dendrogram_generate,
-             spawn_function = dendrogram_spawn,
-             img_format = input$dendrogram_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$dendrogram$update) {
+      try_plot(prefix = "Dendrogram",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = dendrogram_generate,
+               spawn_function = dendrogram_spawn,
+               img_format = input$dendrogram_img_format,
+               toggle_function = "toggle_dendrogram",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -217,15 +220,19 @@ dendrogram_events = function(r6, dimensions_obj, color_palette, input, output, s
         return()
       }
 
-      try_plot(prefix = "Dendrogram",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = dendrogram_generate,
-               spawn_function = dendrogram_spawn,
-               img_format = input$dendrogram_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$dendrogram$update) {
+        try_plot(prefix = "Dendrogram",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = dendrogram_generate,
+                 spawn_function = dendrogram_spawn,
+                 img_format = input$dendrogram_img_format,
+                 toggle_function = "toggle_dendrogram",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
+
 
     })
 
@@ -430,15 +437,19 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Class distribution",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = class_distribution_generate,
-             spawn_function = class_distribution_spawn,
-             img_format = input$class_distribution_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$class_distribution$update) {
+      try_plot(prefix = "Class distribution",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = class_distribution_generate,
+               spawn_function = class_distribution_spawn,
+               img_format = input$class_distribution_img_format,
+               toggle_function = "toggle_class_distribution",
+               input = input,
+               output = output,
+               session = session)
+    }
+
   })
 
   # Generate the plot
@@ -470,15 +481,19 @@ class_distribution_events = function(r6, dimensions_obj, color_palette, input, o
           return()
         }
 
-    try_plot(prefix = "Class distribution",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = class_distribution_generate,
-             spawn_function = class_distribution_spawn,
-             img_format = input$class_distribution_img_format,
-             input = input,
-             output = output,
-             session = session)
+        if (r6$params$class_distribution$update) {
+          try_plot(prefix = "Class distribution",
+                   r6 = r6,
+                   dimensions_obj = dimensions_obj,
+                   gen_function = class_distribution_generate,
+                   spawn_function = class_distribution_spawn,
+                   img_format = input$class_distribution_img_format,
+                   toggle_function = "toggle_class_distribution",
+                   input = input,
+                   output = output,
+                   session = session)
+
+        }
 
   })
 
@@ -656,15 +671,18 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Class comparison",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = class_comparison_generate,
-             spawn_function = class_comparison_spawn,
-             img_format = input$class_comparison_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$class_comparison$update) {
+      try_plot(prefix = "Class comparison",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = class_comparison_generate,
+               spawn_function = class_comparison_spawn,
+               img_format = input$class_comparison_img_format,
+               toggle_function = "toggle_class_comparison",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -696,15 +714,18 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
         return()
       }
 
-    try_plot(prefix = "Class comparison",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = class_comparison_generate,
-             spawn_function = class_comparison_spawn,
-             img_format = input$class_comparison_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$class_comparison$update) {
+        try_plot(prefix = "Class comparison",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = class_comparison_generate,
+                 spawn_function = class_comparison_spawn,
+                 img_format = input$class_comparison_img_format,
+                 toggle_function = "toggle_class_comparison",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
   })
 
@@ -1001,15 +1022,19 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Volcano plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = volcano_plot_generate,
-             spawn_function = volcano_plot_spawn,
-             img_format = input$volcano_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$volcano_plot$update) {
+      try_plot(prefix = "Volcano plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = volcano_plot_generate,
+               spawn_function = volcano_plot_spawn,
+               img_format = input$volcano_plot_img_format,
+               toggle_function = "toggle_volcano_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
+
   })
 
   # auto-update selected groups
@@ -1110,15 +1135,18 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
         return()
       }
 
-      try_plot(prefix = "Volcano plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = volcano_plot_generate,
-               spawn_function = volcano_plot_spawn,
-               img_format = input$volcano_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$volcano_plot$update) {
+        try_plot(prefix = "Volcano plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = volcano_plot_generate,
+                 spawn_function = volcano_plot_spawn,
+                 img_format = input$volcano_plot_img_format,
+                 toggle_function = "toggle_volcano_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
     })
@@ -1461,15 +1489,18 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Heatmap",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = heatmap_generate,
-             spawn_function = heatmap_spawn,
-             img_format = input$heatmap_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$heatmap$update) {
+      try_plot(prefix = "Heatmap",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = heatmap_generate,
+               spawn_function = heatmap_spawn,
+               img_format = input$heatmap_img_format,
+               toggle_function = "toggle_heatmap",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(input$heatmap_multival_cols, {
@@ -1556,15 +1587,18 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
         return()
       }
 
-      try_plot(prefix = "Heatmap",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = heatmap_generate,
-               spawn_function = heatmap_spawn,
-               img_format = input$heatmap_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$heatmap$update) {
+        try_plot(prefix = "Heatmap",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = heatmap_generate,
+                 spawn_function = heatmap_spawn,
+                 img_format = input$heatmap_img_format,
+                 toggle_function = "toggle_heatmap",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
     }
   )
@@ -1845,15 +1879,18 @@ samples_correlation_events = function(r6, dimensions_obj, color_palette, input, 
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Samples correlation",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = samples_correlation_generate,
-             spawn_function = samples_correlation_spawn,
-             img_format = input$samples_correlation_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$samples_correlation$update) {
+      try_plot(prefix = "Samples correlation",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = samples_correlation_generate,
+               spawn_function = samples_correlation_spawn,
+               img_format = input$samples_correlation_img_format,
+               toggle_function = "toggle_samples_correlation",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(
@@ -1903,15 +1940,18 @@ samples_correlation_events = function(r6, dimensions_obj, color_palette, input, 
         return()
       }
 
-      try_plot(prefix = "Samples correlation",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = samples_correlation_generate,
-               spawn_function = samples_correlation_spawn,
-               img_format = input$samples_correlation_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$samples_correlation$update) {
+        try_plot(prefix = "Samples correlation",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = samples_correlation_generate,
+                 spawn_function = samples_correlation_spawn,
+                 img_format = input$samples_correlation_img_format,
+                 toggle_function = "toggle_samples_correlation",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
     })
 
@@ -2206,15 +2246,18 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Feature correlation",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = feature_correlation_generate,
-             spawn_function = feature_correlation_spawn,
-             img_format = input$feature_correlation_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$feature_correlation$update) {
+      try_plot(prefix = "Feature correlation",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = feature_correlation_generate,
+               spawn_function = feature_correlation_spawn,
+               img_format = input$feature_correlation_img_format,
+               toggle_function = "toggle_feature_correlation",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(input$feature_correlation_multival_cols, {
@@ -2297,15 +2340,18 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
         return()
       }
 
-      try_plot(prefix = "Feature correlation",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = feature_correlation_generate,
-               spawn_function = feature_correlation_spawn,
-               img_format = input$feature_correlation_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$feature_correlation$update) {
+        try_plot(prefix = "Feature correlation",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = feature_correlation_generate,
+                 spawn_function = feature_correlation_spawn,
+                 img_format = input$feature_correlation_img_format,
+                 toggle_function = "toggle_feature_correlation",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
     })
 
@@ -2627,15 +2673,18 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "PCA",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = pca_generate,
-             spawn_function = pca_spawn,
-             img_format = input$pca_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$pca$update) {
+      try_plot(prefix = "PCA",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = pca_generate,
+               spawn_function = pca_spawn,
+               img_format = input$pca_img_format,
+               toggle_function = "toggle_pca",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   shiny::observeEvent(input$pca_feature_group, {
@@ -2727,15 +2776,18 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
       return()
     }
 
-    try_plot(prefix = "PCA",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = pca_generate,
-             spawn_function = pca_spawn,
-             img_format = input$pca_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$pca$update) {
+      try_plot(prefix = "PCA",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = pca_generate,
+               spawn_function = pca_spawn,
+               img_format = input$pca_img_format,
+               toggle_function = "toggle_pca",
+               input = input,
+               output = output,
+               session = session)
+    }
 
   })
 
@@ -3055,15 +3107,18 @@ double_bonds_plot_events = function(r6, dimensions_obj, color_palette, input, ou
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Double bonds plot",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = double_bonds_plot_generate,
-             spawn_function = double_bonds_plot_spawn,
-             img_format = input$double_bonds_plot_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$double_bonds_plot$update) {
+      try_plot(prefix = "Double bonds plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = double_bonds_plot_generate,
+               spawn_function = double_bonds_plot_spawn,
+               img_format = input$double_bonds_plot_img_format,
+               toggle_function = "toggle_double_bonds_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Group col selection
@@ -3140,15 +3195,18 @@ double_bonds_plot_events = function(r6, dimensions_obj, color_palette, input, ou
         return()
       }
 
-      try_plot(prefix = "Double bonds plot",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = double_bonds_plot_generate,
-               spawn_function = double_bonds_plot_spawn,
-               img_format = input$double_bonds_plot_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$double_bonds_plot$update) {
+        try_plot(prefix = "Double bonds plot",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = double_bonds_plot_generate,
+                 spawn_function = double_bonds_plot_spawn,
+                 img_format = input$double_bonds_plot_img_format,
+                 toggle_function = "toggle_double_bonds_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
 
 

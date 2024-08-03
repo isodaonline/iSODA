@@ -32,7 +32,8 @@ Mofa_class = R6::R6Class(
         x_label_font_size = 0,
         x_tick_font_size = 15,
         legend_font_size = 15,
-        img_format = 'png'
+        img_format = 'png',
+        update = T
       ),
 
       # Factor plot parameters
@@ -54,7 +55,8 @@ Mofa_class = R6::R6Class(
         x_label_font_size = 20,
         x_tick_font_size = 0,
         legend_font_size = 15,
-        img_format = 'png'
+        img_format = 'png',
+        update = T
       ),
 
       combined_factors_plot = list(
@@ -73,7 +75,8 @@ Mofa_class = R6::R6Class(
         y_tick_font_size = 15,
         x_tick_font_size = 15,
         legend_font_size = 17,
-        img_format = 'png'
+        img_format = 'png',
+        update = T
       ),
 
       # feature weights plot parameters
@@ -95,7 +98,8 @@ Mofa_class = R6::R6Class(
         x_tick_font_size = 15,
         legend_font_size = 15,
         img_format = 'png',
-        groups_list = NULL
+        groups_list = NULL,
+        update = T
       ),
 
       # Feature top weights parameters
@@ -119,7 +123,8 @@ Mofa_class = R6::R6Class(
         x_tick_font_size = 10,
         legend_font_size = 10,
         img_format = 'png',
-        groups_list = NULL
+        groups_list = NULL,
+        update = T
       ),
 
       # MOFA heatmap parameters
@@ -147,7 +152,8 @@ Mofa_class = R6::R6Class(
         x_tick_font_size = 8,
         y_tick_font_size = 8,
         img_format = 'png',
-        features_list = NULL
+        features_list = NULL,
+        update = T
       ),
 
       # Scatter_plot parameters
@@ -165,11 +171,21 @@ Mofa_class = R6::R6Class(
         marker_size = 10,
         marker_opacity = 1,
         show_legend = TRUE,
-        img_format = 'png'
+        img_format = 'png',
+        update = T
       )
 
     ),
     #---------------------------------------------------- Parameter methods ----
+
+    toggle_explained_variance = function() {
+      if (self$params$explained_variance$update) {
+        self$params$explained_variance$update = F
+      } else {
+        self$params$explained_variance$update = T
+      }
+    },
+
     param_explained_variance = function(auto_refresh, color_palette, reverse_color_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
       self$params$explained_variance$auto_refresh = auto_refresh
       self$params$explained_variance$color_palette = color_palette
@@ -181,7 +197,16 @@ Mofa_class = R6::R6Class(
       self$params$explained_variance$x_tick_font_size = x_tick_font_size
       self$params$explained_variance$legend_font_size = legend_font_size
       self$params$explained_variance$img_format = img_format
+      self$params$explained_variance$update = T
 
+    },
+
+    toggle_factor_plot = function() {
+      if (self$params$factor_plot$update) {
+        self$params$factor_plot$update = F
+      } else {
+        self$params$factor_plot$update = T
+      }
     },
 
     param_factor_plot = function(auto_refresh, factors, scale, groups, show_missing, color_palette, marker_size, opacity, add_violin, show_legend, violin_alpha, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -203,6 +228,15 @@ Mofa_class = R6::R6Class(
       self$params$factor_plot$x_tick_font_size = x_tick_font_size
       self$params$factor_plot$legend_font_size = legend_font_size
       self$params$factor_plot$img_format = img_format
+      self$params$factor_plot$update = T
+    },
+
+    toggle_combined_factors_plot = function() {
+      if (self$params$combined_factors_plot$update) {
+        self$params$combined_factors_plot$update = F
+      } else {
+        self$params$combined_factors_plot$update = T
+      }
     },
 
     param_combined_factors_plot = function(auto_refresh, factors, groups, scale, show_missing, color_palette, marker_size, marker_opacity, area_alpha, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -222,6 +256,15 @@ Mofa_class = R6::R6Class(
       self$params$combined_factors_plot$x_tick_font_size = x_tick_font_size
       self$params$combined_factors_plot$legend_font_size = legend_font_size
       self$params$combined_factors_plot$img_format = img_format
+      self$params$combined_factors_plot$update = T
+    },
+
+    toggle_feature_weights = function() {
+      if (self$params$feature_weights$update) {
+        self$params$feature_weights$update = F
+      } else {
+        self$params$feature_weights$update = T
+      }
     },
 
     param_feature_weights = function(auto_refresh, omics, factors, groups, scale, abs, color_palette, reverse_color_palette, marker_size, marker_opacity, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -242,8 +285,16 @@ Mofa_class = R6::R6Class(
       self$params$feature_weights$x_tick_font_size = x_tick_font_size
       self$params$feature_weights$legend_font_size = legend_font_size
       self$params$feature_weights$img_format = img_format
+      self$params$feature_weights$update = T
     },
 
+    toggle_feature_top_weights = function() {
+      if (self$params$feature_top_weights$update) {
+        self$params$feature_top_weights$update = F
+      } else {
+        self$params$feature_top_weights$update = T
+      }
+    },
 
     param_feature_top_weights = function(auto_refresh, omics, factors, nfeatures, abs, scale, sign, groups, color_palette, reverse_color_palette, marker_size, marker_opacity, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
       self$params$feature_top_weights$auto_refresh = auto_refresh
@@ -265,6 +316,15 @@ Mofa_class = R6::R6Class(
       self$params$feature_top_weights$x_tick_font_size = x_tick_font_size
       self$params$feature_top_weights$legend_font_size = legend_font_size
       self$params$feature_top_weights$img_format = img_format
+      self$params$feature_top_weights$update = T
+    },
+
+    toggle_mofa_heatmap = function() {
+      if (self$params$mofa_heatmap$update) {
+        self$params$mofa_heatmap$update = F
+      } else {
+        self$params$mofa_heatmap$update = T
+      }
     },
 
     param_mofa_heatmap = function(auto_refresh, factor, omics, features, feature_annotations, sample_annotations, imputed, denoise, distance_method, clustering_method, p_minkowski, k_clusters_samples, k_clusters_features, center, apply_clustering, color_palette, reverse_color_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
@@ -291,8 +351,16 @@ Mofa_class = R6::R6Class(
       self$params$mofa_heatmap$x_label_font_size = x_label_font_size
       self$params$mofa_heatmap$x_tick_font_size = x_tick_font_size
       self$params$mofa_heatmap$img_format = img_format
+      self$params$mofa_heatmap$update = T
     },
 
+    toggle_scatter_plot = function() {
+      if (self$params$scatter_plot$update) {
+        self$params$scatter_plot$update = F
+      } else {
+        self$params$scatter_plot$update = T
+      }
+    },
 
     param_scatter_plot = function(auto_refresh, factor, omics, features, sign, sample_annotations, add_lm, imputed, color_palette, reverse_palette, marker_size, marker_opacity, show_legend, img_format) {
       self$params$scatter_plot$auto_refresh = auto_refresh
@@ -309,6 +377,7 @@ Mofa_class = R6::R6Class(
       self$params$scatter_plot$marker_opacity = marker_opacity
       self$params$scatter_plot$show_legend = show_legend
       self$params$scatter_plot$img_format = img_format
+      self$params$scatter_plot$update = T
     },
 
 

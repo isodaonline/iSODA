@@ -30,7 +30,8 @@ Snf_class = R6::R6Class(
         title_font_size = 0,
         x_tick_font_size = 0,
         y_tick_font_size = 0,
-        img_format = 'png'
+        img_format = 'png',
+        update = T
       ),
       sample_clustering_2 = list(
         auto_refresh = F,
@@ -48,7 +49,8 @@ Snf_class = R6::R6Class(
         title_font_size = 0,
         x_tick_font_size = 0,
         y_tick_font_size = 0,
-        img_format = 'png'
+        img_format = 'png',
+        update = T
       ),
 
       fusion_heatmap = list(
@@ -69,7 +71,8 @@ Snf_class = R6::R6Class(
         title_font_size = 0,
         x_tick_font_size = 0,
         y_tick_font_size = 0,
-        img_format = 'png'
+        img_format = 'png',
+        update = T
       ),
 
       similarity_network_1 = list(
@@ -92,7 +95,8 @@ Snf_class = R6::R6Class(
         nodeDistance = 200,
         centralGravity = 0.2,
         springLength = 200,
-        springConstant = 0.04
+        springConstant = 0.04,
+        update = T
       ),
 
       similarity_network_2 = list(
@@ -115,7 +119,8 @@ Snf_class = R6::R6Class(
         nodeDistance = 200,
         centralGravity = 0.2,
         springLength = 200,
-        springConstant = 0.04
+        springConstant = 0.04,
+        update = T
       ),
 
       similarity_network_fusion = list(
@@ -142,12 +147,22 @@ Snf_class = R6::R6Class(
         nodeDistance = 200,
         centralGravity = 0.2,
         springLength = 200,
-        springConstant = 0.04
+        springConstant = 0.04,
+        update = T
       )
 
     ),
 
     #---------------------------------------------------- Parameter methods ----
+
+    toggle_sample_clustering_1 = function() {
+      if (self$params$sample_clustering_1$update) {
+        self$params$sample_clustering_1$update = F
+      } else {
+        self$params$sample_clustering_1$update = T
+      }
+    },
+
     param_sample_clustering_1 = function(auto_refresh, data_table, K_nearest_neighbors, sigma, distance_method, K_clusters, z_max, z_min, vertical_annotations, horizontal_annotations, color_palette, reverse_palette, title_font_size, x_tick_font_size, y_tick_font_size, img_format) {
       self$params$sample_clustering_1$auto_refresh = auto_refresh
       self$params$sample_clustering_1$data_table = data_table
@@ -165,7 +180,16 @@ Snf_class = R6::R6Class(
       self$params$sample_clustering_1$x_tick_font_size = x_tick_font_size
       self$params$sample_clustering_1$y_tick_font_size = y_tick_font_size
       self$params$sample_clustering_1$img_format = img_format
+      self$params$sample_clustering_1$update = T
 
+    },
+
+    toggle_sample_clustering_2 = function() {
+      if (self$params$sample_clustering_2$update) {
+        self$params$sample_clustering_2$update = F
+      } else {
+        self$params$sample_clustering_2$update = T
+      }
     },
 
     param_sample_clustering_2 = function(auto_refresh, data_table, K_nearest_neighbors, sigma, distance_method, K_clusters, z_max, z_min, vertical_annotations, horizontal_annotations, color_palette, reverse_palette, title_font_size, x_tick_font_size, y_tick_font_size, img_format) {
@@ -185,7 +209,16 @@ Snf_class = R6::R6Class(
       self$params$sample_clustering_2$x_tick_font_size = x_tick_font_size
       self$params$sample_clustering_2$y_tick_font_size = y_tick_font_size
       self$params$sample_clustering_2$img_format = img_format
+      self$params$sample_clustering_2$update = T
 
+    },
+
+    toggle_fusion_heatmap = function() {
+      if (self$params$fusion_heatmap$update) {
+        self$params$fusion_heatmap$update = F
+      } else {
+        self$params$fusion_heatmap$update = T
+      }
     },
 
     param_fusion_heatmap = function(auto_refresh, K_nearest_neighbors, sigma, distance_method, SNF_K_nearest_neighbors, omics_list, K_clusters, T_iterations, z_max, z_min, vertical_annotations, horizontal_annotations, color_palette, reverse_palette, title_font_size, x_tick_font_size, y_tick_font_size, img_format) {
@@ -207,6 +240,15 @@ Snf_class = R6::R6Class(
       self$params$fusion_heatmap$x_tick_font_size = x_tick_font_size
       self$params$fusion_heatmap$y_tick_font_size = y_tick_font_size
       self$params$fusion_heatmap$img_format = img_format
+      self$params$fusion_heatmap$update = T
+    },
+
+    toggle_similarity_network_1 = function() {
+      if (self$params$similarity_network_1$update) {
+        self$params$similarity_network_1$update = F
+      } else {
+        self$params$similarity_network_1$update = T
+      }
     },
 
     param_similarity_network_1 = function(auto_refresh, data_table, group_colors, node_color_palette, node_opacity, label_font_size, edge_magnifier, K_nearest_neighbors, sigma, distance_method, K_clusters, top_edges, legend, static_network, solver, gravitationalConstant, nodeDistance, centralGravity, springLength, springConstant) {
@@ -230,6 +272,15 @@ Snf_class = R6::R6Class(
       self$params$similarity_network_1$centralGravity = centralGravity
       self$params$similarity_network_1$springLength = springLength
       self$params$similarity_network_1$springConstant = springConstant
+      self$params$similarity_network_1$update = T
+    },
+
+    toggle_similarity_network_2 = function() {
+      if (self$params$similarity_network_2$update) {
+        self$params$similarity_network_2$update = F
+      } else {
+        self$params$similarity_network_2$update = T
+      }
     },
 
     param_similarity_network_2 = function(auto_refresh, data_table, group_colors, node_color_palette, node_opacity, label_font_size, edge_magnifier, K_nearest_neighbors, sigma, distance_method, K_clusters, top_edges, legend, static_network, solver, gravitationalConstant, nodeDistance, centralGravity, springLength, springConstant) {
@@ -253,6 +304,15 @@ Snf_class = R6::R6Class(
       self$params$similarity_network_2$centralGravity = centralGravity
       self$params$similarity_network_2$springLength = springLength
       self$params$similarity_network_2$springConstant = springConstant
+      self$params$similarity_network_2$update = T
+    },
+
+    toggle_similarity_network_fusion = function() {
+      if (self$params$similarity_network_fusion$update) {
+        self$params$similarity_network_fusion$update = F
+      } else {
+        self$params$similarity_network_fusion$update = T
+      }
     },
 
     param_similarity_network_fusion = function(auto_refresh, group_colors,  node_color_palette, edge_color_palette, reverse_edge_colors, K_nearest_neighbors, sigma, distance_method, SNF_K_nearest_neighbors, omics_list, K_clusters, T_iterations, top_edges, edge_magnifier, node_opacity, label_font_size, legend, static_network, solver, gravitationalConstant, nodeDistance, centralGravity, springLength, springConstant) {
@@ -280,6 +340,7 @@ Snf_class = R6::R6Class(
       self$params$similarity_network_fusion$centralGravity = centralGravity
       self$params$similarity_network_fusion$springLength = springLength
       self$params$similarity_network_fusion$springConstant = springConstant
+      self$params$similarity_network_fusion$update = T
     },
 
     #---------------------------------------------------------------- Plots ----

@@ -12,6 +12,7 @@ sample_clustering_1_generate = function(r6, dimensions_obj, input) {
   r6$plot_sample_clustering_1(width = width,
                               height = height)
 }
+
 sample_clustering_1_spawn = function(r6, format, output) {
   print_tm(r6$name, "Sample clustering 1: spawning plot.")
   output$sample_clustering_1_plot = plotly::renderPlotly({
@@ -24,7 +25,6 @@ sample_clustering_1_spawn = function(r6, format, output) {
   })
 }
 
-
 sample_clustering_1_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "sample_clustering_1",
@@ -33,7 +33,6 @@ sample_clustering_1_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 sample_clustering_1_server = function(r6, output, session) {
 
@@ -179,7 +178,6 @@ sample_clustering_1_server = function(r6, output, session) {
   })
 }
 
-
 sample_clustering_1_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -190,15 +188,18 @@ sample_clustering_1_events = function(r6, dimensions_obj, color_palette, input, 
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Sample clustering 1",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = sample_clustering_1_generate,
-             spawn_function = sample_clustering_1_spawn,
-             img_format = input$sample_clustering_1_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$sample_clustering_1$update) {
+      try_plot(prefix = "Sample clustering 1",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = sample_clustering_1_generate,
+               spawn_function = sample_clustering_1_spawn,
+               img_format = input$sample_clustering_1_img_format,
+               toggle_function = "toggle_sample_clustering_1",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -241,17 +242,18 @@ sample_clustering_1_events = function(r6, dimensions_obj, color_palette, input, 
           r6$params$sample_clustering_1$auto_refresh = input$sample_clustering_1_auto_refresh
           return()
         }
-
-        try_plot(prefix = "Sample clustering 1",
-                 r6 = r6,
-                 dimensions_obj = dimensions_obj,
-                 gen_function = sample_clustering_1_generate,
-                 spawn_function = sample_clustering_1_spawn,
-                 img_format = input$sample_clustering_1_img_format,
-                 input = input,
-                 output = output,
-                 session = session)
-
+        if (r6$params$sample_clustering_1$update) {
+          try_plot(prefix = "Sample clustering 1",
+                   r6 = r6,
+                   dimensions_obj = dimensions_obj,
+                   gen_function = sample_clustering_1_generate,
+                   spawn_function = sample_clustering_1_spawn,
+                   img_format = input$sample_clustering_1_img_format,
+                   toggle_function = "toggle_sample_clustering_1",
+                   input = input,
+                   output = output,
+                   session = session)
+        }
   })
 
   # Download associated table
@@ -283,8 +285,6 @@ sample_clustering_1_events = function(r6, dimensions_obj, color_palette, input, 
   })
 }
 
-
-
 #------------------------------------------------------- Sample clustering 2 ----
 sample_clustering_2_generate = function(r6, dimensions_obj, input) {
   print_tm(r6$name, "Sample clustering 2: generating plot.")
@@ -299,6 +299,7 @@ sample_clustering_2_generate = function(r6, dimensions_obj, input) {
   r6$plot_sample_clustering_2(width = width,
                               height = height)
 }
+
 sample_clustering_2_spawn = function(r6, format, output) {
   print_tm(r6$name, "Sample clustering 2: spawning plot.")
   output$sample_clustering_2_plot = plotly::renderPlotly({
@@ -311,7 +312,6 @@ sample_clustering_2_spawn = function(r6, format, output) {
   })
 }
 
-
 sample_clustering_2_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "sample_clustering_2",
@@ -320,7 +320,6 @@ sample_clustering_2_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 sample_clustering_2_server = function(r6, output, session) {
 
@@ -468,7 +467,6 @@ sample_clustering_2_server = function(r6, output, session) {
 
 }
 
-
 sample_clustering_2_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -479,15 +477,18 @@ sample_clustering_2_events = function(r6, dimensions_obj, color_palette, input, 
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Sample clustering 2",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = sample_clustering_2_generate,
-             spawn_function = sample_clustering_2_spawn,
-             img_format = input$sample_clustering_2_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$sample_clustering_2$update) {
+      try_plot(prefix = "Sample clustering 2",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = sample_clustering_2_generate,
+               spawn_function = sample_clustering_2_spawn,
+               img_format = input$sample_clustering_2_img_format,
+               toggle_function = "toggle_sample_clustering_2",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -531,15 +532,18 @@ sample_clustering_2_events = function(r6, dimensions_obj, color_palette, input, 
           return()
         }
 
-        try_plot(prefix = "Sample clustering 2",
-                 r6 = r6,
-                 dimensions_obj = dimensions_obj,
-                 gen_function = sample_clustering_2_generate,
-                 spawn_function = sample_clustering_2_spawn,
-                 img_format = input$sample_clustering_2_img_format,
-                 input = input,
-                 output = output,
-                 session = session)
+        if (r6$params$sample_clustering_2$update) {
+          try_plot(prefix = "Sample clustering 2",
+                   r6 = r6,
+                   dimensions_obj = dimensions_obj,
+                   gen_function = sample_clustering_2_generate,
+                   spawn_function = sample_clustering_2_spawn,
+                   img_format = input$sample_clustering_2_img_format,
+                   toggle_function = "toggle_sample_clustering_2",
+                   input = input,
+                   output = output,
+                   session = session)
+        }
 
   })
 
@@ -572,9 +576,6 @@ sample_clustering_2_events = function(r6, dimensions_obj, color_palette, input, 
   })
 }
 
-
-
-
 #----------------------------------------------------------- Fusion heatmap ----
 fusion_heatmap_generate = function(r6, dimensions_obj, input) {
   print_tm(r6$name, "Fusion heatmap: generating plot.")
@@ -589,6 +590,7 @@ fusion_heatmap_generate = function(r6, dimensions_obj, input) {
   r6$plot_fusion_heatmap(width = width,
                          height = height)
 }
+
 fusion_heatmap_spawn = function(r6, format, output) {
   print_tm(r6$name, "Fusion heatmap: spawning plot.")
   output$fusion_heatmap_plot = plotly::renderPlotly({
@@ -601,7 +603,6 @@ fusion_heatmap_spawn = function(r6, format, output) {
   })
 }
 
-
 fusion_heatmap_ui = function(dimensions_obj, session) {
 
   get_plotly_box(id = "fusion_heatmap",
@@ -610,7 +611,6 @@ fusion_heatmap_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 fusion_heatmap_server = function(r6, output, session) {
 
@@ -772,7 +772,6 @@ fusion_heatmap_server = function(r6, output, session) {
 
 }
 
-
 fusion_heatmap_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -783,71 +782,78 @@ fusion_heatmap_events = function(r6, dimensions_obj, color_palette, input, outpu
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Fusion heatmap",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = fusion_heatmap_generate,
-             spawn_function = fusion_heatmap_spawn,
-             img_format = input$fusion_heatmap_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$fusion_heatmap$update) {
+      try_plot(prefix = "Fusion heatmap",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = fusion_heatmap_generate,
+               spawn_function = fusion_heatmap_spawn,
+               img_format = input$fusion_heatmap_img_format,
+               toggle_function = "toggle_fusion_heatmap",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
-  shiny::observeEvent(c(input$fusion_heatmap_K_nearest_neighbors,
-                        input$fusion_heatmap_sigma,
-                        input$fusion_heatmap_distance_method,
-                        input$fusion_heatmap_SNF_K_nearest_neighbors,
-                        input$fusion_heatmap_omics_list,
-                        input$fusion_heatmap_K_clusters,
-                        input$fusion_heatmap_T_iterations,
-                        input$fusion_heatmap_z_max,
-                        input$fusion_heatmap_z_min,
-                        input$fusion_heatmap_vertical_annotations,
-                        input$fusion_heatmap_horizontal_annotations,
-                        input$fusion_heatmap_color_palette,
-                        input$fusion_heatmap_reverse_palette,
-                        input$fusion_heatmap_title_font_size,
-                        input$fusion_heatmap_y_tick_font_size,
-                        input$fusion_heatmap_x_tick_font_size,
-                        input$fusion_heatmap_img_format), {
+  shiny::observeEvent(c(
+    input$fusion_heatmap_K_nearest_neighbors,
+    input$fusion_heatmap_sigma,
+    input$fusion_heatmap_distance_method,
+    input$fusion_heatmap_SNF_K_nearest_neighbors,
+    input$fusion_heatmap_omics_list,
+    input$fusion_heatmap_K_clusters,
+    input$fusion_heatmap_T_iterations,
+    input$fusion_heatmap_z_max,
+    input$fusion_heatmap_z_min,
+    input$fusion_heatmap_vertical_annotations,
+    input$fusion_heatmap_horizontal_annotations,
+    input$fusion_heatmap_color_palette,
+    input$fusion_heatmap_reverse_palette,
+    input$fusion_heatmap_title_font_size,
+    input$fusion_heatmap_y_tick_font_size,
+    input$fusion_heatmap_x_tick_font_size,
+    input$fusion_heatmap_img_format), {
 
-    r6$param_fusion_heatmap(auto_refresh = input$fusion_heatmap_auto_refresh,
-                            K_nearest_neighbors = input$fusion_heatmap_K_nearest_neighbors,
-                            sigma = input$fusion_heatmap_sigma,
-                            distance_method = input$fusion_heatmap_distance_method,
-                            SNF_K_nearest_neighbors = input$fusion_heatmap_SNF_K_nearest_neighbors,
-                            omics_list = input$fusion_heatmap_omics_list,
-                            K_clusters = input$fusion_heatmap_K_clusters,
-                            T_iterations = input$fusion_heatmap_T_iterations,
-                            z_max = input$fusion_heatmap_z_max,
-                            z_min = input$fusion_heatmap_z_min,
-                            vertical_annotations = input$fusion_heatmap_vertical_annotations,
-                            horizontal_annotations = input$fusion_heatmap_horizontal_annotations,
-                            color_palette = input$fusion_heatmap_color_palette,
-                            reverse_palette = input$fusion_heatmap_reverse_palette,
-                            title_font_size = input$fusion_heatmap_title_font_size,
-                            y_tick_font_size = input$fusion_heatmap_y_tick_font_size,
-                            x_tick_font_size = input$fusion_heatmap_x_tick_font_size,
-                            img_format = input$fusion_heatmap_img_format)
+      r6$param_fusion_heatmap(auto_refresh = input$fusion_heatmap_auto_refresh,
+                              K_nearest_neighbors = input$fusion_heatmap_K_nearest_neighbors,
+                              sigma = input$fusion_heatmap_sigma,
+                              distance_method = input$fusion_heatmap_distance_method,
+                              SNF_K_nearest_neighbors = input$fusion_heatmap_SNF_K_nearest_neighbors,
+                              omics_list = input$fusion_heatmap_omics_list,
+                              K_clusters = input$fusion_heatmap_K_clusters,
+                              T_iterations = input$fusion_heatmap_T_iterations,
+                              z_max = input$fusion_heatmap_z_max,
+                              z_min = input$fusion_heatmap_z_min,
+                              vertical_annotations = input$fusion_heatmap_vertical_annotations,
+                              horizontal_annotations = input$fusion_heatmap_horizontal_annotations,
+                              color_palette = input$fusion_heatmap_color_palette,
+                              reverse_palette = input$fusion_heatmap_reverse_palette,
+                              title_font_size = input$fusion_heatmap_title_font_size,
+                              y_tick_font_size = input$fusion_heatmap_y_tick_font_size,
+                              x_tick_font_size = input$fusion_heatmap_x_tick_font_size,
+                              img_format = input$fusion_heatmap_img_format)
 
-    if (!input$fusion_heatmap_auto_refresh) {
-      r6$params$fusion_heatmap$auto_refresh = input$fusion_heatmap_auto_refresh
-      return()
-    }
+      if (!input$fusion_heatmap_auto_refresh) {
+        r6$params$fusion_heatmap$auto_refresh = input$fusion_heatmap_auto_refresh
+        return()
+      }
 
-    try_plot(prefix = "Fusion heatmap",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = fusion_heatmap_generate,
-             spawn_function = fusion_heatmap_spawn,
-             img_format = input$fusion_heatmap_img_format,
-             input = input,
-             output = output,
-             session = session)
+      if (r6$params$fusion_heatmap$update) {
+        try_plot(prefix = "Fusion heatmap",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = fusion_heatmap_generate,
+                 spawn_function = fusion_heatmap_spawn,
+                 img_format = input$fusion_heatmap_img_format,
+                 toggle_function = "toggle_fusion_heatmap",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
-  })
+    })
 
   # Download associated table
   output$fusion_heatmap_dl_table = shiny::downloadHandler(
@@ -908,7 +914,6 @@ similarity_network_1_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 similarity_network_1_server = function(r6, output, session) {
 
@@ -1102,7 +1107,6 @@ similarity_network_1_server = function(r6, output, session) {
 
 }
 
-
 similarity_network_1_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -1113,15 +1117,18 @@ similarity_network_1_events = function(r6, dimensions_obj, color_palette, input,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Similarity Network 1",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = similarity_network_1_generate,
-             spawn_function = similarity_network_1_spawn,
-             img_format = input$similarity_network_1_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$similarity_network_1$update) {
+      try_plot(prefix = "Similarity Network 1",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = similarity_network_1_generate,
+               spawn_function = similarity_network_1_spawn,
+               img_format = input$similarity_network_1_img_format,
+               toggle_function = "toggle_similarity_network_1",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -1175,15 +1182,18 @@ similarity_network_1_events = function(r6, dimensions_obj, color_palette, input,
           return()
         }
 
-        try_plot(prefix = "Similarity Network 1",
-                 r6 = r6,
-                 dimensions_obj = dimensions_obj,
-                 gen_function = similarity_network_1_generate,
-                 spawn_function = similarity_network_1_spawn,
-                 img_format = input$similarity_network_1_img_format,
-                 input = input,
-                 output = output,
-                 session = session)
+        if (r6$params$similarity_network_1$update) {
+          try_plot(prefix = "Similarity Network 1",
+                   r6 = r6,
+                   dimensions_obj = dimensions_obj,
+                   gen_function = similarity_network_1_generate,
+                   spawn_function = similarity_network_1_spawn,
+                   img_format = input$similarity_network_1_img_format,
+                   toggle_function = "toggle_similarity_network_1",
+                   input = input,
+                   output = output,
+                   session = session)
+        }
 
 
       })
@@ -1231,13 +1241,13 @@ similarity_network_2_generate = function(r6, dimensions_obj, input) {
   r6$plot_similarity_network_2(width = width,
                                height = height)
 }
+
 similarity_network_2_spawn = function(r6, format, output) {
   print_tm(r6$name, "Similarity Network 2: spawning plot.")
   output$similarity_network_2_plot = visNetwork::renderVisNetwork(
     expr = r6$plots$similarity_network_2
   )
 }
-
 
 similarity_network_2_ui = function(dimensions_obj, session) {
 
@@ -1247,7 +1257,6 @@ similarity_network_2_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 similarity_network_2_server = function(r6, output, session) {
 
@@ -1441,7 +1450,6 @@ similarity_network_2_server = function(r6, output, session) {
 
 }
 
-
 similarity_network_2_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -1452,15 +1460,18 @@ similarity_network_2_events = function(r6, dimensions_obj, color_palette, input,
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Similarity Network 2",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = similarity_network_2_generate,
-             spawn_function = similarity_network_2_spawn,
-             img_format = input$similarity_network_2_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$similarity_network_2$update) {
+      try_plot(prefix = "Similarity Network 2",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = similarity_network_2_generate,
+               spawn_function = similarity_network_2_spawn,
+               img_format = input$similarity_network_2_img_format,
+               toggle_function = "toggle_similarity_network_2",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -1515,15 +1526,18 @@ similarity_network_2_events = function(r6, dimensions_obj, color_palette, input,
         return()
       }
 
-      try_plot(prefix = "Similarity Network 2",
-               r6 = r6,
-               dimensions_obj = dimensions_obj,
-               gen_function = similarity_network_2_generate,
-               spawn_function = similarity_network_2_spawn,
-               img_format = input$similarity_network_2_img_format,
-               input = input,
-               output = output,
-               session = session)
+      if (r6$params$similarity_network_2$update) {
+        try_plot(prefix = "Similarity Network 2",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = similarity_network_2_generate,
+                 spawn_function = similarity_network_2_spawn,
+                 img_format = input$similarity_network_2_img_format,
+                 toggle_function = "toggle_similarity_network_2",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
 
     })
 
@@ -1570,6 +1584,7 @@ similarity_network_fusion_generate = function(r6, dimensions_obj, input) {
   r6$plot_similarity_network_fusion(width = width,
                                     height = height)
 }
+
 similarity_network_fusion_spawn = function(r6, format, output) {
   print_tm(r6$name, "Similarity Network Fusion: spawning plot.")
   output$similarity_network_fusion_plot = visNetwork::renderVisNetwork(
@@ -1585,7 +1600,6 @@ similarity_network_fusion_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 similarity_network_fusion_server = function(r6, output, session) {
 
@@ -1812,7 +1826,6 @@ similarity_network_fusion_server = function(r6, output, session) {
   })
 }
 
-
 similarity_network_fusion_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -1823,15 +1836,18 @@ similarity_network_fusion_events = function(r6, dimensions_obj, color_palette, i
     if (is.null(monitor_refresh())) {return()}
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
-    try_plot(prefix = "Similarity Network Fusion",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = similarity_network_fusion_generate,
-             spawn_function = similarity_network_fusion_spawn,
-             img_format = input$similarity_network_fusion_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$similarity_network_fusion$update) {
+      try_plot(prefix = "Similarity Network Fusion",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = similarity_network_fusion_generate,
+               spawn_function = similarity_network_fusion_spawn,
+               img_format = input$similarity_network_fusion_img_format,
+               toggle_function = "toggle_similarity_network_fusion",
+               input = input,
+               output = output,
+               session = session)
+    }
   })
 
   # Generate the plot
@@ -1893,15 +1909,18 @@ similarity_network_fusion_events = function(r6, dimensions_obj, color_palette, i
       return()
     }
 
-    try_plot(prefix = "Similarity Network Fusion",
-             r6 = r6,
-             dimensions_obj = dimensions_obj,
-             gen_function = similarity_network_fusion_generate,
-             spawn_function = similarity_network_fusion_spawn,
-             img_format = input$similarity_network_fusion_img_format,
-             input = input,
-             output = output,
-             session = session)
+    if (r6$params$similarity_network_fusion$update) {
+      try_plot(prefix = "Similarity Network Fusion",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = similarity_network_fusion_generate,
+               spawn_function = similarity_network_fusion_spawn,
+               img_format = input$similarity_network_fusion_img_format,
+               toggle_function = "toggle_similarity_network_fusion",
+               input = input,
+               output = output,
+               session = session)
+    }
 
   })
 

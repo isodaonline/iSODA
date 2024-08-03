@@ -61,6 +61,10 @@ self = example_omics(name = 'geno_1',
                      operation_order = c("Imputation", "Batch correction", "Filtering"),
                      norm_col = "None")
 
+self$params$class_distribution$update
+self$toggle_class_distribution()
+self[["toggle_class_distribution"]]()
+
 #---------------------------------------------------------------- ALL TESTS ----
 # CELLMINER DATA
 

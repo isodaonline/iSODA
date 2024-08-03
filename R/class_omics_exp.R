@@ -64,7 +64,8 @@ Omics_exp = R6::R6Class(
         x_tick_font_size = 0,
         y_label_font_size = 12,
         y_tick_font_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # Class distribution parameters
@@ -79,7 +80,8 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 0,
         x_tick_font_size = 15,
         legend_font_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # Class comparison parameters
@@ -93,7 +95,8 @@ Omics_exp = R6::R6Class(
         y_tick_font_size = 15,
         x_tick_font_size = 15,
         legend_font_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       volcano_plot_comparison = list(
@@ -103,7 +106,8 @@ Omics_exp = R6::R6Class(
         group_2 = NULL,
         fc_function = 'mean',
         statistical_test = 't-Test',
-        adjustment_method = 'none'
+        adjustment_method = 'none',
+        update = T
       ),
 
       # Volcano plot parameters self$params$volcano_plot$
@@ -124,7 +128,8 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 20,
         x_tick_font_size = 15,
         legend_font_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # Heatmap parameters self$params$heatmap$
@@ -153,7 +158,8 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 17,
         x_tick_font_size = 0,
         y_tick_font_size = 0,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # samples correlation parameters self$params$samples_correlation$
@@ -176,7 +182,8 @@ Omics_exp = R6::R6Class(
         y_tick_font_size = 0,
         x_label_font_size = 0,
         x_tick_font_size = 0,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # feature_correlation parameters self$params$feature_correlation$
@@ -203,7 +210,8 @@ Omics_exp = R6::R6Class(
         y_tick_font_size = 0,
         x_label_font_size = 0,
         x_tick_font_size = 0,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # PCA parameters self$params$pca$
@@ -232,7 +240,8 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 20,
         x_tick_font_size = 15,
         legend_font_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       double_bonds_comparison = list(
@@ -264,7 +273,8 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 20,
         x_tick_font_size = 15,
         legend_font_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       ea_selection = list(
@@ -337,7 +347,8 @@ Omics_exp = R6::R6Class(
         xlabel_size = 15,
         xtick_size = 15,
         ytick_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # Dot plot parameters self$params$ora_dot_plot
@@ -361,7 +372,8 @@ Omics_exp = R6::R6Class(
         xlabel_size = 15,
         xtick_size = 15,
         ytick_size = 15,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # Ridge plot parameters self$params$ridge_plot
@@ -382,7 +394,8 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 18,
         x_tick_font_size = 15,
         legend_font_size = 12,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # CNET plot parameters self$params$ea_cnet_plot
@@ -404,7 +417,8 @@ Omics_exp = R6::R6Class(
         centralGravity = 0.3,
         springLength = 800,
         springConstant = 0.01,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # Over representation CNET plot parameters self$params$ora_cnet_plot
@@ -426,7 +440,8 @@ Omics_exp = R6::R6Class(
         centralGravity = 0.3,
         springLength = 800,
         springConstant = 0.01,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
 
@@ -456,7 +471,8 @@ Omics_exp = R6::R6Class(
         centralGravity = 0.2,
         springLength = 200,
         springConstant = 0.05,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # ora emap plot parameters self$params$ora_emap_plot
@@ -484,7 +500,8 @@ Omics_exp = R6::R6Class(
         centralGravity = 0.2,
         springLength = 200,
         springConstant = 0.05,
-        img_format = "png"
+        img_format = "png",
+        update = T
       ),
 
       # Over representation bar plot parameters self$params$ora_bar_plot
@@ -505,7 +522,8 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 15,
         x_tick_font_size = 13,
         legend_font_size = 10,
-        img_format = "png"
+        img_format = "png",
+        update = T
       )
 
     ),
@@ -753,6 +771,14 @@ Omics_exp = R6::R6Class(
       base::dput(parameter_file, file = file_name)
     },
 
+    toggle_dendrogram = function() {
+      if (self$params$dendrogram$update) {
+        self$params$dendrogram$update = F
+      } else {
+        self$params$dendrogram$update = T
+      }
+    },
+
     param_dendrogram = function(auto_refresh, dataset, annotations, distance_method, p, clustering_method, k_clusters, color_palette, x_tick_font_size, y_label_font_size, y_tick_font_size, img_format) {
       self$params$dendrogram$auto_refresh = auto_refresh
       self$params$dendrogram$dataset = dataset
@@ -766,6 +792,15 @@ Omics_exp = R6::R6Class(
       self$params$dendrogram$y_label_font_size = y_label_font_size
       self$params$dendrogram$y_tick_font_size = y_tick_font_size
       self$params$dendrogram$img_format = img_format
+      self$params$dendrogram$update = T
+    },
+
+    toggle_class_distribution = function() {
+      if (self$params$class_distribution$update) {
+        self$params$class_distribution$update = F
+      } else {
+        self$params$class_distribution$update = T
+      }
     },
 
     param_class_distribution = function(auto_refresh, dataset, group_col, color_palette, title_font_size, y_label_font_size, y_tick_font_size, x_label_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -780,6 +815,15 @@ Omics_exp = R6::R6Class(
       self$params$class_distribution$x_tick_font_size = x_tick_font_size
       self$params$class_distribution$legend_font_size = legend_font_size
       self$params$class_distribution$img_format = img_format
+      self$params$class_distribution$update = T
+    },
+
+    toggle_class_comparison = function() {
+      if (self$params$class_comparison$update) {
+        self$params$class_comparison$update = F
+      } else {
+        self$params$class_comparison$update = T
+      }
     },
 
     param_class_comparison = function(auto_refresh, dataset, group_col, color_palette, title_font_size, y_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -793,6 +837,7 @@ Omics_exp = R6::R6Class(
       self$params$class_comparison$x_tick_font_size = x_tick_font_size
       self$params$class_comparison$legend_font_size = legend_font_size
       self$params$class_comparison$img_format = img_format
+      self$params$class_comparison$update = T
     },
 
     param_volcano_plot_comparison = function(data_table, group_col, group_1, group_2, fc_function, statistical_test, adjustment_method) {
@@ -803,6 +848,14 @@ Omics_exp = R6::R6Class(
       self$params$volcano_plot_comparison$fc_function = fc_function
       self$params$volcano_plot_comparison$statistical_test = statistical_test
       self$params$volcano_plot_comparison$adjustment_method = adjustment_method
+    },
+
+    toggle_volcano_plot = function() {
+      if (self$params$volcano_plot$update) {
+        self$params$volcano_plot$update = F
+      } else {
+        self$params$volcano_plot$update = T
+      }
     },
 
     param_volcano_plot = function(auto_refresh, feature_metadata, keep_significant, displayed_plot, p_val_threshold, fc_threshold, marker_size, opacity, color_palette, reverse_palette, title_font_size, y_label_font_size, y_tick_font_size, x_label_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -823,6 +876,15 @@ Omics_exp = R6::R6Class(
       self$params$volcano_plot$x_tick_font_size = x_tick_font_size
       self$params$volcano_plot$legend_font_size = legend_font_size
       self$params$volcano_plot$img_format = img_format
+      self$params$volcano_plot$update = T
+    },
+
+    toggle_heatmap = function() {
+      if (self$params$heatmap$update) {
+        self$params$heatmap$update = F
+      } else {
+        self$params$heatmap$update = T
+      }
     },
 
     param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_min, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, map_feature_terms, multival_cols, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
@@ -851,6 +913,15 @@ Omics_exp = R6::R6Class(
       self$params$heatmap$x_tick_font_size = x_tick_font_size
       self$params$heatmap$y_tick_font_size = y_tick_font_size
       self$params$heatmap$img_format = img_format
+      self$params$heatmap$update = T
+    },
+
+    toggle_samples_correlation = function() {
+      if (self$params$samples_correlation$update) {
+        self$params$samples_correlation$update = F
+      } else {
+        self$params$samples_correlation$update = T
+      }
     },
 
     param_samples_correlation = function(auto_refresh, dataset, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
@@ -873,6 +944,15 @@ Omics_exp = R6::R6Class(
       self$params$samples_correlation$x_label_font_size = x_label_font_size
       self$params$samples_correlation$x_tick_font_size = x_tick_font_size
       self$params$samples_correlation$img_format = img_format
+      self$params$samples_correlation$update = T
+    },
+
+    toggle_feature_correlation = function() {
+      if (self$params$feature_correlation$update) {
+        self$params$feature_correlation$update = F
+      } else {
+        self$params$feature_correlation$update = T
+      }
     },
 
     param_feature_correlation = function(auto_refresh, dataset, multival_cols, map_feature_terms, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, roh_threshold, top_features, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
@@ -900,6 +980,15 @@ Omics_exp = R6::R6Class(
       self$params$feature_correlation$x_label_font_size = x_label_font_size
       self$params$feature_correlation$x_tick_font_size = x_tick_font_size
       self$params$feature_correlation$img_format = img_format
+      self$params$feature_correlation$update = T
+    },
+
+    toggle_pca = function() {
+      if (self$params$pca$update) {
+        self$params$pca$update = F
+      } else {
+        self$params$pca$update = T
+      }
     },
 
     param_pca = function(auto_refresh, data_table, sample_groups_col, feature_groups_col, impute_median, apply_da, sample_groups_da, alpha_da, seed_da, pca_method, nPcs, displayed_pc_1, displayed_pc_2, completeObs, displayed_plots, colors_palette, marker_size, opacity, title_font_size, y_label_font_size, y_tick_font_size, x_label_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -928,6 +1017,7 @@ Omics_exp = R6::R6Class(
       self$params$pca$x_tick_font_size = x_tick_font_size
       self$params$pca$legend_font_size = legend_font_size
       self$params$pca$img_format = img_format
+      self$params$pca$update = T
 
     },
 
@@ -939,6 +1029,14 @@ Omics_exp = R6::R6Class(
       self$params$double_bonds_comparison$fc_function = fc_function
       self$params$double_bonds_comparison$statistical_test = statistical_test
       self$params$double_bonds_comparison$adjustment_method = adjustment_method
+    },
+
+    toggle_double_bonds_plot = function() {
+      if (self$params$double_bonds_plot$update) {
+        self$params$double_bonds_plot$update = F
+      } else {
+        self$params$double_bonds_plot$update = T
+      }
     },
 
     param_double_bonds_plot = function(auto_refresh, carbon_selection, unsat_selection, lipid_class, min_fc, max_pval, remove_missing_pval, remove_infitive_fc, color_palette, reverse_palette, marker_size, marker_opacity, title_font_size, y_label_font_size, y_tick_font_size, x_label_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -961,6 +1059,7 @@ Omics_exp = R6::R6Class(
       self$params$double_bonds_plot$x_tick_font_size = x_tick_font_size
       self$params$double_bonds_plot$legend_font_size = legend_font_size
       self$params$double_bonds_plot$img_format = img_format
+      self$params$double_bonds_plot$update = T
     },
 
     param_ea_selection = function(table, group_col, group_1, group_2, fc_function, statistical_test, adjustment_method) {
@@ -1010,6 +1109,14 @@ Omics_exp = R6::R6Class(
       self$params$ora_process$seed = seed
     },
 
+    toggle_ea_dot_plot = function() {
+      if (self$params$ea_dot_plot$update) {
+        self$params$ea_dot_plot$update = F
+      } else {
+        self$params$ea_dot_plot$update = T
+      }
+    },
+
     param_ea_dot_plot = function(auto_refresh, x, y, color, show_categories, size, order_by, reverse_order, mode, marker_opacity, color_palette, reverse_palette, show_legend, legend_size, size_ref, yaxis_word_split, title_size, xlabel_size, xtick_size, ytick_size, img_format) {
       self$params$ea_dot_plot$auto_refresh= auto_refresh
       self$params$ea_dot_plot$x = x
@@ -1032,6 +1139,15 @@ Omics_exp = R6::R6Class(
       self$params$ea_dot_plot$xtick_size = xtick_size
       self$params$ea_dot_plot$ytick_size = ytick_size
       self$params$ea_dot_plot$img_format = img_format
+      self$params$ea_dot_plot$update = T
+    },
+
+    toggle_ora_dot_plot = function() {
+      if (self$params$ora_dot_plot$update) {
+        self$params$ora_dot_plot$update = F
+      } else {
+        self$params$ora_dot_plot$update = T
+      }
     },
 
     param_ora_dot_plot = function(auto_refresh, x, y, color, show_categories, size, order_by, reverse_order, marker_opacity, color_palette, reverse_palette, show_legend, size_ref, legend_size, yaxis_word_split, title_size, xlabel_size, xtick_size, ytick_size, img_format) {
@@ -1055,6 +1171,15 @@ Omics_exp = R6::R6Class(
       self$params$ora_dot_plot$xtick_size = xtick_size
       self$params$ora_dot_plot$ytick_size = ytick_size
       self$params$ora_dot_plot$img_format = img_format
+      self$params$ora_dot_plot$update = T
+    },
+
+    toggle_ea_ridge_plot = function() {
+      if (self$params$ea_ridge_plot$update) {
+        self$params$ea_ridge_plot$update = F
+      } else {
+        self$params$ea_ridge_plot$update = T
+      }
     },
 
     param_ea_ridge_plot = function(auto_refresh, show_category, fill, core_enrichment, color_palette, reverse_palette, displayed_label, orderBy, decreasing, title_font_size, yaxis_word_split, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -1075,6 +1200,15 @@ Omics_exp = R6::R6Class(
       self$params$ea_ridge_plot$x_tick_font_size = x_tick_font_size
       self$params$ea_ridge_plot$legend_font_size = legend_font_size
       self$params$ea_ridge_plot$img_format = img_format
+      self$params$ea_ridge_plot$update = T
+    },
+
+    toggle_ea_cnet_plot = function() {
+      if (self$params$ea_cnet_plot$update) {
+        self$params$ea_cnet_plot$update = F
+      } else {
+        self$params$ea_cnet_plot$update = T
+      }
     },
 
     param_ea_cnet_plot = function(auto_refresh, show_category, displayed_labels, set_node_annotations, feature_node_annotations, set_node_color_palette, reverse_set_palette, feature_node_color_palette, reverse_feature_palette, label_font_size, static_network, solver, gravitationalConstant, nodeDistance, centralGravity, springLength, springConstant, img_format) {
@@ -1096,6 +1230,15 @@ Omics_exp = R6::R6Class(
       self$params$ea_cnet_plot$springLength = springLength
       self$params$ea_cnet_plot$springConstant = springConstant
       self$params$ea_cnet_plot$img_format = img_format
+      self$params$ea_cnet_plot$update = T
+    },
+
+    toggle_ora_cnet_plot = function() {
+      if (self$params$ora_cnet_plot$update) {
+        self$params$ora_cnet_plot$update = F
+      } else {
+        self$params$ora_cnet_plot$update = T
+      }
     },
 
     param_ora_cnet_plot = function(auto_refresh, show_category, displayed_labels, set_node_annotations, feature_node_annotations, set_node_color_palette, reverse_set_palette, feature_node_color_palette, reverse_feature_palette, label_font_size, static_network, solver, gravitationalConstant, nodeDistance, centralGravity, springLength, springConstant, img_format) {
@@ -1117,6 +1260,15 @@ Omics_exp = R6::R6Class(
       self$params$ora_cnet_plot$springLength = springLength
       self$params$ora_cnet_plot$springConstant = springConstant
       self$params$ora_cnet_plot$img_format = img_format
+      self$params$ora_cnet_plot$update = T
+    },
+
+    toggle_ea_emap_plot = function() {
+      if (self$params$ea_emap_plot$update) {
+        self$params$ea_emap_plot$update = F
+      } else {
+        self$params$ea_emap_plot$update = T
+      }
     },
 
     param_ea_emap_plot = function(auto_refresh, show_category, color, size, displayed_labels, mode, score_threshold, similarity_score, node_color_palette, reverse_node_palette, edge_width, edge_color, edge_color_palette, reverse_edge_palette, edge_magnifier, node_magnifier, label_font_size, static_network, solver, gravitationalConstant, nodeDistance, centralGravity, springLength, springConstant, img_format) {
@@ -1145,6 +1297,15 @@ Omics_exp = R6::R6Class(
       self$params$ea_emap_plot$springLength = springLength
       self$params$ea_emap_plot$springConstant = springConstant
       self$params$ea_emap_plot$img_format = img_format
+      self$params$ea_emap_plot$update = T
+    },
+
+    toggle_ora_emap_plot = function() {
+      if (self$params$ora_emap_plot$update) {
+        self$params$ora_emap_plot$update = F
+      } else {
+        self$params$ora_emap_plot$update = T
+      }
     },
 
     param_ora_emap_plot = function(auto_refresh, show_category, color, size, displayed_labels, score_threshold, similarity_score, node_color_palette, reverse_node_palette, edge_width, edge_color, edge_color_palette, reverse_edge_palette, edge_magnifier, node_magnifier, label_font_size, static_network, solver, gravitationalConstant, nodeDistance, centralGravity, springLength, springConstant, img_format) {
@@ -1172,6 +1333,15 @@ Omics_exp = R6::R6Class(
       self$params$ora_emap_plot$springLength = springLength
       self$params$ora_emap_plot$springConstant = springConstant
       self$params$ora_emap_plot$img_format = img_format
+      self$params$ora_emap_plot$update = T
+    },
+
+    toggle_ora_bar_plot = function() {
+      if (self$params$ora_bar_plot$update) {
+        self$params$ora_bar_plot$update = F
+      } else {
+        self$params$ora_bar_plot$update = T
+      }
     },
 
     param_ora_bar_plot = function(auto_refresh, x, color, show_category, displayed_label, order_by, order_decreasing, color_palette, reverse_palette, title_font_size, yaxis_word_split, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, legend_font_size, img_format) {
@@ -1192,6 +1362,7 @@ Omics_exp = R6::R6Class(
       self$params$ora_bar_plot$x_tick_font_size = x_tick_font_size
       self$params$ora_bar_plot$legend_font_size = legend_font_size
       self$params$ora_bar_plot$img_format = img_format
+      self$params$ora_bar_plot$update = T
     },
 
     #------------------------------------------------------ Indices methods ----
