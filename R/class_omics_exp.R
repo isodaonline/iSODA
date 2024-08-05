@@ -2525,43 +2525,9 @@ Omics_exp = R6::R6Class(
       x_dim = plot_dims$cols
       y_dim = plot_dims$rows
 
-      x_step = 1/x_dim
-      y_step = 1/y_dim
-
-      x = x_step/2
-      y = 0.97 - y_step
-      i = 1
-
-      annotations = c()
-      for (c in class_list) {
-        tmp_ann = list(
-          x = x,
-          y = y,
-          text = ifelse(x_tick_font_size > 0, c, ''),
-          font = list(size = x_tick_font_size),
-          xref = "paper",
-          yref = "paper",
-          xanchor = "center",
-          yanchor = "bottom",
-          showarrow = FALSE)
-        annotations[[i]] = tmp_ann
-        i = i + 1
-        x = x + x_step
-        if (x >= 1) {
-          x = x_step/2
-          y = y - y_step}
-      }
-      annotations[[i]] = list(x = -0.08, y = 0.5, text = y_axis_title,
-                              font = list(size = y_label_font_size),
-                              textangle = 270, showarrow = FALSE, xref='paper',
-                              yref='paper')
-
-
       # Colors
-      color_palette = get_colors(color_count = colors_switch(color_palette), color_palette = color_palette)
-      # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      color_palette = colorRampPalette(color_palette)(length(groups))
-      color_palette = setNames(color_palette, groups)
+      colors = get_color_palette(groups = groups,
+                                        color_palette = color_palette)
 
       # Plot list will be the list of subplots
       plot_list = c()
@@ -2570,7 +2536,12 @@ Omics_exp = R6::R6Class(
       cleared_groups = c()
       j = 1
       for (c in class_list) {
-        subplot = plot_ly(colors = unname(color_palette), width = width, height = height)
+        subplot = plot_ly(colors = unname(colors),
+                          width = width,
+                          height = height,
+                          hovertemplate = paste("Group: %{x}<br>",
+                                                "Value: %{y:.3g}%",
+                                                "<extra></extra>"))
         for (g in groups){
           if (g %in% cleared_groups) {
             first_bool = FALSE
@@ -2590,7 +2561,7 @@ Omics_exp = R6::R6Class(
                                       y = m,
                                       type  = "bar",
                                       name = g,
-                                      color = color_palette[g],
+                                      color = colors[g],
                                       alpha = 1,
                                       legendgroup=g,
                                       showlegend = first_bool)
@@ -2603,7 +2574,7 @@ Omics_exp = R6::R6Class(
                                       boxpoints = "all",
                                       pointpos = 0,
                                       name = g,
-                                      color = color_palette[g],
+                                      color = colors[g],
                                       line = list(color = 'rgb(100,100,100)'),
                                       marker = list(color = 'rgb(100,100,100)'),
                                       alpha = 1,
@@ -2611,6 +2582,20 @@ Omics_exp = R6::R6Class(
                                       showlegend = FALSE,
                                       text = s,
                                       hoverinfo = "text")
+
+          subplot = plotly::add_annotations(
+            p = subplot,
+            text = paste0("<b>", c, "</b>"),
+            x = 0.5,
+            y = 1,
+            yref = "paper",
+            xref = "paper",
+            xanchor = "center",
+            yanchor = "bottom",
+            showarrow = FALSE,
+            font = list(size = x_tick_font_size)
+          )
+
         }
 
         subplot = plotly::layout(
@@ -2618,6 +2603,22 @@ Omics_exp = R6::R6Class(
           xaxis= list(showticklabels = FALSE),
           yaxis = list(showticklabels = xtick_show,
                        tickfont = list(size = y_tick_font_size)
+          ),
+          shapes = list(
+            list(
+              type = "rect",
+              x0 = 0,
+              x1 = 1,
+              y0 = 1.,
+              y1 = 1.2,
+              yref = "paper",
+              xref = "paper",
+              fillcolor = "#0255e9",
+              opacity = 0.4,
+              line = list(color = "#0255e9",
+                          width = 1,
+                          opacity = 0.4)
+            )
           )
         )
 
@@ -2629,10 +2630,8 @@ Omics_exp = R6::R6Class(
 
       fig = plotly::layout(p = fig,
 
-                           title = list(text = title,
-                                        font = list(size = title_font_size)),
-
-                           annotations = annotations,
+                           # title = list(text = title,
+                           #              font = list(size = title_font_size)),
 
                            legend = list(orientation = 'h',
                                          xanchor = "center",

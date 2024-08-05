@@ -5355,13 +5355,6 @@ plot_mofa_scatter_plot = function(model, factor, omics, features, sign = "all", 
   data_table = data_table[!is.na(data_table$value), ]
 
   # Get the color palette
-  # color_count = colors_switch(color_palette)
-  # colors = get_colors(color_count = color_count, color_palette = color_palette)
-  # if (reverse_palette) {
-  #   colors = base::rev(colors)
-  # }
-  # colors = colorRampPalette(colors)(length(unique(data_table$sample_annotations)))
-  # colors = setNames(colors, unique(data_table$sample_annotations))
   colors = get_color_palette(groups = data_table$sample_annotations,
                              color_palette = color_palette,
                              reverse_color_palette = reverse_palette,
