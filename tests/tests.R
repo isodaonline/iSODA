@@ -4,17 +4,19 @@ base::source('./R/class_mofa_exp.R')
 base::source('./R/class_snf_exp.R')
 
 
-name = 'geno_1'
-type = "Genomics"
-meta_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
-data_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/230927_Cellminer_data/cellminer_data/dna_data.csv'
+#--------------------------------------------------- Class comparison tests ----
+
+name = 'lips_1'
+type = "Lipidomics"
+meta_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/240805_Ratna/260724 MASLD_ANCHOR_51.csv'
+data_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/240805_Ratna/260724 Lipidyzer_ANCHOR_51.csv'
 param_file = './R/params/params_gene_based_omics.R'
 id_col_meta = 'ID'
-type_column = 'Sample_type'
-group_column = 'Cancer type'
+type_column = 'SampleType'
+group_column = 'GroupName'
 batch_column = 'Batch'
 blank_pattern = "blank"
-qc_pattern = "quality"
+qc_pattern = "qc"
 pool_pattern = "pool"
 excluded_samples = NULL
 id_col_data = 'ID'
@@ -28,42 +30,45 @@ operation_order = c("Imputation", "Batch correction", "Filtering")
 norm_col = "None"
 
 
-indexed_data = self$tables$indexed_data
-indexed_meta = self$tables$indexed_meta
-excluded_samples = self$indices$excluded_samples
-excluded_features = self$indices$excluded_features
-index_blanks = self$indices$index_blanks
-index_qcs = self$indices$index_qcs
-index_pools = self$indices$index_pools
-batch_column = self$indices$batch_column
-group_column = self$indices$group_column
+self = example_omics(name = name,
+                     type = type,
+                     meta_file = meta_file,
+                     data_file = data_file,
+                     param_file = param_file,
+                     id_col_meta = id_col_meta,
+                     type_column = type_column,
+                     group_column = group_column,
+                     batch_column = batch_column,
+                     blank_pattern = blank_pattern,
+                     qc_pattern = qc_pattern,
+                     pool_pattern = pool_pattern,
+                     excluded_samples = excluded_samples,
+                     id_col_data = id_col_data,
+                     blank_multiplier = blank_multiplier,
+                     sample_threshold = sample_threshold,
+                     group_threshold = group_threshold,
+                     excluded_features = excluded_features,
+                     imputation_method = imputation_method,
+                     batch_effect_correction = batch_effect_correction,
+                     operation_order = operation_order,
+                     norm_col = norm_col)
 
-self = example_omics(name = 'geno_1',
-                     type = "Genomics",
-                     meta_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv',
-                     data_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/230927_Cellminer_data/cellminer_data/dna_data.csv',
-                     param_file = './R/params/params_gene_based_omics.R',
-                     id_col_meta = 'ID',
-                     type_column = 'Sample_type',
-                     group_column = 'Cancer type',
-                     batch_column = 'Batch',
-                     blank_pattern = "blank",
-                     qc_pattern = "quality",
-                     pool_pattern = "pool",
-                     excluded_samples = NULL,
-                     id_col_data = 'ID',
-                     blank_multiplier = 2,
-                     sample_threshold = 0.8,
-                     group_threshold = 0.8,
-                     excluded_features = NULL,
-                     imputation_method = "None",
-                     batch_effect_correction = "None",
-                     operation_order = c("Imputation", "Batch correction", "Filtering"),
-                     norm_col = "None")
+self$plot_class_comparison()
+self$plots$class_comparison
 
-self$params$class_distribution$update
-self$toggle_class_distribution()
-self[["toggle_class_distribution"]]()
+data_table = self$params$class_comparison$dataset
+meta_table = self$tables$raw_meta
+group_col = self$params$class_comparison$group_col
+color_palette = self$params$class_comparison$color_palette
+title_font_size = self$params$class_comparison$title_font_size
+y_label_font_size = self$params$class_comparison$y_label_font_size
+y_tick_font_size = self$params$class_comparison$y_tick_font_size
+x_tick_font_size = self$params$class_comparison$x_tick_font_size
+legend_font_size = self$params$class_comparison$legend_font_size
+width = NULL
+height = NULL
+
+
 
 #---------------------------------------------------------------- ALL TESTS ----
 # CELLMINER DATA

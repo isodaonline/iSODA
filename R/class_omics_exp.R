@@ -2521,9 +2521,9 @@ Omics_exp = R6::R6Class(
       meta_table[,group_col] = as.character(meta_table[,group_col])
       class_list = colnames(data_table)
 
-      x_dim = ceiling(sqrt(length(class_list)))
-      y_dim = floor(sqrt(length(class_list)))
-
+      plot_dims = calculate_subplot_grid_dimensions(length(class_list))
+      x_dim = plot_dims$cols
+      y_dim = plot_dims$rows
 
       x_step = 1/x_dim
       y_step = 1/y_dim
