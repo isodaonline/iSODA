@@ -244,6 +244,43 @@ Omics_exp = R6::R6Class(
         update = T
       ),
 
+      # Fatty acid analysis parameters self$params$fa_analysis_plot$
+      fa_analysis_plot = list(
+        auto_refresh = F,
+        data_table = "Total normalized table",
+        feature_meta = NULL,
+        sample_meta = "Raw meta table",
+        group_col = NULL,
+        selected_view = "lipidclass",
+        selected_lipidclass = "All",
+        fa_norm = FALSE,
+        color_palette = "Set1",
+        title_font_size = NULL,
+        y_label_font_size = NULL,
+        y_tick_font_size = NULL,
+        x_label_font_size = NULL,
+        x_tick_font_size = NULL,
+        legend_font_size = NULL,
+        img_format = "png",
+        update = T
+      ),
+
+      # Fatty acid analysis heatmap self$params$fa_comp_plot$
+      fa_comp_plot = list(
+        auto_refresh = F,
+        data_table = "Total normalized table",
+        sample_meta = "Raw meta table",
+        composition = "fa_tail",
+        feature_meta = NULL,
+        group_col = NULL,
+        group_1 = NULL,
+        group_2 = NULL,
+        selected_lipidclass = "CE",
+        color_palette = "Blues",
+        img_format = "png",
+        update = T
+      ),
+
       double_bonds_comparison = list(
         data_table = "Total normalized table",
         group_col = NULL,
@@ -571,6 +608,13 @@ Omics_exp = R6::R6Class(
           'Z-scored total normalized table'
         )
       ),
+      fa_analysis_plot = list(
+        datasets = list(
+          "Raw data table",
+          "Class normalized table",
+          "Total normalized table"
+        )
+      ),
       double_bonds_plot = list(
         datasets = list(
           "Raw data table",
@@ -748,6 +792,8 @@ Omics_exp = R6::R6Class(
       samples_correlation = NULL,
       feature_correlation = NULL,
       pca_plot = NULL,
+      fa_analysis_plot = NULL,
+      fa_comp_plot = NULL,
       double_bond_plot = NULL,
 
       # Functional analysis plots
@@ -1019,6 +1065,70 @@ Omics_exp = R6::R6Class(
       self$params$pca$img_format = img_format
       self$params$pca$update = T
 
+    },
+
+    toggle_fa_analysis_plot = function() {
+      if (self$params$fa_analysis_plot$update) {
+        self$params$fa_analysis_plot$update = F
+      } else {
+        self$params$fa_analysis_plot$update = T
+      }
+    },
+
+    param_fa_analysis_plot = function(auto_refresh,
+                                      data_table,
+                                      group_col,
+                                      selected_view,
+                                      selected_lipidclass,
+                                      selected_fa,
+                                      fa_norm,
+                                      color_palette,
+                                      title_font_size,
+                                      y_label_font_size,
+                                      y_tick_font_size,
+                                      x_label_font_size,
+                                      x_tick_font_size,
+                                      legend_font_size,
+                                      img_format) {
+      self$params$fa_analysis_plot$auto_refresh = auto_refresh
+      self$params$fa_analysis_plot$data_table = data_table
+      self$params$fa_analysis_plot$group_col = group_col
+      self$params$fa_analysis_plot$selected_view = selected_view
+      self$params$fa_analysis_plot$selected_lipidclass = selected_lipidclass
+      self$params$fa_analysis_plot$selected_fa = selected_fa
+      self$params$fa_analysis_plot$fa_norm = fa_norm
+      self$params$fa_analysis_plot$color_palette = color_palette
+      self$params$fa_analysis_plot$img_format = img_format
+      self$params$fa_analysis_plot$title_font_size = title_font_size
+      self$params$fa_analysis_plot$y_label_font_size = y_label_font_size
+      self$params$fa_analysis_plot$y_tick_font_size = y_tick_font_size
+      self$params$fa_analysis_plot$x_label_font_size = x_label_font_size
+      self$params$fa_analysis_plot$x_tick_font_size = x_tick_font_size
+      self$params$fa_analysis_plot$legend_font_size = legend_font_size
+      self$params$fa_analysis_plot$update = T
+    },
+
+    toggle_fa_comp_plot = function() {
+      if (self$params$fa_comp_plot$update) {
+        self$params$fa_comp_plot$update = F
+      } else {
+        self$params$fa_comp_plot$update = T
+      }
+    },
+
+    param_fa_comp_plot = function(auto_refresh, data_table, sample_meta, composition, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
+      self$params$fa_comp_plot$auto_refresh = auto_refresh
+      self$params$fa_comp_plot$data_table = data_table
+      self$params$fa_comp_plot$sample_meta = sample_meta
+      self$params$fa_comp_plot$composition = composition
+      self$params$fa_comp_plot$feature_meta = feature_meta
+      self$params$fa_comp_plot$group_col = group_col
+      self$params$fa_comp_plot$group_1 = group_1
+      self$params$fa_comp_plot$group_2 = group_2
+      self$params$fa_comp_plot$selected_lipidclass = selected_lipidclass
+      self$params$fa_comp_plot$color_palette = color_palette
+      self$params$fa_comp_plot$img_format = img_format
+      self$params$fa_comp_plot$update = T
     },
 
     param_double_bonds_comparison = function(data_table, group_col, group_1, group_2, fc_function, statistical_test, adjustment_method) {
@@ -1970,6 +2080,37 @@ Omics_exp = R6::R6Class(
                      x_tick_font_size = 15,
                      legend_font_size = 15,
                      img_format = "png")
+
+      self$param_fa_analysis_plot(
+        auto_refresh = F,
+        data_table = "Total normalized table",
+        group_col = self$indices$group_column,
+        selected_view = self$params$fa_analysis_plot$selected_view,
+        selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
+        selected_fa = self$params$fa_analysis_plot$selected_fa,
+        fa_norm = self$params$fa_analysis_plot$fa_norm,
+        color_palette = 'Set1',
+        title_font_size = NULL,
+        y_label_font_size = NULL,
+        y_tick_font_size = NULL,
+        x_label_font_size = NULL,
+        x_tick_font_size = NULL,
+        legend_font_size = NULL,
+        img_format = "png")
+
+      self$param_fa_comp_plot(
+        auto_refresh = F,
+        data_table = self$tables$total_norm_data,
+        sample_meta = self$tables$raw_meta,
+        composition = self$params$fa_comp_plot$composition,
+        feature_meta = self$tables$feature_table,
+        group_col = self$indices$group_column,
+        group_1 = unique(self$tables$raw_meta[, self$indices$group_column])[1],
+        group_2 = unique(self$tables$raw_meta[, self$indices$group_column])[2],
+        selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+        color_palette = "Blues",
+        img_format = "png"
+      )
 
       self$param_volcano_plot_comparison(
         data_table = 'Total normalized table',
@@ -3407,6 +3548,191 @@ Omics_exp = R6::R6Class(
       self$tables$pca_loadings_table = pca_out$pca_data@loadings
       self$plots$pca_plot = pca_out$fig
 
+    },
+
+    ## FA analysis
+    plot_fa_analysis = function(data_table = self$params$fa_analysis_plot$data_table,
+                                feature_table = self$tables$feature_table,
+                                sample_meta = self$tables$raw_meta,
+                                group_col = self$params$fa_analysis_plot$group_col,
+                                selected_view = self$params$fa_analysis_plot$selected_view,
+                                selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass,
+                                selected_fa = self$params$fa_analysis_plot$selected_fa,
+                                fa_norm = self$params$fa_analysis_plot$fa_norm,
+                                color_palette = self$params$fa_analysis_plot$color_palette,
+                                title_font_size = self$params$fa_analysis_plot$title_font_size,
+                                y_label_font_size = self$params$fa_analysis_plot$y_label_font_size,
+                                y_tick_font_size = self$params$fa_analysis_plot$y_tick_font_size,
+                                x_label_font_size = self$params$fa_analysis_plot$x_label_font_size,
+                                x_tick_font_size = self$params$fa_analysis_plot$x_tick_font_size,
+                                legend_font_size = self$params$fa_analysis_plot$legend_font_size,
+                                width = NULL,
+                                height = NULL) {
+
+      data_table = self$table_check_convert(data_table)
+
+      ## At the moment this function is using the raw data table
+      # do the calculations
+      if(selected_view == "lipidclass") {
+        res = fa_analysis_calc(data_table = data_table,
+                               feature_table = feature_table,
+                               sample_meta = sample_meta,
+                               selected_lipidclass = selected_lipidclass,
+                               fa_norm = fa_norm)
+        # column names are fa tail names, rownames sample names
+      } else if(selected_view == "fa") {
+        res = fa_analysis_rev_calc(data_table = data_table,
+                                   feature_table = feature_table,
+                                   sample_meta = sample_meta,
+                                   selected_fa = selected_fa,
+                                   fa_norm = fa_norm)
+      }
+
+      # Produce the class x group table
+      # add ID's, group's and make long
+      res$ID = rownames(res)
+      res$group = sample_meta[res$ID, group_col]
+      res_long = res |>
+        tidyr::pivot_longer(cols = -c(ID, group),
+                            names_to = "names",
+                            values_to = "value")
+
+      # calculate mean and stdev per group
+      plot_table = tapply(as.data.frame(res_long), list(res_long$group, res_long$names), function(x) {
+        avg = mean(x[, "value"], na.rm = TRUE)
+        stdev = sd(x[, "value"], na.rm = TRUE)
+
+        return(list(avg = avg,
+                    stdev = stdev,
+                    names = x[1, "names"],
+                    group = x[1, "group"]))
+        # print(x)
+      })
+
+      plot_table = do.call(rbind.data.frame, plot_table)
+
+      # Store the plot_table
+      self$tables$fa_analysis_table = plot_table
+
+      # group_list = sort(unique(plot_table$group))
+      colors = get_color_palette(groups = plot_table$group,
+                                  color_palette = color_palette,
+                                  reverse_color_palette = T)
+
+      # set the main title for FA overview per lipid class
+      if(selected_view == "lipidclass") {
+        if(selected_lipidclass == "All") {
+          main_title = "All lipid classes (incl. TG)"
+        } else if(selected_lipidclass == "All_noTG") {
+          main_title = "All lipid classes (excl. TG)"
+        } else {
+          main_title = paste0("Lipid class: ", selected_lipidclass)
+        }
+        xlabel = "Fatty acid chain"
+      }
+
+      if(fa_norm) {
+        ylabel = "%"
+      } else {
+        ylabel = "Normalized value"
+      }
+
+      # set the main title for lipid class overview per fatty acids
+      if(selected_view == "fa") {
+        main_title = paste0("FA tails: ", paste(selected_fa, collapse = ", "))
+        xlabel = "Lipid classes"
+      }
+
+      print(length(colors))
+      if (length(colors) > 1) {
+        legend_label = paste0(group_col, ":")
+        legend_tick_font_size = legend_font_size
+        print('LABEL')
+      } else {
+        legend_label = NULL
+        legend_font_size = 0
+        legend_tick_font_size = 0
+        print('NO LABEL')
+      }
+
+      fd = get_plot_font_data(title = main_title,
+                              title_font_size = title_font_size,
+                              x_label = xlabel,
+                              x_label_font_size = x_label_font_size,
+                              x_tick_font_size = x_tick_font_size,
+                              y_label = ylabel,
+                              y_label_font_size = y_label_font_size,
+                              y_tick_font_size = y_tick_font_size,
+                              legend_label = legend_label,
+                              legend_font_size = legend_font_size,
+                              legend_tick_font_size = legend_tick_font_size,
+                              use_html = F)
+
+      # plotting
+      fig = plotly::plot_ly(colors = unname(colors),
+                             width = width,
+                             height = height)
+      for (grp in unique(plot_table$group)) {
+        fig = fig |>
+          plotly::add_trace(data = plot_table[plot_table$group == grp, ],
+                            x = ~names,
+                            y = ~avg,
+                            color = colors[grp],
+                            type = "bar",
+                            name = grp,
+                            text = ~stdev,
+                            error_y = ~ list(array = stdev,
+                                             color = "#000000"),
+                            hovertemplate = paste("Fatty acid chain: %{x}<br>",
+                                                  "Value: %{y:.3g} +/- %{text:0.3g}<br>",
+                                                  paste0("Group: ", grp),
+                                                  "<extra></extra>"))
+      }
+      fig = fig |>
+        plotly::layout(annotations =
+                         list(x = 1,
+                              y = -0.175,
+                              text = "NOTE: error bars are standard deviation",
+                              showarrow = FALSE,
+                              xref = "paper",
+                              yref = "paper",
+                              xanchor = "right",
+                              yanchor = "auto",
+                              xshift = 0,
+                              yshift = 0,
+                              font = list(size = 10)),
+                       title = list(text = fd$title,
+                                    x = 0,
+                                    xanchor = "left",
+                                    font = list(size = fd$title_font_size)),
+                       legend = list(orientation = 'h',
+                                     xanchor = "center",
+                                     x = 0.5,
+                                     title = list(text = fd$legend_label),
+                                     font = list(
+                                       size = fd$legend_font_size
+                                     )),
+                       showlegend = fd$legend_show,
+                       xaxis = list(
+                         title = list(
+                           text = fd$x_label,
+                           font = list(size = fd$x_label_font_size)
+                             ),
+                         showticklabels = fd$x_tick_show,
+                         tickfont = list(size = fd$x_tick_font_size)
+                         ),
+                       yaxis = list(
+                         title = list(
+                           text = fd$y_label,
+                           font = list(size = fd$y_label_font_size)
+                         ),
+                         showticklabels = fd$y_tick_show,
+                         tickfont = list(size = fd$y_tick_font_size)
+                       )
+        )
+      fig
+
+      self$plots$fa_analysis_plot = fig
     },
 
     ## Double bond plot

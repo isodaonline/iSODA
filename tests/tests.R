@@ -29,7 +29,6 @@ batch_effect_correction = "None"
 operation_order = c("Imputation", "Batch correction", "Filtering")
 norm_col = "None"
 
-
 self = example_omics(name = name,
                      type = type,
                      meta_file = meta_file,
@@ -53,21 +52,27 @@ self = example_omics(name = name,
                      operation_order = operation_order,
                      norm_col = norm_col)
 
-self$plot_class_comparison()
-self$plots$class_comparison
+self$plot_fa_analysis()
 
-data_table = self$params$class_comparison$dataset
-meta_table = self$tables$raw_meta
-group_col = self$params$class_comparison$group_col
-color_palette = self$params$class_comparison$color_palette
-title_font_size = self$params$class_comparison$title_font_size
-y_label_font_size = self$params$class_comparison$y_label_font_size
-y_tick_font_size = self$params$class_comparison$y_tick_font_size
-x_tick_font_size = self$params$class_comparison$x_tick_font_size
-legend_font_size = self$params$class_comparison$legend_font_size
+data_table = self$params$fa_analysis_plot$data_table
+feature_table = self$tables$feature_table
+sample_meta = self$tables$raw_meta
+group_col = self$params$fa_analysis_plot$group_col
+selected_view = self$params$fa_analysis_plot$selected_view
+selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass
+selected_fa = self$params$fa_analysis_plot$selected_fa
+fa_norm = self$params$fa_analysis_plot$fa_norm
+color_palette = self$params$fa_analysis_plot$color_palette
 width = NULL
 height = NULL
 
+
+title_font_size = self$params$fa_analysis_plot$title_font_size
+y_label_font_size = self$params$fa_analysis_plot$y_label_font_size
+y_tick_font_size = self$params$fa_analysis_plot$y_tick_font_size
+x_label_font_size = self$params$fa_analysis_plot$x_label_font_size
+x_tick_font_size = self$params$fa_analysis_plot$x_tick_font_size
+legend_font_size = self$params$fa_analysis_plot$legend_font_size
 
 
 #---------------------------------------------------------------- ALL TESTS ----

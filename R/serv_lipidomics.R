@@ -2090,6 +2090,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   samples_correlation_events(r6, dimensions_obj, color_palette, input, output, session)
   feature_correlation_events(r6, dimensions_obj, color_palette, input, output, session)
   pca_events(r6, dimensions_obj, color_palette, input, output, session)
+  fa_analysis_plot_events(r6, dimensions_obj, color_palette, input, output, session)
   double_bonds_plot_events(r6, dimensions_obj, color_palette, input, output, session)
 
   session$userData[[id]]$showPlots = shiny::observeEvent(input$showPlots,{

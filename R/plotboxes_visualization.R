@@ -2829,6 +2829,307 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
 }
 
 
+#-------------------------------------------------------- FA analysis index ----
+fa_analysis_plot_generate = function(r6, dimensions_obj, input) {
+  print_tm(r6$name, "Fatty acid analysis index plot: generating plot.")
+
+  if (input$fa_analysis_plot_plotbox$maximized){
+    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
+    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+  } else {
+    width = dimensions_obj$xpx * dimensions_obj$x_plot
+    height = dimensions_obj$ypx * dimensions_obj$y_plot
+  }
+
+  r6$plot_fa_analysis(width = width,
+                      height = height)
+}
+
+fa_analysis_plot_spawn = function(r6, format, output) {
+  print_tm(r6$name, "Fatty acid analysis index: spawning plot.")
+
+  output$fa_analysis_plot_plot = plotly::renderPlotly({
+    r6$plots$fa_analysis_plot
+    plotly::config(r6$plots$fa_analysis_plot, toImageButtonOptions = list(format = format,
+                                                                          filename = timestamped_name('fa_analysis'),
+                                                                          height = NULL,
+                                                                          width = NULL,
+                                                                          scale = 1))
+  })
+}
+
+fa_analysis_plot_ui = function(dimensions_obj, session) {
+  # add function to show bs4dash with plotting function
+  get_plotly_box(id = "fa_analysis_plot",
+                 label = "Fatty acid analysis",
+                 dimensions_obj = dimensions_obj,
+                 session = session)
+}
+
+fa_analysis_plot_server = function(r6, output, session) {
+  ns = session$ns
+
+  # set some UI
+  output$fa_analysis_plot_sidebar_ui = shiny::renderUI({
+    shiny::tagList(
+      shinyWidgets::materialSwitch(
+        inputId = ns('fa_analysis_plot_auto_refresh'),
+        label = 'Auto-refresh',
+        value = r6$params$fa_analysis_plot$auto_refresh,
+        right = TRUE,
+        status = "success"
+      ),
+      ## Input settings
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectInput(
+        inputId = ns("fa_analysis_plot_data_table"),
+        label = "Select dataset",
+        choices = r6$hardcoded_settings$fa_analysis_plot$datasets,
+        selected = r6$params$fa_analysis_plot$data_table
+      ),
+      shiny::selectInput(
+        inputId = ns("fa_analysis_plot_metacol"),
+        label = "Select group column",
+        choices = colnames(r6$tables$raw_meta),
+        selected = r6$params$fa_analysis_plot$group_col
+      ),
+      shiny::selectizeInput(
+        inputId = ns("fa_analysis_plot_selected_view"),
+        label = "Select view",
+        choices = c("FA overview per lipid class (A)" = "lipidclass",
+                    "Lipid class overview per FA (B)" = "fa"),
+        selected = r6$params$fa_analysis_plot$selected_view,
+        multiple = FALSE
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::selectizeInput(
+            inputId = ns("fa_analysis_plot_selected_lipidclass"),
+            label = "Select lipid class (A)",
+            choices = c("All (incl. TG)" = "All",
+                        "All (excl. TG)" = "All_noTG",
+                        unique(r6$tables$feature_table[['Lipid class']])[!(unique(r6$tables$feature_table[['Lipid class']]) %in% c("PA"))]),
+            selected = r6$params$fa_analysis_plot$selected_lipidclass,
+            multiple = FALSE,
+            width = "98%"
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::selectizeInput(
+            inputId = ns("fa_analysis_plot_selected_fa"),
+            label = "Select fatty acid (B)",
+            choices = get_fa_tails(r6$tables$feature_table),
+            selected = r6$params$fa_analysis_plot$selected_fa,
+            multiple = TRUE,
+            width = "98%"
+          )
+        )
+      ),
+      shiny::span(
+        shinyWidgets::materialSwitch(
+          inputId = ns("fa_analysis_plot_fa_norm"),
+          label = "Fatty acid normalisation",
+          status = "success",
+          right = TRUE,
+          value = r6$params$fa_analysis_plot$fa_norm
+        ),
+        `data-toggle` = "tooltip",
+        `data-placement` = "right",
+        title = "Normalize the data by the total of the fatty acids."
+      ),
+      ## Aesthetic settings
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectizeInput(
+        inputId = ns('fa_analysis_plot_color_palette'),
+        label = "Color palette",
+        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
+                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
+                    'plotly_1', 'plotly_2', 'ggplot2'),
+        selected = r6$params$fa_analysis_plot$color_palette,
+        multiple = FALSE
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_analysis_plot_title_font_size"),
+        label = 'Title font size',
+        value = r6$params$fa_analysis_plot$title_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_analysis_plot_y_label_font_size"),
+        label = 'y-axis label font size',
+        value = r6$params$fa_analysis_plot$y_label_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_analysis_plot_y_tick_font_size"),
+        label = 'y-axis tick font size',
+        value = r6$params$fa_analysis_plot$y_tick_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_analysis_plot_x_label_font_size"),
+        label = 'x-axis label font size',
+        value = r6$params$fa_analysis_plot$x_label_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_analysis_plot_x_tick_font_size"),
+        label = 'x-axis tick font size',
+        value = r6$params$fa_analysis_plot$x_tick_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_analysis_plot_legend_font_size"),
+        label = 'Legend font size',
+        value = r6$params$fa_analysis_plot$legend_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      ## Output settings
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectInput(
+        inputId = ns("fa_analysis_plot_img_format"),
+        label = "Image format",
+        choices = c("png", "svg", "jpeg", "webp"),
+        selected = r6$params$fa_analysis_plot$img_format,
+        width = "100%"),
+      shiny::downloadButton(
+        outputId = ns("download_fa_analysis_plot_table"),
+        label = "Download associated table",
+        style = "width:100%;"
+      )
+    )
+  })
+}
+
+
+fa_analysis_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+
+  # Sidebar refresh
+  monitor_sidebar = shiny::reactive(input$fa_analysis_plot_sidebar)
+  monitor_refresh = shiny::reactive(input$fa_analysis_plot_auto_refresh)
+  shiny::observe({
+    if (is.null(monitor_sidebar())) {return()}
+    if (is.null(monitor_refresh())) {return()}
+    if (monitor_sidebar()) {return()}
+    if (monitor_refresh()) {return()}
+    if (r6$params$fa_analysis_plot$update) {
+      try_plot(prefix = "Fatty acid analysis index",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = fa_analysis_plot_generate,
+               spawn_function = fa_analysis_plot_spawn,
+               img_format = input$fa_analysis_plot_img_format,
+               toggle_function = "toggle_fa_analysis_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
+  })
+
+
+  # Generate the plot
+  shiny::observeEvent(c(
+    input$fa_analysis_plot_data_table,
+    input$fa_analysis_plot_metacol,
+    input$fa_analysis_plot_selected_view,
+    input$fa_analysis_plot_selected_lipidclass,
+    input$fa_analysis_plot_selected_fa,
+    input$fa_analysis_plot_fa_norm,
+    input$fa_analysis_plot_color_palette,
+    input$fa_analysis_plot_title_font_size,
+    input$fa_analysis_plot_y_label_font_size,
+    input$fa_analysis_plot_y_tick_font_size,
+    input$fa_analysis_plot_x_label_font_size,
+    input$fa_analysis_plot_x_tick_font_size,
+    input$fa_analysis_plot_legend_font_size,
+    input$fa_analysis_plot_img_format), {
+
+      if (input$fa_analysis_plot_selected_view == "fa") {
+        shiny::req(input$fa_analysis_plot_selected_fa)
+      }
+
+      r6$param_fa_analysis_plot(
+        auto_refresh = input$fa_analysis_plot_auto_refresh,
+        data_table = input$fa_analysis_plot_data_table,
+        group_col = input$fa_analysis_plot_metacol,
+        selected_view = input$fa_analysis_plot_selected_view,
+        selected_lipidclass = input$fa_analysis_plot_selected_lipidclass,
+        selected_fa = input$fa_analysis_plot_selected_fa,
+        fa_norm = input$fa_analysis_plot_fa_norm,
+        color_palette = input$fa_analysis_plot_color_palette,
+        title_font_size = input$fa_analysis_plot_title_font_size,
+        y_label_font_size = input$fa_analysis_plot_y_label_font_size,
+        y_tick_font_size = input$fa_analysis_plot_y_tick_font_size,
+        x_label_font_size = input$fa_analysis_plot_x_label_font_size,
+        x_tick_font_size = input$fa_analysis_plot_x_tick_font_size,
+        legend_font_size = input$fa_analysis_plot_legend_font_size,
+        img_format = input$fa_analysis_plot_img_format)
+
+      if (!input$fa_analysis_plot_auto_refresh) {
+        r6$params$fa_analysis_plot$auto_refresh = input$fa_analysis_plot_auto_refresh
+        return()
+      }
+
+      if (r6$params$fa_analysis_plot$update) {
+        try_plot(prefix = "Fatty acid analysis index",
+                 r6 = r6,
+                 dimensions_obj = dimensions_obj,
+                 gen_function = fa_analysis_plot_generate,
+                 spawn_function = fa_analysis_plot_spawn,
+                 img_format = input$fa_analysis_plot_img_format,
+                 toggle_function = "toggle_fa_analysis_plot",
+                 input = input,
+                 output = output,
+                 session = session)
+      }
+    })
+
+  # Download associated table
+  output$download_fa_analysis_plot_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("fa_analysis_plot_table.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$fa_analysis_plot_table, file_name)
+    }
+  )
+
+  # Expanded boxes
+  fa_analysis_plot_proxy = plotly::plotlyProxy(outputId = "fa_analysis_plot_plot",
+                                          session = session)
+
+  shiny::observeEvent(input$fa_analysis_plot_plotbox,{
+    if (input$fa_analysis_plot_plotbox$maximized) {
+      plotly::plotlyProxyInvoke(p = fa_analysis_plot_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full,
+                                     height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+                                ))
+    } else {
+      plotly::plotlyProxyInvoke(p = fa_analysis_plot_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx * dimensions_obj$x_plot,
+                                     height = dimensions_obj$ypx * dimensions_obj$y_plot
+                                ))
+    }
+  })
+}
 #-------------------------------------------------------- Double bonds plot ----
 double_bonds_plot_generate = function(r6, dimensions_obj, input, session) {
   print_tm(r6$name, "Double bonds plot: generating plot.")

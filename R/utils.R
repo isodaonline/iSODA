@@ -133,6 +133,7 @@ lipidomics_plot_list = function() {
                 "Samples correlation" = "select_samples_correlation",
                 "Feature correlation" = "select_feature_correlation",
                 "PCA" = "select_pca",
+                "Fatty acid analysis" = "select_fatty_acid_analysis",
                 "Double bonds plot" = "select_double_bonds_plot"
   )
   return(plot_list)
@@ -284,6 +285,9 @@ feature_signal_filtering = function(raw_data,
   if (!is.null(excluded_features)) {
     salvaged_features = c()
     for (g in unique(indexed_meta[rownames(raw_data),group_column])) {
+      if ((g == "") | is.na(g)) {
+        next
+      }
       group_idx = rownames(indexed_meta)[indexed_meta[, group_column] == g]
       above_threshold = rep(0, length(excluded_features))
       names(above_threshold) = excluded_features
@@ -530,6 +534,18 @@ annotate_go = function(feature_names,
 
 
 #-------------------------------------------------------- General utilities ----
+
+is_none = function(value) {
+  if (is.null(value)) {
+    return(T)
+  } else if (is.na(value)) {
+    return(T)
+  } else if (value == "") {
+    return(T)
+  } else {
+    return(F)
+  }
+}
 
 axis_word_split = function(ticks, n) {
   if (n == 0) {return(ticks)}
@@ -999,6 +1015,20 @@ try_plot = function(prefix, r6, dimensions_obj, gen_function, spawn_function, im
 
 #----------------------------------------------------- Lipidomics functions ----
 
+get_fa_tails = function(feature_table) {
+  # get unique FA's, ignore PA
+  feature_table = feature_table[feature_table[['Lipid class']] != "PA", ]
+  fa_tails = c(
+    paste0(feature_table[['Carbon count (chain 1)']][feature_table[['Lipid class']] != "TG"], ":", feature_table[['Double bonds (chain 1)']][feature_table[['Lipid class']] != "TG"]),
+    paste0(feature_table[['Carbon count (chain 2)']], ":", feature_table[['Double bonds (chain 2)']])
+  )
+
+  fa_tails = unique(fa_tails)
+  fa_tails = sort(fa_tails[fa_tails != "0:0"])
+
+  return(fa_tails)
+}
+
 get_group_median_table = function(data_table,
                                   meta_table,
                                   group_col) {
@@ -1279,6 +1309,118 @@ lips_get_del_cols = function(data_table,
 }
 
 #------------------------------------------------------- Plotting functions ----
+
+format_label = function(
+    label,
+    font_size,
+    use_html = F
+  ) {
+  if (is_none(label)) {
+    label = NULL
+    font_size = NULL
+  } else if (is_none(font_size)){
+    font_size = NULL
+  } else if (font_size == 0) {
+    label = NULL
+    font_size = NULL
+  }
+  if (!is.null(label) & use_html) {
+    label = paste0('<span style="font-size: ', font_size, 'px;">', label, '</span>')
+  }
+
+  return(list(
+    label = label,
+    font_size = font_size
+  ))
+}
+
+get_plot_font_data = function(
+    title,
+    title_font_size,
+    x_label,
+    x_label_font_size,
+    x_tick_font_size,
+    y_label,
+    y_label_font_size,
+    y_tick_font_size,
+    legend_label,
+    legend_font_size,
+    legend_tick_font_size,
+    use_html = F
+
+  ) {
+
+  title_data = format_label(label = title,
+                            font_size = title_font_size,
+                            use_html = use_html)
+
+  x_label_data = format_label(label = x_label,
+                              font_size = x_label_font_size,
+                              use_html = use_html)
+
+  y_label_data = format_label(label = y_label,
+                              font_size = y_label_font_size,
+                              use_html = use_html)
+
+  legend_label_data = format_label(label = legend_label,
+                                   font_size = legend_font_size,
+                                   use_html = use_html)
+
+  if (is_none(x_tick_font_size)) {
+    x_tick_font_size = NULL
+    x_tick_show = T
+  } else if (x_tick_font_size == 0) {
+    x_tick_show = F
+  } else {
+    x_tick_show = T
+  }
+
+  if (is_none(y_tick_font_size)) {
+    y_tick_font_size = NULL
+    y_tick_show = T
+  } else if (y_tick_font_size == 0) {
+    y_tick_show = F
+  } else {
+    y_tick_show = T
+  }
+
+  if (is_none(legend_tick_font_size)) {
+    legend_tick_font_size = NULL
+    legend_show = T
+  } else if (legend_tick_font_size == 0) {
+    legend_show = F
+  } else {
+    legend_show = T
+  }
+
+  if (!is.null(legend_label_data$font_size)) {
+    if (legend_label_data$font_size == 0) {
+      legend_show = F
+    }
+  }
+
+  return(list(
+    title = title_data$label,
+    title_font_size = title_data$font_size,
+    x_label = x_label_data$label,
+    x_label_font_size = x_label_data$font_size,
+    x_tick_font_size = x_tick_font_size,
+    x_tick_show = x_tick_show,
+    y_label = y_label_data$label,
+    y_label_font_size = y_label_data$font_size,
+    y_tick_font_size = y_tick_font_size,
+    y_tick_show = y_tick_show,
+    legend_label = legend_label_data$label,
+    legend_font_size = legend_label_data$font_size,
+    legend_tick_font_size = legend_tick_font_size,
+    legend_show = legend_show
+  ))
+}
+
+
+
+
+
 calculate_subplot_grid_dimensions = function(total_plots) {
   nearest_square_root = base::ceiling(sqrt(total_plots))
   rows = nearest_square_root
@@ -3818,6 +3960,7 @@ plotbox_switch_ui_lips = function(selection_list){
                                           "select_samples_correlation" = samples_correlation_ui,
                                           "select_feature_correlation" = feature_correlation_ui,
                                           "select_pca" = pca_ui,
+                                          "select_fatty_acid_analysis" = fa_analysis_plot_ui,
                                           "select_double_bonds_plot" = double_bonds_plot_ui
     )
     )
@@ -3837,6 +3980,7 @@ plotbox_switch_server_lips = function(selection_list){
                                                   "select_samples_correlation" = samples_correlation_server,
                                                   "select_feature_correlation" = feature_correlation_server,
                                                   "select_pca" = pca_server,
+                                                  "select_fatty_acid_analysis" = fa_analysis_plot_server,
                                                   "select_double_bonds_plot" = double_bonds_plot_server
     )
     )
@@ -6586,6 +6730,152 @@ plot_explained_variance = function(variance_explained, title_font_size = 10, y_l
 
   return(plot)
 }
+
+#------------------------------------------------------ Fatty acid analysis ----
+fa_analysis_calc = function(data_table = NULL,
+                            feature_table = NULL,
+                            sample_meta = NULL,
+                            selected_lipidclass = NULL,
+                            fa_norm = FALSE) {
+  ## Features
+  feature_table$lipid = rownames(feature_table)
+
+  # fix TG's
+  idx_tg = feature_table$lipid[feature_table[["Lipid class"]] == "TG"]
+  data_table[, idx_tg] = data_table[, idx_tg] / 3
+
+  # get the species from the selected lipid classes
+  if(selected_lipidclass == "All") {
+    # all lipids, but remove PA
+    sel_feat_idx = feature_table$lipid[!(feature_table[["Lipid class"]] %in% c("PA"))]
+  } else if(selected_lipidclass == "All_noTG") {
+    # all lipids, but remove PA
+    sel_feat_idx = feature_table$lipid[!(feature_table[["Lipid class"]] %in% c("PA", "TG"))]
+  } else {
+    sel_feat_idx = feature_table$lipid[feature_table[["Lipid class"]] %in% selected_lipidclass]
+  }
+  sel_feature_table = feature_table[feature_table$lipid %in% sel_feat_idx, ]
+
+  ## Data
+  # select the correct data
+  sel_data_table = data_table[, sel_feat_idx]
+
+  # get the unique chain lengths and unsaturation
+  uniq_carbon = sort(union(unique(sel_feature_table[["Carbon count (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
+                           unique(sel_feature_table[["Carbon count (chain 2)"]])))
+  uniq_carbon = uniq_carbon[uniq_carbon != 0]
+  uniq_unsat = sort(union(unique(sel_feature_table[["Double bonds (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
+                          unique(sel_feature_table[["Double bonds (chain 2)"]])))
+
+  # Initialize results data.frame
+  fa_chains = expand.grid(uniq_unsat, uniq_carbon)
+  fa_chains = paste(fa_chains[, 2], fa_chains[, 1], sep = ":")
+  res = as.data.frame(matrix(ncol = length(fa_chains),
+                             nrow = nrow(sel_data_table)))
+  colnames(res) = fa_chains
+  rownames(res) = rownames(sel_data_table)
+
+  # do the calculations
+  for(a in uniq_carbon) {
+    for(b in uniq_unsat) {
+      sel_fa_chain = paste(a, b, sep = ":")
+      sel_lipids = sel_feature_table$lipid[(sel_feature_table[["Carbon count (chain 1)"]] == a &
+                                              sel_feature_table[["Double bonds (chain 1)"]] == b) |
+                                             (sel_feature_table[["Carbon count (chain 2)"]] == a &
+                                                sel_feature_table[["Double bonds (chain 2)"]] == b)]
+      sel_lipids_double = sel_feature_table$lipid[(sel_feature_table[["Carbon count (chain 1)"]] == a &
+                                                     sel_feature_table[["Double bonds (chain 1)"]] == b) &
+                                                    (sel_feature_table[["Carbon count (chain 2)"]] == a &
+                                                       sel_feature_table[["Double bonds (chain 2)"]] == b)]
+
+      res[, sel_fa_chain] = `+`(
+        rowSums(sel_data_table[, sel_lipids, drop = FALSE], na.rm = TRUE),
+        rowSums(sel_data_table[, sel_lipids_double, drop = FALSE], na.rm = TRUE)
+      )
+    }
+  }
+
+  # remove empty columns
+  empty_idx = apply(res, 2, function(x) {
+    all(x == 0)
+  })
+  res = res[, !empty_idx]
+
+  # normalise by total FA's
+  if(fa_norm) {
+    res = res / rowSums(res, na.rm = TRUE)
+  }
+
+  return(res)
+}
+
+
+fa_analysis_rev_calc = function(data_table = NULL,
+                                feature_table = NULL,
+                                sample_meta = NULL,
+                                selected_fa = NULL,
+                                fa_norm = FALSE) {
+  uniq_lipid_classes = unique(feature_table[["Lipid class"]][!(feature_table[["Lipid class"]] %in% c("PA"))])
+
+  ## Features
+  feature_table$lipid = rownames(feature_table)
+
+  sel_feat_idx = feature_table$lipid[!(feature_table[["Lipid class"]] %in% c("PA"))]
+  sel_feature_table = feature_table[feature_table$lipid %in% sel_feat_idx, ]
+
+  ## Data
+  # select the correct data
+  sel_data_table = data_table[, sel_feat_idx]
+
+  # Initialize results data.frame
+  res = as.data.frame(matrix(ncol = length(uniq_lipid_classes),
+                             nrow = nrow(sel_data_table)))
+  colnames(res) = uniq_lipid_classes
+  rownames(res) = rownames(sel_data_table)
+
+  # do the calculations
+  fa_norm_tot = 0
+  for(lipid_class in uniq_lipid_classes) {
+    for(fa_tail in selected_fa) {
+      split_fa = as.numeric(unlist(strsplit(fa_tail,
+                                            split = ":",
+                                            fixed = TRUE)))
+      sel_lipids = sel_feature_table$lipid[sel_feature_table[["Lipid class"]] == lipid_class &
+                                             ((sel_feature_table[["Carbon count (chain 1)"]] == split_fa[1] &
+                                                 sel_feature_table[["Double bonds (chain 1)"]] == split_fa[2]) |
+                                                (sel_feature_table[["Carbon count (chain 2)"]] == split_fa[1] &
+                                                   sel_feature_table[["Double bonds (chain 2)"]] == split_fa[2]))]
+      sel_lipids_double = sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
+                                                    (sel_feature_table[["Carbon count (chain 1)"]] == split_fa[1] &
+                                                       sel_feature_table[["Double bonds (chain 1)"]] == split_fa[2]) &
+                                                    (sel_feature_table[["Carbon count (chain 2)"]] == split_fa[1] &
+                                                       sel_feature_table[["Double bonds (chain 2)"]] == split_fa[2])]
+
+      res[, lipid_class] = rowSums(sel_data_table[, c(sel_lipids, sel_lipids_double), drop = FALSE], na.rm = TRUE)
+    } # end selected_fa
+  } # end lipid_class
+
+  # fix the TG's
+  res[, "TG"] = res[, "TG"] / 3
+
+  # remove empty columns
+  empty_idx = apply(res, 2, function(x) {
+    all(x == 0)
+  })
+  res = res[, !empty_idx]
+
+  # get rid of the zero's
+  res[res == 0] = NA
+
+  # normalise by total FA's
+  if(fa_norm) {
+    res = res / rowSums(res, na.rm = TRUE)
+  }
+
+  return(res)
+}
+
+
 #---------------------------------------------------------- COLOR FUNCTIONS ----
 
 
