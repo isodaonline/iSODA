@@ -275,6 +275,7 @@ Omics_exp = R6::R6Class(
         group_2 = NULL,
         selected_lipidclass = "CE",
         color_palette = "Blues",
+        reverse_palette = F,
         title_font_size = NULL,
         y_label_font_size = NULL,
         y_tick_font_size = NULL,
@@ -1135,6 +1136,7 @@ Omics_exp = R6::R6Class(
                                   group_2,
                                   selected_lipidclass,
                                   color_palette,
+                                  reverse_palette,
                                   title_font_size,
                                   y_label_font_size,
                                   y_tick_font_size,
@@ -1150,6 +1152,7 @@ Omics_exp = R6::R6Class(
       self$params$fa_comp_plot$group_2 = group_2
       self$params$fa_comp_plot$selected_lipidclass = selected_lipidclass
       self$params$fa_comp_plot$color_palette = color_palette
+      self$params$fa_comp_plot$reverse_palette = reverse_palette
       self$params$fa_comp_plot$title_font_size = title_font_size
       self$params$fa_comp_plot$y_label_font_size = y_label_font_size
       self$params$fa_comp_plot$y_tick_font_size = y_tick_font_size
@@ -2136,6 +2139,7 @@ Omics_exp = R6::R6Class(
         group_2 = unique(self$tables$raw_meta[, self$indices$group_column])[2],
         selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
         color_palette = "Blues",
+        reverse_palette = F,
         title_font_size = NULL,
         y_label_font_size = NULL,
         y_tick_font_size = NULL,
@@ -3065,11 +3069,11 @@ Omics_exp = R6::R6Class(
       }
 
       # Get the color palette
-      color_count = colors_switch(color_palette)
-      colors = get_colors(color_count = color_count, color_palette = color_palette)
-      if (reverse_palette) {
-        colors = base::rev(colors)
-      }
+      colors = get_color_palette(groups = 1:10,
+                                 color_palette = color_palette,
+                                 reverse_color_palette = reverse_palette,
+                                 force_scale = F,
+                                 force_list = F)
 
       # Plot the data
       plot = heatmaply::heatmaply(x = t(data_table),
@@ -3772,6 +3776,7 @@ Omics_exp = R6::R6Class(
                             group_2 = self$params$fa_comp_plot$group_2,
                             selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
                             color_palette = self$params$fa_comp_plot$color_palette,
+                            reverse_palette = self$params$fa_comp_plot$reverse_palette,
                             title_font_size = self$params$fa_comp_plot$title_font_size,
                             y_label_font_size = self$params$fa_comp_plot$y_label_font_size,
                             y_tick_font_size = self$params$fa_comp_plot$y_tick_font_size,
@@ -3784,8 +3789,8 @@ Omics_exp = R6::R6Class(
       data_table = self$table_check_convert(data_table)
 
       # Get the color palette
-      color_palette = get_color_palette(groups = c(group_1, group_2),
-                                         color_palette = color_palette)
+      # color_palette = get_color_palette(groups = c(group_1, group_2),
+      #                                    color_palette = color_palette)
 
       ## left side
       # heatmap
@@ -3863,6 +3868,7 @@ Omics_exp = R6::R6Class(
                                     composition = composition,
                                     color_limits = c(min_value, max_value),
                                     color_palette = color_palette,
+                                    reverse_palette = reverse_palette,
                                     x_label_font_size = fd$x_label_font_size,
                                     x_tick_font_size = fd$x_tick_font_size,
                                     x_tick_show = fd$x_tick_show,
@@ -3981,6 +3987,7 @@ Omics_exp = R6::R6Class(
                                      composition = composition,
                                      color_limits = c(min_value, max_value),
                                      color_palette = color_palette,
+                                     reverse_palette = reverse_palette,
                                      x_label_font_size = fd$x_label_font_size,
                                      x_tick_font_size = fd$x_tick_font_size,
                                      x_tick_show = fd$x_tick_show,

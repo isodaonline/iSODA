@@ -52,6 +52,7 @@ self = example_omics(name = name,
                      operation_order = operation_order,
                      norm_col = norm_col)
 
+
 self$plot_fa_comp()
 
 data_table = self$params$fa_comp_plot$data_table

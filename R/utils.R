@@ -1475,6 +1475,7 @@ fa_comp_heatmap = function(data = NULL,
                            composition = NULL,
                            color_limits = NULL,
                            color_palette = NULL,
+                           reverse_palette = F,
                            y_pos_right = FALSE,
                            x_label_font_size = NULL,
                            x_tick_font_size = NULL,
@@ -1495,13 +1496,23 @@ fa_comp_heatmap = function(data = NULL,
   data_df$row = as.numeric(data_df$row)
   data_df$col = as.numeric(data_df$col)
 
+  colors = get_color_palette(
+    groups = 1:10,
+    color_palette = color_palette,
+    reverse_color_palette = reverse_palette,
+    force_scale = F,
+    force_list = F
+  )
+
+  colors = unname(colors)
+
   # make heatmap
   fig = plotly::plot_ly(data = data_df,
                         x = ~col,
                         y = ~row,
                         z = ~value,
                         type = "heatmap",
-                        colors = color_palette,
+                        colors = colors,
                         hovertemplate = paste(
                           "Total carbons: %{x:d}<br>",
                           "Total double bond: %{y:d}<br>",
