@@ -134,6 +134,7 @@ lipidomics_plot_list = function() {
                 "Feature correlation" = "select_feature_correlation",
                 "PCA" = "select_pca",
                 "Fatty acid analysis" = "select_fatty_acid_analysis",
+                "Fatty acid composition" = "select_fatty_acid_composition",
                 "Double bonds plot" = "select_double_bonds_plot"
   )
   return(plot_list)
@@ -1310,10 +1311,340 @@ lips_get_del_cols = function(data_table,
 
 #------------------------------------------------------- Plotting functions ----
 
+fa_comp_hm_calc = function(data_table = NULL,
+                           feature_table = NULL,
+                           composition = NULL,
+                           group_col = NULL,
+                           selected_group = NULL,
+                           sample_meta = NULL,
+                           selected_lipidclass = NULL) {
+
+  res = switch(
+    composition,
+    "fa_tail" = fa_comp_hm_calc.fa(data_table = data_table,
+                                   feature_table = feature_table,
+                                   group_col = group_col,
+                                   selected_group = selected_group,
+                                   sample_meta = sample_meta,
+                                   selected_lipidclass = selected_lipidclass),
+    "total_lipid" = fa_comp_hm_calc.total(data_table = data_table,
+                                          feature_table = feature_table,
+                                          group_col = group_col,
+                                          selected_group = selected_group,
+                                          sample_meta = sample_meta,
+                                          selected_lipidclass = selected_lipidclass)
+  )
+
+  return(res)
+}
+
+fa_comp_hm_calc.fa = function(data_table = NULL,
+                              feature_table = NULL,
+                              composition = NULL,
+                              group_col = NULL,
+                              selected_group = NULL,
+                              sample_meta = NULL,
+                              selected_lipidclass = NULL) {
+  ## samples
+  idx_samples = rownames(sample_meta)[sample_meta[, group_col] == selected_group]
+  hm_data = data_table[idx_samples, , drop = FALSE]
+
+  ## features
+  feature_table$lipid = rownames(feature_table)
+  if(selected_lipidclass == "All") {
+    # leave PA's out
+    selected_features = feature_table[feature_table[["Lipid class"]] != "PA", ]
+  } else {
+    selected_features = feature_table[feature_table[["Lipid class"]] == selected_lipidclass, ]
+  }
+  # get the unique chain lengths and unsaturation
+  # special lipid classes
+  tail1_only = c("CE", "FA", "LPC", "LPE")
+  tail2_only = c("Cer", "HexCER", "LacCER", "SM", "TG")
+
+  if(selected_lipidclass == "All") {
+    uniq_carbon = c(min(c(selected_features[["Carbon count (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                          selected_features[["Carbon count (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                          selected_features[["Carbon count (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])),
+                    max(c(selected_features[["Carbon count (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                          selected_features[["Carbon count (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                          selected_features[["Carbon count (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])))
+    uniq_unsat = c(min(c(selected_features[["Double bonds (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                         selected_features[["Double bonds (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                         selected_features[["Double bonds (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])),
+                   max(c(selected_features[["Double bonds (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                         selected_features[["Double bonds (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                         selected_features[["Double bonds (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])))
+  } else {
+    if(selected_lipidclass %in% tail2_only) {
+      uniq_carbon = c(min(selected_features[["Carbon count (chain 2)"]]),
+                      max(selected_features[["Carbon count (chain 2)"]]))
+      uniq_unsat = c(min(selected_features[["Double bonds (chain 2)"]]),
+                     max(selected_features[["Double bonds (chain 2)"]]))
+    } else {
+      uniq_carbon = c(min(c(selected_features[["Carbon count (chain 1)"]], selected_features[["Carbon count (chain 2)"]][selected_features[["Carbon count (chain 2)"]] != 0])),
+                      max(c(selected_features[["Carbon count (chain 1)"]], selected_features[["Carbon count (chain 2)"]])))
+      uniq_unsat = c(min(c(selected_features[["Double bonds (chain 1)"]], selected_features[["Double bonds (chain 2)"]])),
+                     max(c(selected_features[["Double bonds (chain 1)"]], selected_features[["Double bonds (chain 2)"]])))
+    }
+  }
+
+  ## calculations
+  # initialize result matrix
+  res = matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+               nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+  colnames(res) = uniq_carbon[1]:uniq_carbon[2]
+  rownames(res) = uniq_unsat[1]:uniq_unsat[2]
+
+  for(a in rownames(res)) { # unsaturation
+    for(b in colnames(res)) { # carbons
+      idx_lipids = selected_features$lipid[(selected_features[["Carbon count (chain 1)"]] == b &
+                                              selected_features[["Double bonds (chain 1)"]] == a) |
+                                             (selected_features[["Carbon count (chain 2)"]] == b &
+                                                selected_features[["Double bonds (chain 2)"]] == a)]
+
+      idx_lipids_double = selected_features$lipid[(selected_features[["Carbon count (chain 1)"]] == b &
+                                                     selected_features[["Double bonds (chain 1)"]] == a) &
+                                                    (selected_features[["Carbon count (chain 2)"]] == b &
+                                                       selected_features[["Double bonds (chain 2)"]] == a)]
+      if(length(idx_lipids) > 0) {
+        res[a, b] = sum(hm_data[, idx_lipids], na.rm = TRUE)
+      } else {
+        res[a, b] = 0
+      }
+
+      # compensate for if a specific tails appears twice in a lipid, sum again
+      if(length(idx_lipids_double) > 0) {
+        res[a, b] = sum(res[a, b], hm_data[, idx_lipids_double], na.rm = TRUE)
+      }
+    }
+  }
+
+  # calculate the proportion
+  res = res / sum(res)
+
+  return(res)
+}
+
+fa_comp_hm_calc.total = function(data_table = NULL,
+                                 feature_table = NULL,
+                                 group_col = NULL,
+                                 selected_group = NULL,
+                                 sample_meta = NULL,
+                                 selected_lipidclass = NULL) {
+  ## samples
+  idx_samples = rownames(sample_meta)[sample_meta[, group_col] == selected_group]
+  hm_data = data_table[idx_samples, , drop = FALSE]
+
+  ## features
+  feature_table$lipid = rownames(feature_table)
+  selected_features = feature_table[feature_table[["Lipid class"]] == selected_lipidclass, ]
+
+  # get the unique chain lengths and unsaturation
+  uniq_carbon = c(min(selected_features[["Carbon count (sum)"]]), max(selected_features[["Carbon count (sum)"]]))
+  uniq_unsat = c(min(selected_features[["Double bonds (sum)"]]), max(selected_features[["Double bonds (sum)"]]))
+
+  ## calculations
+  # initialize result matrix
+  res = matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+               nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+  colnames(res) = uniq_carbon[1]:uniq_carbon[2]
+  rownames(res) = uniq_unsat[1]:uniq_unsat[2]
+  for(a in rownames(res)) { # unsaturation
+    for(b in colnames(res)) { # carbons
+      idx_lipids = selected_features$lipid[selected_features[["Carbon count (sum)"]] == b &
+                                             selected_features[["Double bonds (sum)"]] == a]
+      if(length(idx_lipids) > 0) {
+        res[a, b] = sum(hm_data[, idx_lipids], na.rm = TRUE)
+      } else {
+        res[a, b] = 0
+      }
+    }
+  }
+
+  # calculate the proportion
+  res = res / sum(res)
+
+  return(res)
+}
+
+
+fa_comp_heatmap = function(data = NULL,
+                           hline = NULL,
+                           vline = NULL,
+                           composition = NULL,
+                           color_limits = NULL,
+                           color_palette = NULL,
+                           y_pos_right = FALSE,
+                           x_label_font_size = NULL,
+                           x_tick_font_size = NULL,
+                           x_tick_show = T,
+                           y_label_font_size = NULL,
+                           y_tick_font_size = NULL,
+                           y_tick_show = T,
+                           legend_label_font_size = NULL,
+                           showlegend = FALSE) {
+  # prepare data
+  data_df = as.data.frame(data)
+  data_df$row = rownames(data)
+
+  data_df = data_df |>
+    tidyr::pivot_longer(cols = -row,
+                        names_to = "col",
+                        values_to = "value")
+  data_df$row = as.numeric(data_df$row)
+  data_df$col = as.numeric(data_df$col)
+
+  # make heatmap
+  fig = plotly::plot_ly(data = data_df,
+                        x = ~col,
+                        y = ~row,
+                        z = ~value,
+                        type = "heatmap",
+                        colors = color_palette,
+                        hovertemplate = paste(
+                          "Total carbons: %{x:d}<br>",
+                          "Total double bond: %{y:d}<br>",
+                          "Proportion: %{z:.3f}",
+                          "<extra></extra>"
+                        )) |>
+    plotly::colorbar(limits = color_limits,
+                     title = "Proportion",
+                     tickfont = list(size = legend_label_font_size)) |>
+
+    plotly::style(xgap = 3,
+                  ygap = 3)
+
+  if(!showlegend) {
+    fig = fig |>
+      plotly::hide_colorbar()
+  }
+  fig = fig |>
+    # vertical line
+    plotly::add_segments(
+      x = vline,
+      xend = vline,
+      y = min(data_df$row) - 0.5,
+      yend = max(data_df$row) + 0.5,
+      inherit = FALSE,
+      line = list(color = "black",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+    # horizotal line
+    plotly::add_segments(
+      x = min(data_df$col) - 0.5,
+      xend = max(data_df$col) + 0.5,
+      y = hline,
+      yend = hline,
+      inherit = FALSE,
+      line = list(color = "black",
+                  width = 2,
+                  dash = "dot"),
+      showlegend = FALSE
+    ) |>
+
+    plotly::layout(
+      font = list(
+        size = 9
+      ),
+      xaxis = list(
+        tick0 = 1,
+        dtick = 1,
+        zeroline = FALSE,
+        showgrid = FALSE,
+        fixedrange = TRUE,
+        ticklen = 3,
+        title = list(
+          text = ifelse(composition == "fa_tail",
+                        "Number of carbon atoms",
+                        "Number of total carbon atoms"),
+          standoff = 5,
+          font = list(
+            size = x_label_font_size
+          )
+        ),
+        showticklabels = x_tick_show,
+        tickfont = list(size = x_tick_font_size)
+      )
+    ) |>
+    plotly::add_annotations(
+      x = c(max(data_df$col), vline),
+      y = c(hline, max(data_df$row)),
+      text = c(sprintf("Avg. %0.1f", hline), sprintf("Avg. %0.1f", vline)),
+      font = list(size = 10),
+      xref = "x",
+      yref = "y",
+      showarrow = FALSE,
+      xanchor = c("right", "left"),
+      yanchor = c("bottom", "middle")
+    )
+
+  if(y_pos_right) {
+    fig = fig |>
+      plotly::layout(
+        font = list(
+          size = 9
+        ),
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          zeroline = FALSE,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          side = "right",
+          fixedrange = TRUE,
+          ticklen = 3,
+          title = list(
+            text = ifelse(composition == "fa_tail",
+                          "Number of double bonds",
+                          "Number of total double bonds"),
+            standoff = 3,
+            font = list(
+              size = y_label_font_size
+            )
+          ),
+          showticklabels = y_tick_show,
+          tickfont = list(size = y_tick_font_size)
+        )
+      )
+  } else {
+    fig = fig |>
+      plotly::layout(
+        font = list(
+          size = 9
+        ),
+        yaxis = list(
+          tick0 = 1,
+          dtick = 1,
+          zeroline = FALSE,
+          showgrid = FALSE,
+          range = c(max(data_df$row) + 0.5, min(data_df$row) - 0.5),
+          fixedrange = TRUE,
+          ticklen = 3,
+          title = list(
+            text = ifelse(composition == "fa_tail",
+                          "Number of double bonds",
+                          "Number of total double bonds"),
+            standoff = 3,
+            font = list(
+              size = y_label_font_size
+            )
+          ),
+          showticklabels = y_tick_show,
+          tickfont = list(size = y_tick_font_size)
+        )
+      )
+  }
+
+  return(fig)
+}
+
+
 format_label = function(
     label,
-    font_size,
-    use_html = F
+    font_size
   ) {
   if (is_none(label)) {
     label = NULL
@@ -1323,9 +1654,6 @@ format_label = function(
   } else if (font_size == 0) {
     label = NULL
     font_size = NULL
-  }
-  if (!is.null(label) & use_html) {
-    label = paste0('<span style="font-size: ', font_size, 'px;">', label, '</span>')
   }
 
   return(list(
@@ -1344,27 +1672,20 @@ get_plot_font_data = function(
     y_label_font_size,
     y_tick_font_size,
     legend_label,
-    legend_font_size,
-    legend_tick_font_size,
-    use_html = F
-
+    legend_font_size
   ) {
 
   title_data = format_label(label = title,
-                            font_size = title_font_size,
-                            use_html = use_html)
+                            font_size = title_font_size)
 
   x_label_data = format_label(label = x_label,
-                              font_size = x_label_font_size,
-                              use_html = use_html)
+                              font_size = x_label_font_size)
 
   y_label_data = format_label(label = y_label,
-                              font_size = y_label_font_size,
-                              use_html = use_html)
+                              font_size = y_label_font_size)
 
   legend_label_data = format_label(label = legend_label,
-                                   font_size = legend_font_size,
-                                   use_html = use_html)
+                                   font_size = legend_font_size)
 
   if (is_none(x_tick_font_size)) {
     x_tick_font_size = NULL
@@ -1384,19 +1705,18 @@ get_plot_font_data = function(
     y_tick_show = T
   }
 
-  if (is_none(legend_tick_font_size)) {
-    legend_tick_font_size = NULL
-    legend_show = T
-  } else if (legend_tick_font_size == 0) {
-    legend_show = F
-  } else {
-    legend_show = T
-  }
+
 
   if (!is.null(legend_label_data$font_size)) {
     if (legend_label_data$font_size == 0) {
       legend_show = F
+    } else {
+      legend_show = T
     }
+  } else if (!is.null(legend_label_data$label)) {
+    legend_show = T
+  } else {
+    legend_show = F
   }
 
   return(list(
@@ -1412,7 +1732,6 @@ get_plot_font_data = function(
     y_tick_show = y_tick_show,
     legend_label = legend_label_data$label,
     legend_font_size = legend_label_data$font_size,
-    legend_tick_font_size = legend_tick_font_size,
     legend_show = legend_show
   ))
 }
@@ -3961,6 +4280,7 @@ plotbox_switch_ui_lips = function(selection_list){
                                           "select_feature_correlation" = feature_correlation_ui,
                                           "select_pca" = pca_ui,
                                           "select_fatty_acid_analysis" = fa_analysis_plot_ui,
+                                          "select_fatty_acid_composition" = fa_comp_plot_ui,
                                           "select_double_bonds_plot" = double_bonds_plot_ui
     )
     )
@@ -3981,6 +4301,7 @@ plotbox_switch_server_lips = function(selection_list){
                                                   "select_feature_correlation" = feature_correlation_server,
                                                   "select_pca" = pca_server,
                                                   "select_fatty_acid_analysis" = fa_analysis_plot_server,
+                                                  "select_fatty_acid_composition" = fa_comp_plot_server,
                                                   "select_double_bonds_plot" = double_bonds_plot_server
     )
     )

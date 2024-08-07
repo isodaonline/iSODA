@@ -3019,7 +3019,6 @@ fa_analysis_plot_server = function(r6, output, session) {
   })
 }
 
-
 fa_analysis_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
 
   # Sidebar refresh
@@ -3031,7 +3030,7 @@ fa_analysis_plot_events = function(r6, dimensions_obj, color_palette, input, out
     if (monitor_sidebar()) {return()}
     if (monitor_refresh()) {return()}
     if (r6$params$fa_analysis_plot$update) {
-      try_plot(prefix = "Fatty acid analysis index",
+      try_plot(prefix = "FA analysis plot",
                r6 = r6,
                dimensions_obj = dimensions_obj,
                gen_function = fa_analysis_plot_generate,
@@ -3089,7 +3088,7 @@ fa_analysis_plot_events = function(r6, dimensions_obj, color_palette, input, out
       }
 
       if (r6$params$fa_analysis_plot$update) {
-        try_plot(prefix = "Fatty acid analysis index",
+        try_plot(prefix = "FA analysis plot",
                  r6 = r6,
                  dimensions_obj = dimensions_obj,
                  gen_function = fa_analysis_plot_generate,
@@ -3130,6 +3129,317 @@ fa_analysis_plot_events = function(r6, dimensions_obj, color_palette, input, out
     }
   })
 }
+#---------------------------------------------------------- FA composition  ----
+fa_comp_plot_generate = function(r6, dimensions_obj, input) {
+  print_tm(r6$name, "Fatty acid composition: generating plot.")
+
+  if (input$fa_comp_plot_plotbox$maximized){
+    width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full
+    height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+  } else {
+    width = dimensions_obj$xpx * dimensions_obj$x_plot
+    height = dimensions_obj$ypx * dimensions_obj$y_plot
+  }
+
+  r6$plot_fa_comp(width = width,
+                  height = height)
+}
+
+fa_comp_plot_spawn = function(r6, format, output) {
+  print_tm(r6$name, "Fatty acid composition: spawning plot.")
+
+  output$fa_comp_plot_plot = plotly::renderPlotly({
+    r6$plots$fa_comp_plot
+    plotly::config(r6$plots$fa_comp_plot, toImageButtonOptions = list(format = format,
+                                                                      filename = timestamped_name('fa_comp'),
+                                                                      height = NULL,
+                                                                      width = NULL,
+                                                                      scale = 1))
+  })
+}
+
+fa_comp_plot_ui = function(dimensions_obj, session) {
+  # add function to show bs4dash with plotting function
+  get_plotly_box(id = "fa_comp_plot",
+                 label = "Composition analysis",
+                 dimensions_obj = dimensions_obj,
+                 session = session)
+}
+
+fa_comp_plot_server = function(r6, output, session) {
+  ns = session$ns
+
+  # set some UI
+  output$fa_comp_plot_sidebar_ui = shiny::renderUI({
+    shiny::tagList(
+      shinyWidgets::materialSwitch(
+        inputId = ns('fa_comp_plot_auto_refresh'),
+        label = 'Auto-refresh',
+        value = r6$params$fa_comp_plot$auto_refresh,
+        right = TRUE,
+        status = "success"
+      ),
+      ## Input settings
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectInput(
+        inputId = ns("fa_comp_plot_data_table"),
+        label = "Select dataset",
+        choices = r6$hardcoded_settings$fa_comp_plot$datasets,
+        selected = r6$params$fa_comp_plot$data_table
+      ),
+      shiny::selectInput(
+        inputId = ns("fa_comp_plot_composition"),
+        label = "Select composition",
+        choices = list(
+          "Fatty acid tail" = "fa_tail",
+          "Total lipid" = "total_lipid"
+        ),
+        selected = r6$params$fa_comp_plot$composition,
+        multiple = F
+      ),
+      shiny::selectInput(
+        inputId = ns("fa_comp_plot_metacol"),
+        label = "Select group column",
+        choices = colnames(r6$tables$raw_meta),
+        selected = r6$params$fa_comp_plot$group_col
+      ),
+      shiny::selectizeInput(
+        inputId = ns("fa_comp_plot_metagroup"),
+        label = "Select two groups to compare",
+        choices = unique(r6$tables$raw_meta[, r6$params$fa_comp_plot$group_col]),
+        selected = c(r6$params$fa_comp_plot$group_1, r6$params$fa_comp_plot$group_2),
+        multiple = TRUE
+      ),
+      shiny::selectizeInput(
+        inputId = ns("fa_comp_plot_selected_lipidclass"),
+        label = "Select lipid class",
+        choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table[["Lipid class"]])),
+        selected = r6$params$fa_comp_plot$selected_lipidclass,
+        multiple = FALSE
+      ),
+      # Aesthetic settings
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectizeInput(
+        inputId = ns('fa_comp_plot_color_palette'),
+        label = "Color palette",
+        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
+                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
+                    'plotly_1', 'plotly_2', 'ggplot2'),
+        selected = r6$params$fa_comp_plot$color_palette,
+        multiple = FALSE
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_comp_plot_title_font_size"),
+        label = 'Title font size',
+        value = r6$params$fa_comp_plot$title_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_comp_plot_y_label_font_size"),
+        label = 'y-axis label font size',
+        value = r6$params$fa_comp_plot$y_label_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_comp_plot_y_tick_font_size"),
+        label = 'y-axis tick font size',
+        value = r6$params$fa_comp_plot$y_tick_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_comp_plot_x_label_font_size"),
+        label = 'x-axis label font size',
+        value = r6$params$fa_comp_plot$x_label_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_comp_plot_x_tick_font_size"),
+        label = 'x-axis tick font size',
+        value = r6$params$fa_comp_plot$x_tick_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      shiny::numericInput(
+        inputId = ns("fa_comp_plot_legend_font_size"),
+        label = 'Legend font size',
+        value = r6$params$fa_comp_plot$legend_font_size,
+        min = 0,
+        step = 1,
+        width = '100%'
+      ),
+      ## Output settings
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::selectInput(
+        inputId = ns("fa_comp_plot_img_format"),
+        label = "Image format",
+        choices = c("png", "svg", "jpeg", "webp"),
+        selected = r6$params$fa_comp_plot$img_format,
+        width = "100%"),
+      shiny::downloadButton(
+        outputId = ns("download_fa_comp_plot_table"),
+        label = "Download associated table",
+        style = "width:100%;"
+      )
+    )
+  })
+}
+
+fa_comp_plot_events = function(r6, dimensions_obj, color_palette, input, output, session) {
+
+  # auto-update the lipid classes
+  shiny::observeEvent(input$fa_comp_plot_composition, {
+    if(input$fa_comp_plot_composition == "fa_tail") {
+      lipidclass_choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table[["Lipid class"]]))
+    } else {
+      lipidclass_choices = unique(r6$tables$feature_table[["Lipid class"]])
+    }
+
+    if(r6$params$fa_comp_plot$selected_lipidclass == "All") {
+      selected_lipidclass = "CE"
+    } else {
+      selected_lipidclass = r6$params$fa_comp_plot$selected_lipidclass
+    }
+
+    shiny::updateSelectizeInput(
+      inputId = "fa_comp_plot_selected_lipidclass",
+      session = session,
+      choices = lipidclass_choices,
+      selected = selected_lipidclass,
+    )
+  })
+
+  # auto-update selected groups
+  shiny::observeEvent(input$fa_comp_plot_metacol, {
+    shiny::updateSelectizeInput(
+      inputId = "fa_comp_plot_metagroup",
+      session = session,
+      choices = unique(r6$tables$raw_meta[, input$fa_comp_plot_metacol]),
+      selected = unique(r6$tables$raw_meta[, input$fa_comp_plot_metacol])[c(1, 2)]
+    )
+  })
+
+  # Sidebar refresh
+  monitor_sidebar = shiny::reactive(input$fa_comp_plot_sidebar)
+  monitor_refresh = shiny::reactive(input$fa_comp_plot_auto_refresh)
+  shiny::observe({
+    if (is.null(monitor_sidebar())) {return()}
+    if (is.null(monitor_refresh())) {return()}
+    if (monitor_sidebar()) {return()}
+    if (monitor_refresh()) {return()}
+    if (r6$params$fa_comp_plot$update) {
+      try_plot(prefix = "FA Comp plot",
+               r6 = r6,
+               dimensions_obj = dimensions_obj,
+               gen_function = fa_comp_plot_generate,
+               spawn_function = fa_comp_plot_spawn,
+               img_format = input$fa_comp_plot_img_format,
+               toggle_function = "toggle_fa_comp_plot",
+               input = input,
+               output = output,
+               session = session)
+    }
+  })
+
+  # Generate the plot
+  shiny::observeEvent(c(
+    shiny::req(length(input$fa_comp_plot_metagroup) == 2),
+    input$fa_comp_plot_data_table,
+    input$fa_comp_plot_composition,
+    input$fa_comp_plot_selected_lipidclass,
+    input$fa_comp_plot_color_palette,
+    input$fa_comp_plot_title_font_size,
+    input$fa_comp_plot_y_label_font_size,
+    input$fa_comp_plot_y_tick_font_size,
+    input$fa_comp_plot_x_label_font_size,
+    input$fa_comp_plot_x_tick_font_size,
+    input$fa_comp_plot_legend_font_size,
+    input$fa_comp_plot_img_format),
+    {
+
+      if(!(input$fa_comp_plot_composition == "total_lipid" & input$fa_comp_plot_selected_lipidclass == "All")) {
+
+        r6$param_fa_comp_plot(
+          auto_refresh = input$fa_comp_plot_auto_refresh,
+          data_table = input$fa_comp_plot_data_table,
+          composition = input$fa_comp_plot_composition,
+          group_col = input$fa_comp_plot_metacol,
+          group_1 = input$fa_comp_plot_metagroup[1],
+          group_2 = input$fa_comp_plot_metagroup[2],
+          selected_lipidclass = input$fa_comp_plot_selected_lipidclass,
+          color_palette = input$fa_comp_plot_color_palette,
+          title_font_size = input$fa_comp_plot_title_font_size,
+          y_label_font_size = input$fa_comp_plot_y_label_font_size,
+          y_tick_font_size = input$fa_comp_plot_y_tick_font_size,
+          x_label_font_size = input$fa_comp_plot_x_label_font_size,
+          x_tick_font_size = input$fa_comp_plot_x_tick_font_size,
+          legend_font_size = input$fa_comp_plot_legend_font_size,
+          img_format = input$fa_comp_plot_img_format
+        )
+
+        if (!input$fa_comp_plot_auto_refresh) {
+          r6$params$fa_comp_plot$auto_refresh = input$fa_comp_plot_auto_refresh
+          return()
+        }
+
+
+        if (r6$params$fa_comp_plot$update) {
+          try_plot(prefix = "FA Comp plot",
+                   r6 = r6,
+                   dimensions_obj = dimensions_obj,
+                   gen_function = fa_comp_plot_generate,
+                   spawn_function = fa_comp_plot_spawn,
+                   img_format = input$fa_comp_plot_img_format,
+                   toggle_function = "toggle_fa_comp_plot",
+                   input = input,
+                   output = output,
+                   session = session)
+        }
+
+      }
+    })
+
+  # Download associated table
+  output$download_fa_comp_plot_table = shiny::downloadHandler(
+    filename = function(){timestamped_name("fa_composition_table.csv")},
+    content = function(file_name){
+      write.csv(r6$tables$fa_comp_table, file_name)
+    }
+  )
+
+  # Expanded boxes
+  fa_comp_plot_proxy = plotly::plotlyProxy(outputId = "fa_comp_plot_plot",
+                                      session = session)
+
+  shiny::observeEvent(input$fa_comp_plot_plotbox,{
+    if (input$fa_comp_plot_plotbox$maximized) {
+      plotly::plotlyProxyInvoke(p = fa_comp_plot_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx_total * dimensions_obj$x_plot_full,
+                                     height = dimensions_obj$ypx_total * dimensions_obj$y_plot_full
+                                ))
+    } else {
+      plotly::plotlyProxyInvoke(p = fa_comp_plot_proxy,
+                                method = "relayout",
+                                list(width = dimensions_obj$xpx * dimensions_obj$x_plot,
+                                     height = dimensions_obj$ypx * dimensions_obj$y_plot
+                                ))
+    }
+  })
+}
+
 #-------------------------------------------------------- Double bonds plot ----
 double_bonds_plot_generate = function(r6, dimensions_obj, input, session) {
   print_tm(r6$name, "Double bonds plot: generating plot.")

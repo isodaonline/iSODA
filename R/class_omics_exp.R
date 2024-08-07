@@ -269,14 +269,18 @@ Omics_exp = R6::R6Class(
       fa_comp_plot = list(
         auto_refresh = F,
         data_table = "Total normalized table",
-        sample_meta = "Raw meta table",
         composition = "fa_tail",
-        feature_meta = NULL,
         group_col = NULL,
         group_1 = NULL,
         group_2 = NULL,
         selected_lipidclass = "CE",
         color_palette = "Blues",
+        title_font_size = NULL,
+        y_label_font_size = NULL,
+        y_tick_font_size = NULL,
+        x_label_font_size = NULL,
+        x_tick_font_size = NULL,
+        legend_font_size = NULL,
         img_format = "png",
         update = T
       ),
@@ -609,6 +613,13 @@ Omics_exp = R6::R6Class(
         )
       ),
       fa_analysis_plot = list(
+        datasets = list(
+          "Raw data table",
+          "Class normalized table",
+          "Total normalized table"
+        )
+      ),
+      fa_comp_plot = list(
         datasets = list(
           "Raw data table",
           "Class normalized table",
@@ -1098,13 +1109,13 @@ Omics_exp = R6::R6Class(
       self$params$fa_analysis_plot$selected_fa = selected_fa
       self$params$fa_analysis_plot$fa_norm = fa_norm
       self$params$fa_analysis_plot$color_palette = color_palette
-      self$params$fa_analysis_plot$img_format = img_format
       self$params$fa_analysis_plot$title_font_size = title_font_size
       self$params$fa_analysis_plot$y_label_font_size = y_label_font_size
       self$params$fa_analysis_plot$y_tick_font_size = y_tick_font_size
       self$params$fa_analysis_plot$x_label_font_size = x_label_font_size
       self$params$fa_analysis_plot$x_tick_font_size = x_tick_font_size
       self$params$fa_analysis_plot$legend_font_size = legend_font_size
+      self$params$fa_analysis_plot$img_format = img_format
       self$params$fa_analysis_plot$update = T
     },
 
@@ -1116,17 +1127,35 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_fa_comp_plot = function(auto_refresh, data_table, sample_meta, composition, feature_meta, group_col, group_1, group_2, selected_lipidclass, color_palette, img_format) {
+    param_fa_comp_plot = function(auto_refresh,
+                                  data_table,
+                                  composition,
+                                  group_col,
+                                  group_1,
+                                  group_2,
+                                  selected_lipidclass,
+                                  color_palette,
+                                  title_font_size,
+                                  y_label_font_size,
+                                  y_tick_font_size,
+                                  x_label_font_size,
+                                  x_tick_font_size,
+                                  legend_font_size,
+                                  img_format) {
       self$params$fa_comp_plot$auto_refresh = auto_refresh
       self$params$fa_comp_plot$data_table = data_table
-      self$params$fa_comp_plot$sample_meta = sample_meta
       self$params$fa_comp_plot$composition = composition
-      self$params$fa_comp_plot$feature_meta = feature_meta
       self$params$fa_comp_plot$group_col = group_col
       self$params$fa_comp_plot$group_1 = group_1
       self$params$fa_comp_plot$group_2 = group_2
       self$params$fa_comp_plot$selected_lipidclass = selected_lipidclass
       self$params$fa_comp_plot$color_palette = color_palette
+      self$params$fa_comp_plot$title_font_size = title_font_size
+      self$params$fa_comp_plot$y_label_font_size = y_label_font_size
+      self$params$fa_comp_plot$y_tick_font_size = y_tick_font_size
+      self$params$fa_comp_plot$x_label_font_size = x_label_font_size
+      self$params$fa_comp_plot$x_tick_font_size = x_tick_font_size
+      self$params$fa_comp_plot$legend_font_size = legend_font_size
       self$params$fa_comp_plot$img_format = img_format
       self$params$fa_comp_plot$update = T
     },
@@ -2100,15 +2129,19 @@ Omics_exp = R6::R6Class(
 
       self$param_fa_comp_plot(
         auto_refresh = F,
-        data_table = self$tables$total_norm_data,
-        sample_meta = self$tables$raw_meta,
+        data_table = "Total normalized table",
         composition = self$params$fa_comp_plot$composition,
-        feature_meta = self$tables$feature_table,
         group_col = self$indices$group_column,
         group_1 = unique(self$tables$raw_meta[, self$indices$group_column])[1],
         group_2 = unique(self$tables$raw_meta[, self$indices$group_column])[2],
         selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
         color_palette = "Blues",
+        title_font_size = NULL,
+        y_label_font_size = NULL,
+        y_tick_font_size = NULL,
+        x_label_font_size = NULL,
+        x_tick_font_size = NULL,
+        legend_font_size = NULL,
         img_format = "png"
       )
 
@@ -3606,7 +3639,6 @@ Omics_exp = R6::R6Class(
                     stdev = stdev,
                     names = x[1, "names"],
                     group = x[1, "group"]))
-        # print(x)
       })
 
       plot_table = do.call(rbind.data.frame, plot_table)
@@ -3643,16 +3675,13 @@ Omics_exp = R6::R6Class(
         xlabel = "Lipid classes"
       }
 
-      print(length(colors))
       if (length(colors) > 1) {
         legend_label = paste0(group_col, ":")
         legend_tick_font_size = legend_font_size
-        print('LABEL')
       } else {
         legend_label = NULL
         legend_font_size = 0
         legend_tick_font_size = 0
-        print('NO LABEL')
       }
 
       fd = get_plot_font_data(title = main_title,
@@ -3664,9 +3693,7 @@ Omics_exp = R6::R6Class(
                               y_label_font_size = y_label_font_size,
                               y_tick_font_size = y_tick_font_size,
                               legend_label = legend_label,
-                              legend_font_size = legend_font_size,
-                              legend_tick_font_size = legend_tick_font_size,
-                              use_html = F)
+                              legend_font_size = legend_font_size)
 
       # plotting
       fig = plotly::plot_ly(colors = unname(colors),
@@ -3733,6 +3760,363 @@ Omics_exp = R6::R6Class(
       fig
 
       self$plots$fa_analysis_plot = fig
+    },
+
+    # plot Fatty acid composition heatmaps
+    plot_fa_comp = function(data_table = self$params$fa_comp_plot$data_table,
+                            sample_meta = self$tables$raw_meta,
+                            feature_table = self$tables$feature_table,
+                            composition = self$params$fa_comp_plot$composition,
+                            group_col = self$params$fa_comp_plot$group_col,
+                            group_1 = self$params$fa_comp_plot$group_1,
+                            group_2 = self$params$fa_comp_plot$group_2,
+                            selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+                            color_palette = self$params$fa_comp_plot$color_palette,
+                            title_font_size = self$params$fa_comp_plot$title_font_size,
+                            y_label_font_size = self$params$fa_comp_plot$y_label_font_size,
+                            y_tick_font_size = self$params$fa_comp_plot$y_tick_font_size,
+                            x_label_font_size = self$params$fa_comp_plot$x_label_font_size,
+                            x_tick_font_size = self$params$fa_comp_plot$x_tick_font_size,
+                            legend_font_size = self$params$fa_comp_plot$legend_font_size,
+                            width = NULL,
+                            height = NULL) {
+
+      data_table = self$table_check_convert(data_table)
+
+      # Get the color palette
+      color_palette = get_color_palette(groups = c(group_1, group_2),
+                                         color_palette = color_palette)
+
+      ## left side
+      # heatmap
+      hm_left_data = fa_comp_hm_calc(data_table = data_table,
+                                      sample_meta = sample_meta,
+                                      composition = composition,
+                                      feature_table = feature_table,
+                                      group_col = group_col,
+                                      selected_group = group_1,
+                                      selected_lipidclass = selected_lipidclass)
+      # bar left top
+      bar_top_left_data = data.frame(x = factor(colnames(hm_left_data),
+                                                 levels = sort(as.numeric(colnames(hm_left_data))),
+                                                 labels = sort(as.numeric(colnames(hm_left_data)))),
+                                      y = colSums(hm_left_data))
+      avg_carbon_left = weighted.mean(x = as.numeric(as.character(bar_top_left_data$x)),
+                                       w = bar_top_left_data$y)
+      # bar left
+      bar_left_data = data.frame(x = factor(rownames(hm_left_data),
+                                             levels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE),
+                                             labels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE)),
+                                  y = rowSums(hm_left_data))
+      avg_unsat_left = weighted.mean(x = as.numeric(as.character(bar_left_data$x)),
+                                      w = bar_left_data$y)
+
+
+      ## right side
+      # heatmap
+      hm_right_data = fa_comp_hm_calc(data_table = data_table,
+                                       sample_meta = sample_meta,
+                                       composition = composition,
+                                       feature_table = feature_table,
+                                       group_col = group_col,
+                                       selected_group = group_2,
+                                       selected_lipidclass = selected_lipidclass)
+      # bar right top
+      bar_top_right_data = data.frame(x = factor(colnames(hm_right_data),
+                                                  levels = sort(as.numeric(colnames(hm_right_data))),
+                                                  labels = sort(as.numeric(colnames(hm_right_data)))),
+                                       y = colSums(hm_right_data))
+      avg_carbon_right = weighted.mean(x = as.numeric(as.character(bar_top_right_data$x)),
+                                        w = bar_top_right_data$y)
+      # bar right
+      bar_right_data = data.frame(x = factor(rownames(hm_right_data),
+                                              levels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE),
+                                              labels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE)),
+                                   y = rowSums(hm_right_data))
+      avg_unsat_right = weighted.mean(x = as.numeric(as.character(bar_right_data$x)),
+                                       w = bar_right_data$y)
+
+
+      # get the min and max value for the heatmap colorbar
+      min_value = min(c(min(hm_left_data), min(hm_right_data)))
+      max_value = max(c(max(hm_left_data), max(hm_right_data)))
+
+      # Get font data
+      fd = get_plot_font_data(title = base::ifelse(selected_lipidclass == "All",
+                                             paste0("<b>Lipid class: ", selected_lipidclass, " (excl. PA)</b>"),
+                                             paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
+                              title_font_size = title_font_size,
+                              x_label = "Number of carbon atoms",
+                              x_label_font_size = x_label_font_size,
+                              x_tick_font_size = x_tick_font_size,
+                              y_label = "Proportion",
+                              y_label_font_size = y_label_font_size,
+                              y_tick_font_size = y_tick_font_size,
+                              legend_label = "Proportion",
+                              legend_font_size = legend_font_size)
+
+      ## plots
+      # left side
+      fig_hm_left = fa_comp_heatmap(data = hm_left_data,
+                                    vline = avg_carbon_left,
+                                    hline = avg_unsat_left,
+                                    composition = composition,
+                                    color_limits = c(min_value, max_value),
+                                    color_palette = color_palette,
+                                    x_label_font_size = fd$x_label_font_size,
+                                    x_tick_font_size = fd$x_tick_font_size,
+                                    x_tick_show = fd$x_tick_show,
+                                    y_label_font_size = fd$y_label_font_size,
+                                    y_tick_font_size = fd$y_tick_font_size,
+                                    y_tick_show = fd$y_tick_show,
+                                    legend_label_font_size = fd$legend_font_size)
+
+
+      fig_bar_top_left = plotly::plot_ly(
+        data = bar_top_left_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE,
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
+      ) |>
+        plotly::layout(
+          xaxis = list(showticklabels = FALSE,
+                       fixedrange = TRUE),
+          yaxis = list(
+            fixedrange = TRUE,
+            title = list(
+              text = fd$y_label,
+              standoff = 3,
+              font = list(
+                size = fd$y_label_font_size
+              )
+            ),
+            showticklabels = fd$y_tick_show,
+            tickfont = list(size = fd$y_tick_font_size)
+          )
+        )
+
+      # plotly::layout(annotations =
+      #                  list(x = 1,
+      #                       y = -0.175,
+      #                       text = "NOTE: error bars are standard deviation",
+      #                       showarrow = FALSE,
+      #                       xref = "paper",
+      #                       yref = "paper",
+      #                       xanchor = "right",
+      #                       yanchor = "auto",
+      #                       xshift = 0,
+      #                       yshift = 0,
+      #                       font = list(size = 10)),
+      #                title = list(text = fd$title,
+      #                             x = 0,
+      #                             xanchor = "left",
+      #                             font = list(size = fd$title_font_size)),
+      #                legend = list(orientation = 'h',
+      #                              xanchor = "center",
+      #                              x = 0.5,
+      #                              title = list(text = fd$legend_label),
+      #                              font = list(
+      #                                size = fd$legend_font_size
+      #                              )),
+      #                showlegend = fd$legend_show,
+      #                xaxis = list(
+      #                  title = list(
+      #                    text = fd$x_label,
+      #                    font = list(size = fd$x_label_font_size)
+      #                  ),
+      #                  showticklabels = fd$x_tick_show,
+      #                  tickfont = list(size = fd$x_tick_font_size)
+      #                ),
+      #                yaxis = list(
+      #                  title = list(
+      #                    text = fd$y_label,
+      #                    font = list(size = fd$y_label_font_size)
+      #                  ),
+      #                  showticklabels = fd$y_tick_show,
+      #                  tickfont = list(size = fd$y_tick_font_size)
+      #                )
+      # )
+
+      fig_bar_left = plotly::plot_ly(
+        data = bar_left_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h",
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
+      ) |>
+        plotly::layout(
+          xaxis = list(
+            autorange = "reversed",
+            fixedrange = TRUE,
+            title = list(
+              text = fd$y_label,
+              standoff = 3,
+              font = list(
+                size = fd$y_label_font_size
+              )
+            ),
+            showticklabels = fd$y_tick_show,
+            tickfont = list(size = fd$y_tick_font_size)
+          ),
+          yaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE,
+            title = "")
+        )
+
+      # right side
+      fig_hm_right = fa_comp_heatmap(data = hm_right_data,
+                                     vline = avg_carbon_right,
+                                     hline = avg_unsat_right,
+                                     composition = composition,
+                                     color_limits = c(min_value, max_value),
+                                     color_palette = color_palette,
+                                     x_label_font_size = fd$x_label_font_size,
+                                     x_tick_font_size = fd$x_tick_font_size,
+                                     x_tick_show = fd$x_tick_show,
+                                     y_label_font_size = fd$y_label_font_size,
+                                     y_tick_font_size = fd$y_tick_font_size,
+                                     y_tick_show = fd$y_tick_show,
+                                     legend_label_font_size = fd$legend_font_size,
+                                     y_pos_right = TRUE,
+                                     showlegend = fd$legend_show)
+
+      fig_bar_top_right = plotly::plot_ly(
+        data = bar_top_right_data,
+        x = ~x,
+        y = ~y,
+        type = "bar",
+        showlegend = FALSE,
+        color = I("gray"),
+        hovertemplate = paste("Number of carbons: %{x}<br>",
+                              "Proportion: %{y:.3g}<br>",
+                              "<extra></extra>")
+      )|>
+        plotly::layout(
+          xaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE),
+          yaxis = list(
+            fixedrange = TRUE,
+            side = "right",
+            title = list(
+              text = fd$y_label,
+              standoff = 3,
+              font = list(
+                size = fd$y_label_font_size
+              )
+            ),
+            showticklabels = fd$y_tick_show,
+            tickfont = list(size = fd$y_tick_font_size)
+          )
+        )
+
+      fig_bar_right = plotly::plot_ly(
+        data = bar_right_data,
+        x = ~y,
+        y = ~x,
+        type = "bar",
+        showlegend = FALSE,
+        orientation = "h",
+        color = I("gray"),
+        hovertemplate = paste("Number of double bonds: %{y}<br>",
+                              "Proportion: %{x:.3g}<br>",
+                              "<extra></extra>")
+      ) |>
+        plotly::layout(
+          yaxis = list(
+            showticklabels = FALSE,
+            fixedrange = TRUE,
+            title = ""),
+          xaxis = list(
+            fixedrange = TRUE,
+            title = list(
+              text = fd$y_label,
+              standoff = 3,
+              font = list(
+                size = fd$y_label_font_size
+              )
+            ),
+            showticklabels = fd$y_tick_show,
+            tickfont = list(size = fd$y_tick_font_size)
+          )
+        )
+
+      # blank plot
+      blank = plotly::plot_ly(type = "scatter", mode = "markers")
+      blank = plotly::layout(blank,
+                              xaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE),
+                              yaxis = list(zeroline = FALSE,
+                                           showticklabels = FALSE,
+                                           showgrid = FALSE,
+                                           fixedrange = TRUE))
+
+      # set annotation for combined plots
+      annotations = list(
+        list(
+          x = 0.3,
+          y = 0.975,
+          text = paste0("<b>", group_1, "</b>"),
+          font = list(size = 12),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        ),
+        list(
+          x = 0.7,
+          y = 0.975,
+          text = paste0("<b>", group_2, "</b>"),
+          font = list(size = 12),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE
+        )
+      )
+
+      # combine plots
+      fig_top = plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),
+                                 nrows = 1,
+                                 widths = c(0.1, 0.4, 0.4, 0.1),
+                                 titleY = TRUE)
+
+      fig_bottom = plotly::subplot(list(fig_bar_left, fig_hm_left, fig_hm_right, fig_bar_right),
+                                    nrows = 1,
+                                    widths = c(0.1, 0.4, 0.4, 0.1),
+                                    titleX = TRUE,
+                                    titleY = TRUE)
+
+      fig = plotly::subplot(list(fig_top, fig_bottom),
+                             nrows = 2,
+                             heights = c(0.2, 0.75),
+                             titleX = TRUE,
+                             titleY = TRUE) |>
+        plotly::layout(title = list(
+          text = fd$title,
+          font = list(
+            size = fd$title_font_size
+          )
+        ),
+        annotations = annotations) |>
+        plotly::config(modeBarButtonsToRemove = c("zoomIn2d", "zoomOut2d", "select2d", "lasso2d"))
+
+      self$plots$fa_comp_plot = fig
     },
 
     ## Double bond plot

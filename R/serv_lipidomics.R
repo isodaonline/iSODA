@@ -2039,7 +2039,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                                              status = "default",
                                              choices = lipidomics_plot_list(),
                                              checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
-                                             size = "normal",
+                                             size = "sm",
                                              justified = TRUE
           )
         ),
@@ -2091,6 +2091,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   feature_correlation_events(r6, dimensions_obj, color_palette, input, output, session)
   pca_events(r6, dimensions_obj, color_palette, input, output, session)
   fa_analysis_plot_events(r6, dimensions_obj, color_palette, input, output, session)
+  fa_comp_plot_events(r6, dimensions_obj, color_palette, input, output, session)
   double_bonds_plot_events(r6, dimensions_obj, color_palette, input, output, session)
 
   session$userData[[id]]$showPlots = shiny::observeEvent(input$showPlots,{

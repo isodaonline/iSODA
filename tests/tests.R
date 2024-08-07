@@ -16,7 +16,7 @@ type_column = 'SampleType'
 group_column = 'GroupName'
 batch_column = 'Batch'
 blank_pattern = "blank"
-qc_pattern = "qc"
+qc_pattern = "quality"
 pool_pattern = "pool"
 excluded_samples = NULL
 id_col_data = 'ID'
@@ -52,28 +52,25 @@ self = example_omics(name = name,
                      operation_order = operation_order,
                      norm_col = norm_col)
 
-self$plot_fa_analysis()
+self$plot_fa_comp()
 
-data_table = self$params$fa_analysis_plot$data_table
-feature_table = self$tables$feature_table
+data_table = self$params$fa_comp_plot$data_table
 sample_meta = self$tables$raw_meta
-group_col = self$params$fa_analysis_plot$group_col
-selected_view = self$params$fa_analysis_plot$selected_view
-selected_lipidclass = self$params$fa_analysis_plot$selected_lipidclass
-selected_fa = self$params$fa_analysis_plot$selected_fa
-fa_norm = self$params$fa_analysis_plot$fa_norm
-color_palette = self$params$fa_analysis_plot$color_palette
+feature_table = self$tables$feature_table
+composition = self$params$fa_comp_plot$composition
+group_col = "Gender"
+group_1 = "male"
+group_2 = "female"
+selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass
+color_palette = self$params$fa_comp_plot$color_palette
+title_font_size = self$params$fa_comp_plot$title_font_size
+y_label_font_size = self$params$fa_comp_plot$y_label_font_size
+y_tick_font_size = self$params$fa_comp_plot$y_tick_font_size
+x_label_font_size = self$params$fa_comp_plot$x_label_font_size
+x_tick_font_size = self$params$fa_comp_plot$x_tick_font_size
+legend_font_size = self$params$fa_comp_plot$legend_font_size
 width = NULL
 height = NULL
-
-
-title_font_size = self$params$fa_analysis_plot$title_font_size
-y_label_font_size = self$params$fa_analysis_plot$y_label_font_size
-y_tick_font_size = self$params$fa_analysis_plot$y_tick_font_size
-x_label_font_size = self$params$fa_analysis_plot$x_label_font_size
-x_tick_font_size = self$params$fa_analysis_plot$x_tick_font_size
-legend_font_size = self$params$fa_analysis_plot$legend_font_size
-
 
 #---------------------------------------------------------------- ALL TESTS ----
 # CELLMINER DATA
