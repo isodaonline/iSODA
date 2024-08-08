@@ -7337,7 +7337,7 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
       out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
       if (length(unique_groups) > 1) {
         out_colors = ggplot2::scale_color_gradientn(colours = color_palette, limits = range(unique_groups))
-        out_colors = out_colors$rescale(unique_groups)
+        out_colors = out_colors$rescale(as.numeric(unique_groups))
         out_colors = color_palette[findInterval(out_colors, seq(min(out_colors), max(out_colors), length.out = length(color_palette)))]
       }
       out_colors = setNames(out_colors, as.character(unique_groups))

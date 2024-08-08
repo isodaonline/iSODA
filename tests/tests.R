@@ -8,15 +8,15 @@ base::source('./R/class_snf_exp.R')
 
 name = 'lips_1'
 type = "Lipidomics"
-meta_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/240805_Ratna/260724 MASLD_ANCHOR_51.csv'
-data_file = 'C:/Users/dolivier/Desktop/local_work/230704_soda/240325_iSODA/test_data/240805_Ratna/260724 Lipidyzer_ANCHOR_51.csv'
+meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/240605_Ratna/Metadata_50_ANCHOR.csv'
+data_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/240605_Ratna/Lipidyzer_50_ANCHOR.csv'
 param_file = './R/params/params_gene_based_omics.R'
 id_col_meta = 'ID'
 type_column = 'SampleType'
 group_column = 'GroupName'
 batch_column = 'Batch'
 blank_pattern = "blank"
-qc_pattern = "quality"
+qc_pattern = "qc"
 pool_pattern = "pool"
 excluded_samples = NULL
 id_col_data = 'ID'
@@ -52,6 +52,17 @@ self = example_omics(name = name,
                      operation_order = operation_order,
                      norm_col = norm_col)
 
+data_table = self$params$class_comparison$dataset
+meta_table = self$tables$raw_meta
+group_col = "F_groups"
+color_palette = self$params$class_comparison$color_palette
+title_font_size = self$params$class_comparison$title_font_size
+y_label_font_size = self$params$class_comparison$y_label_font_size
+y_tick_font_size = self$params$class_comparison$y_tick_font_size
+x_tick_font_size = self$params$class_comparison$x_tick_font_size
+legend_font_size = self$params$class_comparison$legend_font_size
+width = NULL
+height = NULL
 
 self$plot_fa_comp()
 

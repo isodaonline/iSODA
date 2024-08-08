@@ -2705,7 +2705,7 @@ Omics_exp = R6::R6Class(
 
       # Colors
       colors = get_color_palette(groups = groups,
-                                        color_palette = color_palette)
+                                 color_palette = color_palette)
 
       # Plot list will be the list of subplots
       plot_list = c()
