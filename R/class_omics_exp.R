@@ -1721,6 +1721,7 @@ Omics_exp = R6::R6Class(
 
       indexed_meta = get_indexed_table(id_col = id_col,
                                        input_table = imp_meta)
+      indexed_meta[is.na(indexed_meta)] = "NA"
 
       # Store
       self$indices$id_col_meta = id_col

@@ -52,37 +52,38 @@ self = example_omics(name = name,
                      operation_order = operation_order,
                      norm_col = norm_col)
 
-data_table = self$params$class_comparison$dataset
+self$plot_heatmap(apply_da =F)
+self$plots$heatmap
+
+dataset = self$params$heatmap$dataset
+distance_method = self$params$heatmap$distance_method
+clustering_method = self$params$heatmap$clustering_method
+impute_min = self$params$heatmap$impute_min
+center = self$params$heatmap$center
 meta_table = self$tables$raw_meta
-group_col = "F_groups"
-color_palette = self$params$class_comparison$color_palette
-title_font_size = self$params$class_comparison$title_font_size
-y_label_font_size = self$params$class_comparison$y_label_font_size
-y_tick_font_size = self$params$class_comparison$y_tick_font_size
-x_tick_font_size = self$params$class_comparison$x_tick_font_size
-legend_font_size = self$params$class_comparison$legend_font_size
+meta_table_features = self$tables$feature_table
+apply_clustering = self$params$heatmap$apply_clustering
+k_clusters_samples = self$params$heatmap$k_clusters_samples
+k_clusters_features = self$params$heatmap$k_clusters_features
+row_annotations = self$params$heatmap$map_sample_data
+col_annotations = self$params$heatmap$map_feature_data
+map_feature_terms = self$params$heatmap$map_feature_terms
+apply_da = F
+group_column_da = self$params$heatmap$group_column_da
+alpha_da = self$params$heatmap$alpha_da
+seed_da = self$params$heatmap$seed_da
+color_palette = self$params$heatmap$color_palette
+reverse_palette = self$params$heatmap$reverse_palette
+title_font_size = self$params$heatmap$title_font_size
+y_label_font_size = self$params$heatmap$y_label_font_size
+x_label_font_size = self$params$heatmap$x_label_font_size
+x_tick_font_size = self$params$heatmap$x_tick_font_size
+y_tick_font_size = self$params$heatmap$y_tick_font_size
 width = NULL
 height = NULL
 
-self$plot_fa_comp()
 
-data_table = self$params$fa_comp_plot$data_table
-sample_meta = self$tables$raw_meta
-feature_table = self$tables$feature_table
-composition = self$params$fa_comp_plot$composition
-group_col = "Gender"
-group_1 = "male"
-group_2 = "female"
-selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass
-color_palette = self$params$fa_comp_plot$color_palette
-title_font_size = self$params$fa_comp_plot$title_font_size
-y_label_font_size = self$params$fa_comp_plot$y_label_font_size
-y_tick_font_size = self$params$fa_comp_plot$y_tick_font_size
-x_label_font_size = self$params$fa_comp_plot$x_label_font_size
-x_tick_font_size = self$params$fa_comp_plot$x_tick_font_size
-legend_font_size = self$params$fa_comp_plot$legend_font_size
-width = NULL
-height = NULL
+
 
 #---------------------------------------------------------------- ALL TESTS ----
 # CELLMINER DATA
@@ -1524,32 +1525,97 @@ height = NULL
 
 #------------------------------------------------------- SNF TEST CELLMINER ----
 
-meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/sample_annotations_non_epithelial.tsv'
-# meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
+meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
+param_file = './R/params/params_gene_based_omics.R'
+id_col_meta = 'ID'
+type_column = 'Sample_type'
+group_column = 'Cancer type'
+batch_column = 'Batch'
+blank_pattern = "blank"
+qc_pattern = "qc"
+pool_pattern = "pool"
+excluded_samples = NULL
+id_col_data = 'ID'
+blank_multiplier = 2
+sample_threshold = 0.8
+group_threshold = 0.8
+excluded_features = NULL
+imputation_method = "None"
+batch_effect_correction = "None"
+operation_order = c("Imputation", "Batch correction", "Filtering")
+norm_col = "None"
 
-prot_1 = example_proteomics(name = 'prot_1',
-                            id = NA,
-                            slot = NA,
-                            data = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/prot_data.csv',
-                            meta = meta_file,
-                            group_column = 'Cancer type',
-                            param_file = './R/params/params_gene_based_omics.R')
+prot_1 = example_omics(name = "prot_1",
+                     type = "Proteomics",
+                     meta_file = meta_file,
+                     data_file = "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/prot_data.csv",
+                     param_file = param_file,
+                     id_col_meta = id_col_meta,
+                     type_column = type_column,
+                     group_column = group_column,
+                     batch_column = batch_column,
+                     blank_pattern = blank_pattern,
+                     qc_pattern = qc_pattern,
+                     pool_pattern = pool_pattern,
+                     excluded_samples = excluded_samples,
+                     id_col_data = id_col_data,
+                     blank_multiplier = blank_multiplier,
+                     sample_threshold = sample_threshold,
+                     group_threshold = group_threshold,
+                     excluded_features = excluded_features,
+                     imputation_method = imputation_method,
+                     batch_effect_correction = batch_effect_correction,
+                     operation_order = operation_order,
+                     norm_col = norm_col)
 
-trns_1 = example_transcriptomics(name = 'trns_1',
-                                 id = NA,
-                                 slot = NA,
-                                 data = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/rna_data.csv',
-                                 meta = meta_file,
-                                 group_column = 'Cancer type',
-                                 param_file = './R/params/params_gene_based_omics.R')
+trns_1 = example_omics(name = "trns_1",
+                       type = "Transcriptomics",
+                       meta_file = meta_file,
+                       data_file = "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/rna_data.csv",
+                       param_file = param_file,
+                       id_col_meta = id_col_meta,
+                       type_column = type_column,
+                       group_column = group_column,
+                       batch_column = batch_column,
+                       blank_pattern = blank_pattern,
+                       qc_pattern = qc_pattern,
+                       pool_pattern = pool_pattern,
+                       excluded_samples = excluded_samples,
+                       id_col_data = id_col_data,
+                       blank_multiplier = blank_multiplier,
+                       sample_threshold = sample_threshold,
+                       group_threshold = group_threshold,
+                       excluded_features = excluded_features,
+                       imputation_method = imputation_method,
+                       batch_effect_correction = batch_effect_correction,
+                       operation_order = operation_order,
+                       norm_col = norm_col)
 
-geno_1 = example_transcriptomics(name = 'geno_1',
-                                 id = NA,
-                                 slot = NA,
-                                 data = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/dna_data.csv',
-                                 meta = meta_file,
-                                 group_column = 'Cancer type',
-                                 param_file = './R/params/params_gene_based_omics.R')
+geno_1 = example_omics(name = "geno_1",
+                       type = "Genomics",
+                       meta_file = meta_file,
+                       data_file = "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/test_data/230927_Cellminer_data/cellminer_data/dna_data.csv",
+                       param_file = param_file,
+                       id_col_meta = id_col_meta,
+                       type_column = type_column,
+                       group_column = group_column,
+                       batch_column = batch_column,
+                       blank_pattern = blank_pattern,
+                       qc_pattern = qc_pattern,
+                       pool_pattern = pool_pattern,
+                       excluded_samples = excluded_samples,
+                       id_col_data = id_col_data,
+                       blank_multiplier = blank_multiplier,
+                       sample_threshold = sample_threshold,
+                       group_threshold = group_threshold,
+                       excluded_features = excluded_features,
+                       imputation_method = imputation_method,
+                       batch_effect_correction = batch_effect_correction,
+                       operation_order = operation_order,
+                       norm_col = norm_col)
+
+
+
 
 self = Snf_class$new(
   name = "snf_1"
@@ -1576,13 +1642,7 @@ self$add_data(name = geno_1$name,
 print(names(self$tables$omics_tables))
 
 
-self$plot_sample_clustering_1(data_table = "prot_1",
-                              title_font_size = 10,
-                              x_tick_font_size = 10,
-                              y_tick_font_size = 10)
-
-self$tables$sample_annotation_tables$prot_1
-self$tables$sample_metadata
+self$plot_sample_clustering_1(data_table = "prot_1")
 
 
 data_table = "prot_1"
@@ -1597,9 +1657,9 @@ vertical_annotations = self$params$sample_clustering_1$vertical_annotations
 horizontal_annotations = self$params$sample_clustering_1$horizontal_annotations
 color_palette = self$params$sample_clustering_1$color_palette
 reverse_palette = self$params$sample_clustering_1$reverse_palette
-title_font_size = 10
-x_tick_font_size = 10
-y_tick_font_size = 10
+title_font_size = self$params$sample_clustering_1$title_font_size
+x_tick_font_size = self$params$sample_clustering_1$x_tick_font_size
+y_tick_font_size = self$params$sample_clustering_1$y_tick_font_size
 width = NULL
 height = NULL
 
