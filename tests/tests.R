@@ -3,6 +3,60 @@ base::source('./R/class_omics_exp.R')
 base::source('./R/class_mofa_exp.R')
 base::source('./R/class_snf_exp.R')
 
+#--------------------------------------------- DEBUG TRANSCRIPTOMICS 241004 ----
+
+name = 'trns_1'
+type = "Transcriptomics"
+meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241004_Yassene/sample_meta.tsv'
+data_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241004_Yassene/measurment_data.tsv'
+param_file = './R/params/params_gene_based_omics.R'
+id_col_meta = 'ID'
+type_column = 'Genotype'
+group_column = 'Genotype'
+batch_column = 'Batch'
+blank_pattern = "blank"
+qc_pattern = "quality"
+pool_pattern = "pool"
+excluded_samples = NULL
+drop_blanks = F
+drop_qcs = F
+drop_pools = F
+id_col_data = 'ID'
+blank_multiplier = 2
+sample_threshold = 0.8
+group_threshold = 0.8
+excluded_features = NULL
+imputation_method = "None"
+batch_effect_correction = "None"
+operation_order = c("Imputation", "Batch correction", "Filtering")
+norm_col = "None"
+
+self = example_omics(name = name,
+                     type = type,
+                     meta_file = meta_file,
+                     data_file = data_file,
+                     param_file = param_file,
+                     id_col_meta = id_col_meta,
+                     type_column = type_column,
+                     group_column = group_column,
+                     batch_column = batch_column,
+                     blank_pattern = blank_pattern,
+                     qc_pattern = qc_pattern,
+                     pool_pattern = pool_pattern,
+                     excluded_samples = excluded_samples,
+                     drop_blanks = drop_blanks,
+                     drop_qcs = drop_qcs,
+                     drop_pools = drop_pools,
+                     id_col_data = id_col_data,
+                     blank_multiplier = blank_multiplier,
+                     sample_threshold = sample_threshold,
+                     group_threshold = group_threshold,
+                     excluded_features = excluded_features,
+                     imputation_method = imputation_method,
+                     batch_effect_correction = batch_effect_correction,
+                     operation_order = operation_order,
+                     norm_col = norm_col)
+
 
 #-------------------------------------------------- DEBUG LIPIDOMICS 241008 ----
 
@@ -58,35 +112,6 @@ self = example_omics(name = name,
                      operation_order = operation_order,
                      norm_col = norm_col)
 
-self$plot_heatmap(apply_da =F)
-self$plots$heatmap
-
-dataset = self$params$heatmap$dataset
-distance_method = self$params$heatmap$distance_method
-clustering_method = self$params$heatmap$clustering_method
-impute_min = self$params$heatmap$impute_min
-center = self$params$heatmap$center
-meta_table = self$tables$raw_meta
-meta_table_features = self$tables$feature_table
-apply_clustering = self$params$heatmap$apply_clustering
-k_clusters_samples = self$params$heatmap$k_clusters_samples
-k_clusters_features = self$params$heatmap$k_clusters_features
-row_annotations = self$params$heatmap$map_sample_data
-col_annotations = self$params$heatmap$map_feature_data
-map_feature_terms = self$params$heatmap$map_feature_terms
-apply_da = F
-group_column_da = self$params$heatmap$group_column_da
-alpha_da = self$params$heatmap$alpha_da
-seed_da = self$params$heatmap$seed_da
-color_palette = self$params$heatmap$color_palette
-reverse_palette = self$params$heatmap$reverse_palette
-title_font_size = self$params$heatmap$title_font_size
-y_label_font_size = self$params$heatmap$y_label_font_size
-x_label_font_size = self$params$heatmap$x_label_font_size
-x_tick_font_size = self$params$heatmap$x_tick_font_size
-y_tick_font_size = self$params$heatmap$y_tick_font_size
-width = NULL
-height = NULL
 
 
 

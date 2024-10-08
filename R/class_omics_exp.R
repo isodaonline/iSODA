@@ -1816,15 +1816,17 @@ Omics_exp = R6::R6Class(
           }
 
         } else if (func_name == "Filtering") {
-          raw_data = feature_signal_filtering(
-            raw_data = raw_data,
-            blank_table = blank_table,
-            indexed_meta = indexed_meta,
-            batch_column = batch_column,
-            group_column = group_column,
-            blank_multiplier = blank_multiplier,
-            sample_threshold = sample_threshold,
-            group_threshold = group_threshold)
+          if (nrow(blank_table) > 0) {
+            raw_data = feature_signal_filtering(
+              raw_data = raw_data,
+              blank_table = blank_table,
+              indexed_meta = indexed_meta,
+              batch_column = batch_column,
+              group_column = group_column,
+              blank_multiplier = blank_multiplier,
+              sample_threshold = sample_threshold,
+              group_threshold = group_threshold)
+          }
         } else {
           base::stop(paste0('Requested process does not exist: ', func_name))
         }

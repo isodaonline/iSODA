@@ -1048,10 +1048,6 @@ get_group_median_table = function(data_table,
   for (group in unique_groups) {
     idx = rownames(meta_table)[which(meta_table[,group_col] == group)]
 
-    if (is_coercible_to_numeric(idx)){
-      idx = as.numeric(idx)
-    }
-
     group_table = data_table[idx,, drop = FALSE]
 
     if (length(idx) == 1) {
@@ -1060,7 +1056,6 @@ get_group_median_table = function(data_table,
       group_values = apply(group_table,2,median, na.rm = TRUE)
     }
 
-    # group_values[is.na(group_values)] = 0.0
     group_values[group_values == 0] = NA
     out_table[group,] = group_values
   }

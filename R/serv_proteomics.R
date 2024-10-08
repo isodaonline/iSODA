@@ -958,7 +958,7 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
     }
 
     output$data_preview_table = renderDataTable({
-      DT::datatable(utils::head(data_table[,1:100]), options = list(paging = TRUE, pageLength = 25))
+      DT::datatable(utils::head(data_table[,1:min(c(100, ncol(data_table)))]), options = list(paging = TRUE, pageLength = 25))
     })
 
   })
