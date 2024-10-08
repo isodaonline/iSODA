@@ -1,0 +1,12 @@
+START
+08:41:10 - Added  (Lipidomics) 
+08:41:25 - lips_1 - Setting ID column 
+08:42:08 - lips_1 - Dropping selected samples 
+08:42:18 - lips_1 - Setting ID column 
+08:43:12 - lips_1 - Dendrogram: generating plot. 
+08:43:13 - WARNING:lips_1 - Dendrogram Warning: simpleWarning: Can only have one: config 
+08:43:13 - lips_1 - Dendrogram: spawning plot. 
+08:43:13 - lips_1 - Dendrogram Completed 
+08:43:14 - lips_1 - Class distribution: generating plot. 
+08:43:14 - lips_1 - Class distribution: spawning plot. 
+08:43:14 - lips_1 - Class distribution Completed 

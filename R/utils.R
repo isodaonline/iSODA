@@ -264,8 +264,13 @@ feature_signal_filtering = function(raw_data,
                                     sample_threshold,
                                     group_threshold) {
 
-  indexed_meta = indexed_meta[c(rownames(raw_data),
-                                rownames(blank_table)),]
+  # Add blank rows to indexed meta, only if they are not already there
+  blank_table_idx = base::setdiff(rownames(blank_table), rownames(raw_data))
+  if (length(blank_table_idx) > 0) {
+    indexed_meta = indexed_meta[c(rownames(raw_data),
+                                  rownames(blank_table)),]
+  }
+
 
   # Blank filtering
   excluded_features = c()
@@ -2237,6 +2242,9 @@ example_omics = function(name,
                          qc_pattern = "quality",
                          pool_pattern = "pool",
                          excluded_samples = NULL,
+                         drop_blanks = T,
+                         drop_qcs = T,
+                         drop_pools = T,
                          id_col_data,
                          blank_multiplier = 2,
                          sample_threshold = 0.8,
@@ -2272,9 +2280,9 @@ example_omics = function(name,
 
 
   self$exclude_samples(manual_selection = excluded_samples,
-                       select_blanks = T,
-                       select_qcs = T,
-                       select_pools = T,
+                       select_blanks = drop_blanks,
+                       select_qcs = drop_qcs,
+                       select_pools = drop_pools,
                        exclude = T)
 
   self$set_raw_meta()
