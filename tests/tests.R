@@ -975,8 +975,11 @@ self$add_data(name = geno_1$name,
 
 print(names(self$tables$omics_tables))
 
+self$clean_datasets()
+
 
 self$plot_sample_clustering_1(data_table = "prot_1")
+self$plots$sample_clustering_1
 
 
 data_table = "prot_1"
@@ -987,7 +990,7 @@ distance_method = self$params$sample_clustering_1$distance_method
 K_clusters = self$params$sample_clustering_1$K_clusters
 z_max = self$params$sample_clustering_1$z_max
 z_min = self$params$sample_clustering_1$z_min
-vertical_annotations = self$params$sample_clustering_1$vertical_annotations
+vertical_annotations = c("K clusters")
 horizontal_annotations = self$params$sample_clustering_1$horizontal_annotations
 color_palette = self$params$sample_clustering_1$color_palette
 reverse_palette = self$params$sample_clustering_1$reverse_palette
@@ -996,8 +999,6 @@ x_tick_font_size = self$params$sample_clustering_1$x_tick_font_size
 y_tick_font_size = self$params$sample_clustering_1$y_tick_font_size
 width = NULL
 height = NULL
-
-
 
 
 
