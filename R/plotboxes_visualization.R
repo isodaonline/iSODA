@@ -843,14 +843,14 @@ volcano_plot_server = function(r6, output, session) {
 
       shiny::selectizeInput(
         inputId = ns('volcano_plot_feature_metadata'),
-        label = "Feature metadata",
+        label = "Feature annotations",
         choices = c('None', colnames(r6$tables$feature_table)),
         selected = r6$params$volcano_plot$feature_metadata,
         multiple = FALSE
       ),
       shiny::selectizeInput(
         inputId = ns('volcano_plot_annotation_terms'),
-        label = "Feature annotations",
+        label = "Feature pipe-separated values",
         choices = NULL,
         selected = NULL,
         multiple = TRUE

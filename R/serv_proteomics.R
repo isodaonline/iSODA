@@ -786,7 +786,7 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
         shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
         shiny::fluidRow(
           shiny::selectizeInput(inputId = ns("na_imputation"),
-                                choices = c('None', 'minimum', 'mean', 'median', 'max'),
+                                choices = c('None', 'minimum', 'mean', 'median', 'maximum'),
                                 selected = "None",
                                 label = 'Imputation method',
                                 multiple = F,

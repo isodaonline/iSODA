@@ -58,30 +58,30 @@ self = example_omics(name = name,
                      norm_col = norm_col)
 
 
-#-------------------------------------------------- DEBUG LIPIDOMICS 241008 ----
+#--------------------------------------------------------- DEBUG LIPIDOMICS ----
 
 name = 'lips_1'
 type = "Lipidomics"
-meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241008_Cammack/Fat1-2_p1.3_Ct1_149R-2R-WT-Only_SODAmetadatafile_v1.csv'
-data_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241008_Cammack/Fat1-2_p1.3_Ct1_149R-2R-WT-Only_SODAdatafile_v1.csv'
+meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241004_Yassene/lips_meta.tsv'
+data_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241004_Yassene/lips_data.tsv'
 param_file = './R/params/params_lipidomics.R'
-id_col_meta = 'Sample IDs'
-type_column = 'Sample Type'
-group_column = 'Group Type'
-batch_column = 'Batch'
+id_col_meta = 'ID'
+type_column = 'Sample_type'
+group_column = 'Experimental_group'
+batch_column = NULL
 blank_pattern = "blank"
 qc_pattern = "quality"
 pool_pattern = "pool"
 excluded_samples = NULL
 drop_blanks = F
-drop_qcs = F
-drop_pools = F
-id_col_data = 'Sample IDs'
+drop_qcs = T
+drop_pools = T
+id_col_data = 'ID'
 blank_multiplier = 2
 sample_threshold = 0.8
 group_threshold = 0.8
 excluded_features = NULL
-imputation_method = "None"
+imputation_method = "minimum"
 batch_effect_correction = "None"
 operation_order = c("Imputation", "Batch correction", "Filtering")
 norm_col = "None"

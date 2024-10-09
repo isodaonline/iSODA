@@ -1554,6 +1554,10 @@ Omics_exp = R6::R6Class(
         base::stop('Define an ID column before proceeding')
       }
 
+      if (is.null(batch_column)) {
+        batch_column = "isoda_batch"
+      }
+
       if (!(batch_column %in% colnames(indexed_meta))) {
 
         base::warning('Undefined or unsupplied batch column, proceding without batches')
@@ -1830,6 +1834,17 @@ Omics_exp = R6::R6Class(
         } else {
           base::stop(paste0('Requested process does not exist: ', func_name))
         }
+      }
+
+      # Remove any columns with either only 0s or NAs that can have survived
+      empty_cols = colSums(raw_data, na.rm = T)
+      empty_cols = which(empty_cols == 0)
+      if (length(empty_cols) > 0) {
+        empty_cols = names(empty_cols)
+        raw_data = raw_data[,-which(colnames(raw_data) %in% empty_cols)]
+        blank_table = blank_table[,colnames(raw_data)]
+        qc_table = qc_table[,colnames(raw_data)]
+        pool_table = pool_table[,colnames(raw_data)]
       }
 
       # Normalization

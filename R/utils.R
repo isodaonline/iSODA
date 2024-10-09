@@ -309,7 +309,7 @@ feature_signal_filtering = function(raw_data,
 
         # Find features / columns below threshold
         for (col in excluded_features) {
-          above_threshold[col] = above_threshold[col] + sum(raw_data[batch_samples,col] >= threshold[col], na.rm = T)
+          above_threshold[col] = above_threshold[col] + sum(raw_data[batch_samples,col] > threshold[col], na.rm = T)
         }
       }
       above_threshold = above_threshold / length(group_idx) >= group_threshold
@@ -1119,9 +1119,12 @@ z_score_normalisation = function(data_table) {
 
 impute_na = function(data_table, method) {
   imputation_func = method_switch(method)
-  data_table = remove_empty_cols(data_table)
   for (feature in colnames(data_table)){
-    imputed_value = imputation_func(data_table[, feature], na.rm = T)
+    if (length(stats::na.omit(data_table[, feature])) > 0) {
+      imputed_value = imputation_func(data_table[, feature], na.rm = T)
+    } else {
+      imputed_value = 0
+    }
     data_table[is.na(data_table[, feature]), feature] = imputed_value
   }
   return(data_table)
@@ -1220,7 +1223,7 @@ blank_filter = function(data_table, blank_table, blank_multiplier, sample_thresh
   total_samples = nrow(data_table)
   for (col in colnames(data_table)){
     threshold = blank_multiplier * blank_means[col]
-    above_threshold = sum(data_table[, col] >= threshold, na.rm = T)
+    above_threshold = sum(data_table[, col] > threshold, na.rm = T)
     if ((above_threshold/total_samples) < sample_threshold) {
       del_cols = c(del_cols, col)
     }
