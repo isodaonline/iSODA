@@ -6056,9 +6056,9 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
   }
 
   data = data.frame(
-    fold_change = fc_vals,
-    p_values = p_vals,
-    names = names
+    "fold_change" = fc_vals,
+    "p_values" = p_vals,
+    "names" = names
   )
 
   if(nchar(left_label) != nchar(right_label)) {
@@ -6149,7 +6149,6 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     left_violin = plot_volcano_violin(data = left_data,
                                       threshold = -log10(p_val_threshold),
                                       side = 'left',
-                                      label = left_label,
                                       opacity = opacity,
                                       marker_size = marker_size,
                                       x_label_font_size = x_label_font_size,
@@ -6165,7 +6164,6 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
     right_violin = plot_volcano_violin(data = right_data,
                                        threshold = -log10(p_val_threshold),
                                        side = 'right',
-                                       label = right_label,
                                        opacity = opacity,
                                        marker_size = marker_size,
                                        x_label_font_size = x_label_font_size,
@@ -6323,7 +6321,15 @@ volcano_main = function(fc_vals = volcano_table$fold_change,
 
 }
 
-plot_volcano_violin = function(data, threshold, side, opacity = 1, marker_size = 6, x_label_font_size = 20, y_label_font_size = 20, legend_font_size = 0) {
+plot_volcano_violin = function(
+    data,
+    threshold,
+    side,
+    opacity = 1,
+    marker_size = 6,
+    x_label_font_size = 20,
+    y_label_font_size = 20,
+    legend_font_size = 0) {
 
   if (!(side %in% c('left', 'right', 'top'))) {
     stop('side must be in [left, right, top]')

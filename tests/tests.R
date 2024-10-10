@@ -3,24 +3,24 @@ base::source('./R/class_omics_exp.R')
 base::source('./R/class_mofa_exp.R')
 base::source('./R/class_snf_exp.R')
 
-#--------------------------------------------- DEBUG TRANSCRIPTOMICS 241004 ----
+#--------------------------------------------- DEBUG TRANSCRIPTOMICS 241010 ----
 
 name = 'trns_1'
 type = "Transcriptomics"
-meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241004_Yassene/sample_meta.tsv'
-data_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241004_Yassene/measurment_data.tsv'
+meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241010_Yassene/trns_meta.csv'
+data_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241010_Yassene/trns_data.csv'
 param_file = './R/params/params_gene_based_omics.R'
 id_col_meta = 'ID'
-type_column = 'Genotype'
-group_column = 'Genotype'
+type_column = 'genotype'
+group_column = 'genotype'
 batch_column = 'Batch'
 blank_pattern = "blank"
 qc_pattern = "quality"
 pool_pattern = "pool"
 excluded_samples = NULL
-drop_blanks = F
-drop_qcs = F
-drop_pools = F
+drop_blanks = T
+drop_qcs = T
+drop_pools = T
 id_col_data = 'ID'
 blank_multiplier = 2
 sample_threshold = 0.8
@@ -57,6 +57,9 @@ self = example_omics(name = name,
                      operation_order = operation_order,
                      norm_col = norm_col)
 
+self$get_volcano_table()
+self$plot_volcano()
+self$plots$volcano_plot
 
 #--------------------------------------------------------- DEBUG LIPIDOMICS ----
 
