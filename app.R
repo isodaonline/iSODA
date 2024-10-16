@@ -19,6 +19,7 @@ library(ggupset)
 library(networkD3)
 library(igraph)
 library(ellipse)
+library(ggdendro)
 
 # text
 library(stringr)
@@ -59,7 +60,8 @@ library(xfun)
 library(R6)
 
 # New
-library(ggdendro)
+library(data.table)
+library(matrixStats)
 
 # Use basilisk
 # reticulate::use_condaenv(condaenv = 'mofa_1')

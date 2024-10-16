@@ -1,35 +1,66 @@
-base::source('./R/utils.R')
-base::source('./R/class_omics_exp.R')
-base::source('./R/class_mofa_exp.R')
-base::source('./R/class_snf_exp.R')
+base::source('./iSODA/R/utils.R')
+base::source('./iSODA/R/class_omics_exp.R')
+base::source('./iSODA/R/class_mofa_exp.R')
+base::source('./iSODA/R/class_snf_exp.R')
 
 #--------------------------------------------- DEBUG TRANSCRIPTOMICS 241010 ----
 
-name = 'trns_1'
-type = "Transcriptomics"
-meta_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241010_Yassene/trns_meta.csv'
-data_file = '/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/241010_Yassene/trns_data.csv'
-param_file = './R/params/params_gene_based_omics.R'
-id_col_meta = 'ID'
-type_column = 'genotype'
-group_column = 'genotype'
-batch_column = 'Batch'
-blank_pattern = "blank"
-qc_pattern = "quality"
-pool_pattern = "pool"
-excluded_samples = NULL
-drop_blanks = T
-drop_qcs = T
-drop_pools = T
-id_col_data = 'ID'
-blank_multiplier = 2
-sample_threshold = 0.8
-group_threshold = 0.8
-excluded_features = NULL
-imputation_method = "None"
-batch_effect_correction = "None"
-operation_order = c("Imputation", "Batch correction", "Filtering")
-norm_col = "None"
+if (F) {
+  name = 'trns_1'
+  type = "Transcriptomics"
+  meta_file = './test_data/241010_Yassene/trns_meta.csv'
+  data_file = './test_data/241010_Yassene/trns_data.csv'
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  type_column = 'genotype'
+  group_column = 'genotype'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  id_col_data = 'ID'
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+}
+
+if (T) {
+  name = 'trns_1'
+  type = "Transcriptomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/rna_data.csv'
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  id_col_data = 'ID'
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+}
+
 
 self = example_omics(name = name,
                      type = type,

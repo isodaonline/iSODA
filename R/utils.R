@@ -431,16 +431,13 @@ soda_read_table = function(file_path, sep = NA, first_column_as_index = FALSE) {
   } else {
     if (is.na(sep)) {
       sep = find_delim(path = file_path)
-      data_table = read.csv(file_path,
-                            header = T,
-                            sep = sep,
-                            check.names = FALSE)
-    } else {
-      data_table = read.csv(file_path,
-                            header = T,
-                            sep = sep,
-                            check.names = FALSE)
     }
+    data_table = data.table::fread(
+      file_path,
+      header = T,
+      sep = sep)
+    data_table = base::as.data.frame(
+      data_table, check.names = F)
 
   }
 
@@ -460,6 +457,7 @@ soda_read_table = function(file_path, sep = NA, first_column_as_index = FALSE) {
   original_count = ncol(data_table)
   if (original_count > 1) {
     data_table = data_table[,!base::duplicated(colnames(data_table))]
+    # data_table = data_table[,!base::duplicated(colnames(data_table)), with = FALSE]
     final_count = ncol(data_table)
     if(original_count != final_count) {
       warning(paste0('Removed ', original_count - final_count, ' duplicated columns'))
@@ -1038,26 +1036,34 @@ get_fa_tails = function(feature_table) {
 get_group_median_table = function(data_table,
                                   meta_table,
                                   group_col) {
-  unique_groups = unique(meta_table[,group_col])
-  out_table = as.data.frame(matrix(data = NA,
-                                   nrow = length(unique_groups),
-                                   ncol = ncol(data_table)))
+  # Get the group information from the metadata
+  groups = meta_table[, group_col]
+  unique_groups = unique(groups)
+  
+  # Initialize an output matrix
+  out_table = matrix(NA, nrow = length(unique_groups), ncol = ncol(data_table))
   colnames(out_table) = colnames(data_table)
   rownames(out_table) = unique_groups
+  
+  # Precompute logical indices for each group
+  group_indices = lapply(unique_groups, function(g) groups == g)
 
-  for (group in unique_groups) {
-    idx = rownames(meta_table)[which(meta_table[,group_col] == group)]
-
-    group_table = data_table[idx,, drop = FALSE]
-
-    if (length(idx) == 1) {
-      group_values = group_table
+  for (i in seq_along(unique_groups)) {
+    group_idx = group_indices[[i]]
+    group_table = data_table[group_idx, , drop = FALSE]
+    
+    # Use colMedians from the matrixStats package (optimized for large matrices)
+    if (nrow(group_table) == 1) {
+      group_medians = group_table
     } else {
-      group_values = apply(group_table,2,median, na.rm = TRUE)
+      group_medians = matrixStats::colMedians(group_table, na.rm = TRUE)
     }
-
-    group_values[group_values == 0] = NA
-    out_table[group,] = group_values
+    
+    # Replace 0 with NA
+    group_medians[group_medians == 0] = NA
+    
+    # Assign the result to the appropriate row in the output matrix
+    out_table[i, ] = group_medians
   }
   return(out_table)
 }
@@ -1109,12 +1115,12 @@ normalise_lipid_class = function(lips_table) {
 
 z_score_normalisation = function(data_table) {
 
-  data_table = apply(data_table, 2, function(col) {
-    centered_row = col - base::mean(col, na.rm = T)
-    scaled_row = centered_row / sd(centered_row, na.rm = T)
-    return(scaled_row)
-  })
-  return(data_table)
+  col_means = colMeans(data_table, na.rm = TRUE)
+  col_sds = apply(data_table, 2, sd, na.rm = TRUE)
+  normalized_data = base::sweep(data_table, 2, col_means, "-")
+  normalized_data = base::sweep(normalized_data, 2, col_sds, "/")
+  
+  return(normalized_data)
 }
 
 impute_na = function(data_table, method) {

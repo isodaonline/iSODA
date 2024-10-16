@@ -679,7 +679,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             shiny::selectInput(
               inputId = ns('select_data_table'),
               label = NULL,
-              choices = c('Imported data table'),
+              choices = c('Imported data table', 'Raw data table'),
               selected = 'Imported data table',
               width = '100%'
             )
@@ -883,15 +883,9 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   })
 
   #----------------------------------------------------- Data upload server ----
-  # Upload metadata
+  # Upload data
   session$userData[[id]]$upload_data = shiny::observeEvent(input$file_data, {
-    file_path = input$file_data$datapath
-    data_table = soda_read_table(file_path = file_path)
-    r6$tables$imp_data = data_table
-    # Preview table
-    output$data_preview_table = renderDataTable({
-      DT::datatable(utils::head(data_table[,1:100]), options = list(paging = TRUE))
-    })
+    r6$import_data(path = input$file_data$datapath)
 
     if (input$table_box_data$collapsed) {
       bs4Dash::updateBox(id = 'table_box_data', action = 'toggle')
@@ -919,7 +913,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Preview all / subset switch
   session$userData[[id]]$select_data_table = shiny::observeEvent(input$select_data_table, {
-    shiny::req(r6$tables$imp_data)
+    shiny::req(r6$tables$raw_data)
 
     data_table = table_switch(table_name = input$select_data_table, r6 = r6)
 
