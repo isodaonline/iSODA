@@ -743,11 +743,14 @@ Omics_exp = R6::R6Class(
       dbplot_table = NULL,
 
       # GSEA & over representation
-      gsea_prot_list = NULL,
-      ora_prot_list = NULL,
-      gsea_object = NULL,
-      go_enrich = NULL,
-
+      ea_feature_table = NULL,
+      ea_object = NULL,
+      ea_table = NULL,
+      
+      ora_feature_table = NULL,
+      ora_object = NULL,
+      ora_table = NULL,
+      
       # Functional analysis tables
       ea_dot_plot = NULL,
       ora_dot_plot = NULL,
@@ -777,9 +780,7 @@ Omics_exp = R6::R6Class(
              'Class table total normalized' = self$tables$class_table_total_norm,
              'Class table z-scored total normalized' = self$tables$class_table_z_scored_total_norm,
              'Species summary table' = self$tables$summary_species_table,
-             'Class summary table' = self$tables$summary_class_table,
-             'GSEA prot list' = self$tables$gsea_prot_list,
-             'ORA prot list' = self$tables$ora_prot_list
+             'Class summary table' = self$tables$summary_class_table
       )
     },
 
@@ -2524,6 +2525,7 @@ Omics_exp = R6::R6Class(
                                 seed = seed)
 
       self$tables$ea_object = ea_object
+      self$tables$ea_table = ea_object@result
     },
 
     # Get ORA object
@@ -2560,6 +2562,7 @@ Omics_exp = R6::R6Class(
                                   seed = seed)
 
       self$tables$ora_object = ora_object
+      self$tables$ora_table = ora_object@result
     },
 
     #----------------------------------------------------- Plotting methods ----

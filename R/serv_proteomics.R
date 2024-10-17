@@ -1224,7 +1224,7 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
                 inputId = ns('feat_name_add'),
                 label = NULL,
                 width = '100%',
-                placeholder = 'ex: feat_1'
+                placeholder = 'Name, eg: feat_1'
               )
             ),
             shiny::column(
@@ -1744,6 +1744,29 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
                 maximizable = F,
                 headerBorder = T
               ),
+              
+              shiny::fluidRow(
+                shiny::br()
+              ),
+              
+              shiny::fluidRow(
+                shiny::column(
+                  width = 6,
+                  shiny::downloadButton(
+                    outputId = ns("download_ea_feature_table"),
+                    label = "Feature table",
+                    style = "width:98%;"
+                  )
+                ),
+                shiny::column(
+                  width = 6,
+                  shiny::downloadButton(
+                    outputId = ns("download_ea_table"),
+                    label = "EA table",
+                    style = "width:100%;"
+                  )
+                )
+              )
 
             ),
             shiny::column(
@@ -1862,7 +1885,28 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
                 headerBorder = T
               ),
 
-
+              shiny::fluidRow(
+                shiny::br()
+              ),
+              
+              shiny::fluidRow(
+                shiny::column(
+                  width = 6,
+                  shiny::downloadButton(
+                    outputId = ns("download_ora_feature_table"),
+                    label = "Feature table",
+                    style = "width:98%;"
+                  )
+                ),
+                shiny::column(
+                  width = 6,
+                  shiny::downloadButton(
+                    outputId = ns("download_ora_table"),
+                    label = "ORA table",
+                    style = "width:100%;"
+                  )
+                )
+              )
 
             )
           )
@@ -2162,7 +2206,7 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
   })
 
   #--------------------------------------------- Enrichment analysis server ----
-
+  
   session$userData[[id]]$select_feature_type = shiny::observeEvent(input$select_feature_type, {
     if (r6$preloaded_data) {return()}
     print_tm(m, paste0('FA: feature ID type set to ', input$select_feature_type))
@@ -2246,6 +2290,41 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
     shinyjs::enable("run_gsea")
   })
 
+  # Download associated tables
+  dl_ea_feature_table = shiny::reactiveValues(
+    name = NULL,
+    table = NULL
+  )
+  
+  dl_ea_table = shiny::reactiveValues(
+    name = NULL,
+    table = NULL
+  )
+  
+  session$userData[[id]]$run_gsea_dl = shiny::observeEvent(input$run_gsea , {
+    shiny::req(r6$tables$ea_table)
+    dl_ea_feature_table$name = timestamped_name("ea_feature_table.tsv")
+    dl_ea_feature_table$table = r6$tables$ea_feature_table
+    
+    dl_ea_table$name = timestamped_name("ea_table.tsv")
+    dl_ea_table$table = r6$tables$ea_table
+  })
+  
+  output$download_ea_feature_table = shiny::downloadHandler(
+    filename = shiny::reactive(dl_ea_feature_table$name),
+    content = function(file_name) {
+      write.table(dl_ea_feature_table$table, file_name, na = "", sep = '\t')
+    }
+  )
+  
+  output$download_ea_table = shiny::downloadHandler(
+    filename = shiny::reactive(dl_ea_table$name),
+    content = function(file_name) {
+      write.table(dl_ea_table$table, file_name, na = "", sep = '\t')
+    }
+  )
+  
+  
   #------------------------------------ Over representation analysis server ----
 
   session$userData[[id]]$run_ora = shiny::observeEvent(input$run_ora, {
@@ -2333,6 +2412,41 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
     shinyjs::enable("run_ora")
 
   })
+  
+  # Download associated tables
+  dl_ora_feature_table = shiny::reactiveValues(
+    name = NULL,
+    table = NULL
+  )
+  
+  dl_ora_table = shiny::reactiveValues(
+    name = NULL,
+    table = NULL
+  )
+  
+  session$userData[[id]]$run_ora_dl = shiny::observeEvent(input$run_ora , {
+    shiny::req(r6$tables$ora_table)
+    dl_ora_feature_table$name = timestamped_name("ora_feature_table.tsv")
+    dl_ora_feature_table$table = r6$tables$ora_feature_table
+    
+    dl_ora_table$name = timestamped_name("ora_table.tsv")
+    dl_ora_table$table = r6$tables$ora_table
+  })
+  
+  output$download_ora_feature_table = shiny::downloadHandler(
+    filename = shiny::reactive(dl_ora_feature_table$name),
+    content = function(file_name) {
+      write.table(dl_ora_feature_table$table, file_name, na = "", sep = '\t')
+    }
+  )
+  
+  output$download_ora_table = shiny::downloadHandler(
+    filename = shiny::reactive(dl_ora_table$name),
+    content = function(file_name) {
+      write.table(dl_ora_table$table, file_name, na = "", sep = '\t')
+    }
+  )
+  
 
 
   # Initialise dimensions object
