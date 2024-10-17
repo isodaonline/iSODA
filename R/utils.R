@@ -220,7 +220,7 @@ get_indexed_table = function(id_col,
   if (base::any(base::is.na((input_table[[id_col]])))) {
     stop(paste("Requested ID column '", id_col, "' contains missing values"))
   }
-
+  
   # Check if id_col has unique values
   if (base::anyDuplicated(input_table[[id_col]]) > 0) {
     stop(paste("Requested ID column '", id_col, "' contains duplicate values"))
@@ -412,7 +412,7 @@ find_delim = function(path) {
   return(names(which.max(sep)))
 }
 
-soda_read_table = function(file_path, sep = NA, first_column_as_index = FALSE) {
+soda_read_table = function(file_path, sep = NA, header = T, first_column_as_index = FALSE) {
 
   if (is.na(sep)) {
     if (stringr::str_sub(file_path, -4, -1) == ".tsv") {
@@ -427,14 +427,14 @@ soda_read_table = function(file_path, sep = NA, first_column_as_index = FALSE) {
   }
 
   if (stringr::str_sub(file_path, -5, -1) == ".xlsx") {
-    data_table = as.data.frame(readxl::read_xlsx(file_path))
+    data_table = as.data.frame(readxl::read_xlsx(file_path, col_names = header))
   } else {
     if (is.na(sep)) {
       sep = find_delim(path = file_path)
     }
     data_table = data.table::fread(
       file_path,
-      header = T,
+      header = header,
       sep = sep)
     data_table = base::as.data.frame(
       data_table, check.names = F)
@@ -1114,7 +1114,7 @@ normalise_lipid_class = function(lips_table) {
 }
 
 z_score_normalisation = function(data_table) {
-
+  
   col_means = colMeans(data_table, na.rm = TRUE)
   col_sds = apply(data_table, 2, sd, na.rm = TRUE)
   normalized_data = base::sweep(data_table, 2, col_means, "-")
@@ -2237,6 +2237,8 @@ example_omics = function(name,
                          type,
                          meta_file,
                          data_file,
+                         meta_file_format = "Wide",
+                         data_file_format = "Wide",
                          param_file = NULL,
                          id_col_meta,
                          type_column,
@@ -2269,7 +2271,7 @@ example_omics = function(name,
 
 
   ####---- Meta import
-  self$import_meta(meta_file)
+  self$import_meta(meta_file, meta_file_format)
   self$set_indexed_meta(id_col = id_col_meta)
 
   self$set_type_column(type_column = type_column)
@@ -2292,7 +2294,7 @@ example_omics = function(name,
   self$set_raw_meta()
 
   ####---- Data import
-  self$import_data(data_file)
+  self$import_data(data_file, data_file_format)
   self$set_indexed_data(id_col = id_col_data)
   self$feature_manual_exclusion(selection = excluded_features,
                                 drop = T)

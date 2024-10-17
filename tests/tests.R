@@ -10,6 +10,8 @@ if (F) {
   type = "Transcriptomics"
   meta_file = './test_data/241010_Yassene/trns_meta.csv'
   data_file = './test_data/241010_Yassene/trns_data.csv'
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
   param_file = './R/params/params_gene_based_omics.R'
   id_col_meta = 'ID'
   type_column = 'genotype'
@@ -38,6 +40,8 @@ if (T) {
   type = "Transcriptomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
   data_file = './test_data/230927_Cellminer_data/cellminer_data/rna_data.csv'
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
   param_file = './R/params/params_gene_based_omics.R'
   id_col_meta = 'ID'
   type_column = 'Sample_type'
@@ -61,11 +65,84 @@ if (T) {
   norm_col = "None"
 }
 
+if (T) {
+  name = 'trns_1'
+  type = "Transcriptomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/t_sample_annotations.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/t_rna_data.csv'
+  meta_file_format = "Long"
+  data_file_format = "Long"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  id_col_data = 'ID'
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+}
+meta_table = soda_read_table(meta_file)
+meta_table = t(meta_table)
+colnames(meta_table) = meta_table[1,]
+meta_table = meta_table[-1,]
+write.table(meta_table, file = "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/t_sample_annotations.tsv", sep = '\t')
+
+t_meta_table = soda_read_table("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/t_sample_annotations.tsv",
+                               header = F)
+
+t_meta_table = t(t_meta_table)
+colnames(t_meta_table) = t_meta_table[1,]
+t_meta_table = t_meta_table[-1,]
+rownames(t_meta_table) = NULL
+t_meta_table = as.data.frame(t_meta_table, check.names = F)
+
+data_table = soda_read_table(data_file)
+data_table = t(data_table)
+colnames(data_table) = data_table[1,]
+data_table = data_table[-1,]
+write.table(data_table, file = "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/t_rna_data.tsv", sep = '\t')
+
+t_data_table = soda_read_table("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/t_rna_data.tsv",
+                               header = F)
+t_data_table = t(t_data_table)
+colnames(t_data_table) = t_data_table[1,]
+t_data_table = t_data_table[-1,]
+rownames(t_data_table) = NULL
+t_data_table = as.data.frame(t_data_table, check.names = F)
+
+
+data_table = get_indexed_table(id_col = "ID",
+                  input_table = t_data_table)
+
+
+numeric_matrix = as.matrix(sapply(data_table, as.numeric))
+rownames(numeric_matrix) = rownames(data_table)
+colnames(numeric_matrix) = colnames(data_table)
+
+
+data_table_numeric <- matrix(as.numeric(data_table), nrow = nrow(data_table), ncol = ncol(data_table))
+truffles = as.numeric(as.matrix(data_table))
+truffles[1,1]
 
 self = example_omics(name = name,
                      type = type,
                      meta_file = meta_file,
                      data_file = data_file,
+                     meta_file_format = meta_file_format,
+                     data_file_format = data_file_format,
                      param_file = param_file,
                      id_col_meta = id_col_meta,
                      type_column = type_column,
@@ -91,6 +168,12 @@ self = example_omics(name = name,
 self$get_volcano_table()
 self$plot_volcano()
 self$plots$volcano_plot
+
+base::saveRDS(self, "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds")
+
+loaded_r6_object <- readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds")
+
+loaded_r6_object$plots$volcano_plot
 
 #--------------------------------------------------------- DEBUG LIPIDOMICS ----
 

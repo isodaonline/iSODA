@@ -71,13 +71,23 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
         shiny::fluidRow(
           # Data upload
           shiny::column(
-            width = 6,
+            width = 5,
             shiny::fileInput(
               inputId = ns("file_meta"),
               label = NULL,
               multiple = F,
               accept = c(".csv", ".tsv", ".txt", ".xlsx"),
               width = "100%")
+          ),
+          shiny::column(
+            width = 1,
+            shinyWidgets::awesomeRadio(
+              inputId = ns("meta_file_format"),
+              label = NULL, 
+              choices = c("Wide", "Long"),
+              selected = "Wide",
+              status = "warning"
+            )
           ),
           # Table select
           shiny::column(
@@ -321,16 +331,13 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
 
   # Upload metadata
   session$userData[[id]]$upload_meta = shiny::observeEvent(input$file_meta, {
-    file_path = input$file_meta$datapath
-    data_table = soda_read_table(file_path = file_path)
-    if (ncol(data_table) > 70) {
-      print_tm(m, 'ERROR: uploaded file has more than 70 columns, unlikely to be a metadata file')
-      return()
-    }
-    r6$tables$imp_meta = data_table
+    
+    r6$import_meta(path = input$file_meta$datapath,
+                   input_format = input$meta_file_format)
+
     # Preview table
     output$metadata_preview_table = renderDataTable({
-      DT::datatable(data_table, options = list(paging = TRUE))
+      DT::datatable(r6$tables$imp_meta, options = list(paging = TRUE))
     })
 
     if (input$table_box_meta$collapsed) {
@@ -664,13 +671,23 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
         shiny::fluidRow(
           # Data upload
           shiny::column(
-            width = 6,
+            width = 5,
             shiny::fileInput(
               inputId = ns("file_data"),
               label = NULL,
               multiple = F,
               accept = c(".csv", ".tsv", ".txt", ".xlsx"),
               width = "100%")
+          ),
+          shiny::column(
+            width = 1,
+            shinyWidgets::awesomeRadio(
+              inputId = ns("data_file_format"),
+              label = NULL, 
+              choices = c("Wide", "Long"),
+              selected = "Wide",
+              status = "warning"
+            )
           ),
           # Table select
           shiny::column(
@@ -897,7 +914,8 @@ proteomics_server = function(id, ns, input, output, session, module_controler) {
   # Upload data
   session$userData[[id]]$upload_data = shiny::observeEvent(input$file_data, {
 
-    r6$import_data(path = input$file_data$datapath)
+    r6$import_data(path = input$file_data$datapath,
+                   input_format = input$data_file_format)
 
     if (input$table_box_data$collapsed) {
       bs4Dash::updateBox(id = 'table_box_data', action = 'toggle')

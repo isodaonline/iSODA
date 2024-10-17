@@ -1710,13 +1710,30 @@ Omics_exp = R6::R6Class(
 
     #-------------------------------------------------------- Table methods ----
 
-    import_meta = function(path) {
-      imp_meta = soda_read_table(path)
+    import_meta = function(path, input_format = "Wide") {
+      if (input_format == "Long") {
+        imp_meta = t(soda_read_table(path, header = F))
+        colnames(imp_meta) = imp_meta[1,]
+        imp_meta = imp_meta[-1,]
+        rownames(imp_meta) = NULL
+        imp_meta = as.data.frame(imp_meta, check.names = F)
+      } else {
+        imp_meta = soda_read_table(path)
+      }
       self$tables$imp_meta = imp_meta
     },
 
-    import_data = function(path) {
-      imp_data = soda_read_table(path)
+    import_data = function(path, input_format = "Wide") {
+      
+      if (input_format == "Long") {
+        imp_data = t(soda_read_table(path, header = F))
+        colnames(imp_data) = imp_data[1,]
+        imp_data = imp_data[-1,]
+        rownames(imp_data) = NULL
+        imp_data = as.data.frame(imp_data, check.names = F)
+      } else {
+        imp_data = soda_read_table(path)
+      }
       self$tables$imp_data = imp_data
     },
 
@@ -1736,12 +1753,16 @@ Omics_exp = R6::R6Class(
     set_indexed_data = function(id_col,
                                 imp_data = self$tables$imp_data) {
 
-      indexed_data = get_indexed_table(id_col = id_col,
+      indexed_df = get_indexed_table(id_col = id_col,
                                        input_table = imp_data)
+      
+      indexed_data = as.matrix(sapply(indexed_df, as.numeric))
+      rownames(indexed_data) = rownames(indexed_df)
+      colnames(indexed_data) = colnames(indexed_df)
 
       # Store
       self$indices$id_col_data = id_col
-      self$tables$indexed_data = as.matrix(indexed_data)
+      self$tables$indexed_data = indexed_data
 
     },
 
