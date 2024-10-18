@@ -232,20 +232,24 @@ get_indexed_table = function(id_col,
   #   stop(paste("Requested ID column '", id_col, "' mixed data types, must be either fully numeric or fully string"))
   # }
 
-  # # Check if id_col is coercible to numeric
-  # if (is_coercible_to_numeric(input_table[[id_col]])) {
-  #
-  #   if (!is_integer_char_vector(input_table[[id_col]])) {
-  #     base::stop(paste0('Values in requested ID column <', id_col, '> contains floats: only integers allowed'))
-  #   }
-  #
-  #   warning(paste("Requested ID column '", id_col, "' is numeric, coercing to strings"))
-  #
-  #   ids = as.numeric(input_table)
-  #   max_digits = nchar(as.character(max(ids)))
-  #   input_table[[id_col]] = sprintf(paste0("S%0", max_digits, "d"), ids)
-  #
-  # }
+  # Check if id_col is coercible to numeric
+  if (is_coercible_to_numeric(input_table[[id_col]])) {
+
+    if (!is_integer_char_vector(input_table[[id_col]])) {
+      base::stop(paste0('Values in requested ID column <', id_col, '> contains floats: only integers allowed'))
+    }
+    
+    ids = as.numeric(input_table[[id_col]])
+    input_table[[id_col]] = as.character(round(ids))
+    
+
+    # warning(paste("Requested ID column '", id_col, "' is numeric, coercing to strings"))
+    # 
+    # ids = as.numeric(input_table[[id_col]])
+    # max_digits = nchar(as.character(max(ids)))
+    # input_table[[id_col]] = sprintf(paste0("S%0", max_digits, "d"), ids)
+
+  }
 
   # Set id_col as the row names of the table
   rownames(input_table) = input_table[[id_col]]
@@ -413,57 +417,60 @@ find_delim = function(path) {
   return(names(which.max(sep)))
 }
 
-soda_read_table = function(file_path, sep = NA, header = T, first_column_as_index = FALSE) {
+soda_read_table = function(file_path, sep = NA, first_column_as_index = FALSE, transpose = F) {
 
+  # Set sep
   if (is.na(sep)) {
     if (stringr::str_sub(file_path, -4, -1) == ".tsv") {
       sep = '\t'
-    }
-  }
-
-  if (first_column_as_index) {
-    index = 1
-  } else {
-    index = NULL
-  }
-
-  if (stringr::str_sub(file_path, -5, -1) == ".xlsx") {
-    data_table = as.data.frame(readxl::read_xlsx(file_path, col_names = header))
-  } else {
-    if (is.na(sep)) {
+    } else if (stringr::str_sub(file_path, -5, -1) != ".xlsx"){
       sep = find_delim(path = file_path)
     }
-    data_table = data.table::fread(
-      file_path,
-      header = header,
-      sep = sep)
-    data_table = base::as.data.frame(
-      data_table, check.names = F)
-
   }
 
-  if (!is.null(index)) {
+  
+  # Read table (if transpose, header is temporarily ignored)
+  if (stringr::str_sub(file_path, -5, -1) == ".xlsx") {
+    data_table = readxl::read_xlsx(
+        path = file_path,
+        col_names = base::ifelse(transpose, F, T))
+  } else {
+    data_table = data.table::fread(
+      file_path,
+      header = base::ifelse(transpose, F, T),
+      sep = sep)
 
-    duplicates = duplicated(data_table[,index])
+  }
+  
+  # Transpose and set header on the final result
+  if (transpose) {
+    data_table = t(data_table)
+    rownames(data_table) = NULL
+    colnames(data_table) = data_table[1,]
+    data_table = data_table[-1,]
+  } 
+  
+  # # Convert to dataframe for consistency
+  data_table = as.data.frame(data_table, check.names = F)
+
+  # Set index if relevant and remove duplicated rows
+  if (first_column_as_index) {
+    duplicates = base::duplicated(data_table[,1])
     if (sum(duplicates) > 0) {
-      warning(paste0('Removed ', sum(duplicates), ' duplicated samples'))
+      warning(paste0('Removed ', sum(duplicates), ' duplicated rows'))
       data_table = data_table[!duplicates,]
     }
     rownames(data_table) = data_table[,1]
     data_table[,1] = NULL
   }
-
-
-
-  original_count = ncol(data_table)
-  if (original_count > 1) {
-    data_table = data_table[,!base::duplicated(colnames(data_table))]
-    # data_table = data_table[,!base::duplicated(colnames(data_table)), with = FALSE]
-    final_count = ncol(data_table)
-    if(original_count != final_count) {
-      warning(paste0('Removed ', original_count - final_count, ' duplicated columns'))
-    }
+  
+  # Remove duplicated columns
+  duplicated_columns = which(base::duplicated(colnames(data_table)))
+  if (length(duplicated_columns) > 0) {
+    data_table = data_table[,-duplicated_columns]
+    warning(paste0('Removed ', length(duplicated_columns), ' duplicated columns'))
   }
+    
   return(data_table)
 }
 

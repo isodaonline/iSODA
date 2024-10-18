@@ -1577,8 +1577,10 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     } else {
       name = input$feat_name_add
     }
-    r6$add_feature_table(name = name,
-                         feature_file = input$feat_add$datapath)
+    r6$import_feature_table(
+      name = name,
+      feature_file = input$feat_add$datapath,
+      input_format = input$feat_file_format)
 
     shiny::updateSelectInput(
       inputId = 'feat_name_del',

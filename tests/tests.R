@@ -33,7 +33,7 @@ if (F) {
   batch_effect_correction = "None"
   operation_order = c("Imputation", "Batch correction", "Filtering")
   norm_col = "None"
-}
+} # TRNS
 if (F) {
   name = 'trns_1'
   type = "Transcriptomics"
@@ -62,8 +62,8 @@ if (F) {
   batch_effect_correction = "None"
   operation_order = c("Imputation", "Batch correction", "Filtering")
   norm_col = "None"
-}
-if (T) {
+} # TRNS
+if (F) {
   name = 'trns_1'
   type = "Transcriptomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
@@ -91,7 +91,65 @@ if (T) {
   batch_effect_correction = "None"
   operation_order = c("Imputation", "Batch correction", "Filtering")
   norm_col = "None"
-}
+} # TRNS
+if (F) {
+  name = 'lips_1'
+  type = "Lipidomics"
+  meta_file = './test_data/230828_multiomics_1/t_lipidomics_metadata.csv'
+  data_file = './test_data/230828_multiomics_1/t_lipidomics.tsv'
+  meta_file_format = "Long"
+  data_file_format = "Long"
+  param_file = './R/params/params_lipidomics.R'
+  id_col_meta = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  id_col_data = 'ID'
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+} # LIPS
+if (T) {
+  name = 'prot_1'
+  type = "Proteomics"
+  meta_file = './test_data/230828_multiomics_1/metadata.csv'
+  data_file = './test_data/230828_multiomics_1/proteomics_2.tsv'
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = F
+  drop_qcs = F
+  drop_pools = F
+  id_col_data = 'ID'
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+} # PROT
 
 self = example_omics(
   name = name,
@@ -121,6 +179,15 @@ self = example_omics(
   batch_effect_correction = batch_effect_correction,
   operation_order = operation_order,
   norm_col = norm_col)
+
+self$import_feature_table(name = "feat_1",
+                          feature_file = "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230828_multiomics_1/t_proteomics_feat_annotation_clean.tsv",
+                          input_format = "Wide")
+
+
+self$derive_data_tables()
+
+feature_table = self$tables$feature_table
 
 self$get_volcano_table()
 self$plot_volcano()

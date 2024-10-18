@@ -1712,31 +1712,42 @@ Omics_exp = R6::R6Class(
     #-------------------------------------------------------- Table methods ----
 
     import_meta = function(path, input_format = "Wide") {
-      if (input_format == "Long") {
-        imp_meta = t(soda_read_table(path, header = F))
-        colnames(imp_meta) = imp_meta[1,]
-        imp_meta = imp_meta[-1,]
-        rownames(imp_meta) = NULL
-        imp_meta = as.data.frame(imp_meta, check.names = F)
-      } else {
-        imp_meta = soda_read_table(path)
-      }
+      
+      transpose = base::ifelse(input_format == "Long", T, F)
+      imp_meta = soda_read_table(file_path = path,
+                                 sep = NA,
+                                 first_column_as_index = F,
+                                 transpose = transpose)
       self$tables$imp_meta = imp_meta
     },
 
     import_data = function(path, input_format = "Wide") {
       
-      if (input_format == "Long") {
-        imp_data = t(soda_read_table(path, header = F))
-        colnames(imp_data) = imp_data[1,]
-        imp_data = imp_data[-1,]
-        rownames(imp_data) = NULL
-        imp_data = as.data.frame(imp_data, check.names = F)
-      } else {
-        imp_data = soda_read_table(path)
-      }
+      transpose = base::ifelse(input_format == "Long", T, F)
+      imp_data = soda_read_table(file_path = path,
+                                 sep = NA,
+                                 first_column_as_index = F,
+                                 transpose = transpose)
       self$tables$imp_data = imp_data
     },
+    
+    import_feature_table = function(name, feature_file, input_format = "Long") {
+      
+      transpose = base::ifelse(input_format == "Wide", T, F)
+      ext_feature_table = soda_read_table(file_path = feature_file,
+                                          sep = NA,
+                                          first_column_as_index = T,
+                                          transpose = transpose)
+      self$tables$external_feature_tables[[name]] = ext_feature_table
+    },
+    
+    del_feature_table = function(name) {
+      self$tables$external_feature_tables[[name]] = NULL
+      if (length(names(self$tables$external_feature_tables)) == 0) {
+        names(self$tables$external_feature_tables) = NULL
+      }
+    },
+    
 
     set_indexed_meta = function(id_col = self$indices$id_col_meta,
                                 imp_meta = self$tables$imp_meta) {
@@ -1755,7 +1766,7 @@ Omics_exp = R6::R6Class(
                                 imp_data = self$tables$imp_data) {
 
       indexed_df = get_indexed_table(id_col = id_col,
-                                       input_table = imp_data)
+                                     input_table = imp_data)
       
       indexed_data = as.matrix(sapply(indexed_df, as.numeric))
       rownames(indexed_data) = rownames(indexed_df)
@@ -1996,20 +2007,6 @@ Omics_exp = R6::R6Class(
 
       self$tables$feature_table = feature_table
       self$tables$feature_list = out_list
-    },
-
-    add_feature_table = function(name, feature_file) {
-      ext_feature_table = soda_read_table(file_path = feature_file,
-                                          sep = NA,
-                                          first_column_as_index = T)
-      self$tables$external_feature_tables[[name]] = ext_feature_table
-    },
-
-    del_feature_table = function(name) {
-      self$tables$external_feature_tables[[name]] = NULL
-      if (length(names(self$tables$external_feature_tables)) == 0) {
-        names(self$tables$external_feature_tables) = NULL
-      }
     },
 
     # Class normalisation
