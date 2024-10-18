@@ -61,6 +61,7 @@ r6_switch = function(exp_type, name, id, slot){
          "Metabolomics" = Omics_exp$new(name = name, type = "Metabolomics",id = id, slot = slot, param_file = './R/params/params_metabolomics.R'),
          "Proteomics" = Omics_exp$new(name = name, type = "Proteomics",id = id, slot = slot, param_file = './R/params/params_gene_based_omics.R'),
          "Transcriptomics" = Omics_exp$new(name = name, type = "Transcriptomics",id = id, slot = slot, param_file = './R/params/params_gene_based_omics.R'),
+         # "Transcriptomics" = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds"),
          "Genomics" = Omics_exp$new(name = name, type = "Genomics",id = id, slot = slot, param_file = './R/params/params_gene_based_omics.R')
 
   )

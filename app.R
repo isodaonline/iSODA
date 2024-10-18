@@ -62,6 +62,7 @@ library(R6)
 # New
 library(data.table)
 library(matrixStats)
+library(bsplus)
 
 # Use basilisk
 # reticulate::use_condaenv(condaenv = 'mofa_1')
@@ -246,6 +247,8 @@ ui = bs4Dash::dashboardPage(header, sidebar, body)
 
 server = function(input, output, session) {
 
+  
+  
   # Create logfile
   log_file <<- paste0("./logs/", get_day_time_code(), ".log")
   if (!base::file.exists("./logs/")) {
@@ -254,6 +257,10 @@ server = function(input, output, session) {
   if (!base::file.exists("./models/")) {
     base::dir.create("./models/")
   }
+  
+  # Source the tooltips file and utils
+  base::source("./man/tooltips_data.R")
+  base::source('./R/utils.R')
 
   options(shiny.maxRequestSize=300*1024^2)
 

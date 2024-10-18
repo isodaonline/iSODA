@@ -134,9 +134,12 @@ self$get_ora_feature_table()
 self$get_ora_object()
 
 
+self$preloaded_data = T
+
 base::saveRDS(self, "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds")
 self = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds")
-self$plots$volcano_plot
+self$plot_samples_correlation()
+self$plots$samples_correlation
 
 #--------------------------------------------------------- DEBUG LIPIDOMICS ----
 

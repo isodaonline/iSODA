@@ -77,42 +77,56 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           # Data upload
           shiny::column(
             width = 5,
-            shiny::fileInput(
-              inputId = ns("file_meta"),
-              label = NULL,
-              multiple = F,
-              accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-              width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::fileInput(
+                inputId = ns("file_meta"),
+                label = NULL,
+                multiple = F,
+                accept = c(".csv", ".tsv", ".txt", ".xlsx"),
+                placeholder = "Sample table",
+                width = "100%"),
+              title = tooltip_data$data_upload$file_meta,
+              placement = "top")
+            
           ),
           shiny::column(
             width = 1,
-            shinyWidgets::awesomeRadio(
-              inputId = ns("meta_file_format"),
-              label = NULL, 
-              choices = c("Wide", "Long"),
-              selected = "Wide",
-              status = "warning"
-            )
+            bsplus::bs_embed_tooltip(
+              shinyWidgets::awesomeRadio(
+                inputId = ns("meta_file_format"),
+                label = NULL, 
+                choices = c("Wide", "Long"),
+                selected = "Wide",
+                status = "warning"
+              ),
+              title = tooltip_data$data_upload$meta_file_format,
+              placement = "top")
           ),
           # Table select
           shiny::column(
             width = 3,
-            shiny::selectInput(
-              inputId = ns('select_meta_table'),
-              label = NULL,
-              choices = c('Imported metadata table'),
-              selected = 'Imported metadata table',
-              width = '100%'
-            )
+            bsplus::bs_embed_tooltip(
+              shiny::selectInput(
+                inputId = ns('select_meta_table'),
+                label = NULL,
+                choices = c('Imported metadata table'),
+                selected = 'Imported metadata table',
+                width = '100%'
+              ),
+              title = tooltip_data$data_upload$select_meta_table,
+              placement = "top")
           ),
           # Download metadata button
           shiny::column(
             width = 3,
-            shiny::downloadButton(
-              outputId = ns("download_metatable"),
-              label = "Download",
-              style = "width:100%;"
-            )
+            bsplus::bs_embed_tooltip(
+              shiny::downloadButton(
+                outputId = ns("download_metatable"),
+                label = "Download",
+                style = "width:100%;"
+              ),
+              title = tooltip_data$data_upload$download_metatable,
+              placement = "top")
           )
         ),
 
@@ -179,39 +193,51 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           shiny::column(
             width = 6,
             # Select ID column
-            shiny::selectInput(
-              inputId = ns("select_id_meta"),
-              choices = NULL,
-              label = "Sample IDs",
-              multiple = F,
-              width = "100%"),
+            bsplus::bs_embed_tooltip(
+              shiny::selectInput(
+                inputId = ns("select_id_meta"),
+                choices = NULL,
+                label = "Sample IDs",
+                multiple = F,
+                width = "100%"),
+              title = tooltip_data$data_upload$select_id_meta,
+              placement = "top"),
 
             # Select group column
-            shiny::selectInput(
-              inputId = ns("select_group_col"),
-              choices = NULL,
-              label = "Group column",
-              multiple = F,
-              width = "100%"),
+            bsplus::bs_embed_tooltip(
+              shiny::selectInput(
+                inputId = ns("select_group_col"),
+                choices = NULL,
+                label = "Group column",
+                multiple = F,
+                width = "100%"),
+              title = tooltip_data$data_upload$select_group_col,
+              placement = "top"),
 
           ),
           shiny::column(
             width = 6,
             # Select sample type column
-            shiny::selectInput(
-              inputId = ns("select_type_col"),
-              choices = NULL,
-              label = "Type column",
-              multiple = F,
-              width = "100%"),
+            bsplus::bs_embed_tooltip(
+              shiny::selectInput(
+                inputId = ns("select_type_col"),
+                choices = NULL,
+                label = "Type column",
+                multiple = F,
+                width = "100%"),
+            title = tooltip_data$data_upload$select_type_col,
+            placement = "top"),
 
             # Select batch column
-            shiny::selectInput(
-              inputId = ns("select_batch_col"),
-              choices = NULL,
-              label = "Batch column",
-              multiple = F,
-              width = "100%"),
+            bsplus::bs_embed_tooltip(
+              shiny::selectInput(
+                inputId = ns("select_batch_col"),
+                choices = NULL,
+                label = "Batch column",
+                multiple = F,
+                width = "100%"),
+            title = tooltip_data$data_upload$select_batch_col,
+            placement = "top"),
 
             shiny::span(textOutput(outputId = ns("found_batches")))
           )
@@ -226,19 +252,40 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           shiny::column(
             width = 4,
             # Select blank battern text for regex
-            shiny::textInput(inputId = ns("blank_pattern"), label = "Blanks:", value = "blank", width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::textInput(
+                inputId = ns("blank_pattern"),
+                label = "Blanks:",
+                value = "blank",
+                width = "100%"),
+            title = tooltip_data$data_upload$blank_pattern,
+            placement = "top")
           ),
 
           shiny::column(
             width = 4,
             # Select QC battern text for regex
-            shiny::textInput(inputId = ns("qc_pattern"), label = "QCs:", value = "quality", width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::textInput(
+                inputId = ns("qc_pattern"), 
+                label = "QCs:", 
+                value = "quality", 
+                width = "100%"),
+              title = tooltip_data$data_upload$qc_pattern,
+              placement = "top")
           ),
 
           shiny::column(
             width = 4,
             # Select pool battern text for regex
-            shiny::textInput(inputId = ns("pool_pattern"), label = "Pools:", value = "pool", width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::textInput(
+                inputId = ns("pool_pattern"),
+                label = "Pools:",
+                value = "pool",
+                width = "100%"),
+            title = tooltip_data$data_upload$pool_pattern,
+            placement = "top")
           )
         ),
 
@@ -251,24 +298,34 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             width = 12,
             shiny::h5("Non-sample selection"),
 
-            shinyWidgets::checkboxGroupButtons(
-              inputId = ns('non_samples_selection'),
-              label = NULL,
-              choices = c("Blanks", "QCs", "Pools"),
-              selected = c("Blanks", "QCs", "Pools"),
-              direction = "horizontal",
-              status = "default",
-              justified = TRUE,
-              width = '100%',
-              checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
-            ),
+            bsplus::bs_embed_tooltip(
+              shinyWidgets::checkboxGroupButtons(
+                inputId = ns('non_samples_selection'),
+                label = NULL,
+                choices = c("Blanks", "QCs", "Pools"),
+                selected = c("Blanks", "QCs", "Pools"),
+                direction = "horizontal",
+                status = "default",
+                justified = TRUE,
+                width = '100%',
+                checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
+              ),
+            title = tooltip_data$data_upload$non_samples_selection,
+            placement = "top"),
 
             # Manual sample exclusion (selection from rows in the filtered metadata table)
             shiny::h5("Manual sample selection"),
-            shiny::selectizeInput(
-              inputId = ns("selection_manual"), choices = NULL, label = NULL, multiple = T, width = "100%"
-            ),
-
+            bsplus::bs_embed_tooltip(
+              shiny::selectizeInput(
+                inputId = ns("selection_manual"),
+                choices = NULL,
+                label = NULL,
+                multiple = T,
+                width = "100%"
+              ),
+              title = tooltip_data$data_upload$selection_manual,
+              placement = "top"),
+            
             # Exclusion based on a metadata column value
             shiny::h5("Metadata selection"),
             shiny::h6("Select samples based on metadata values"),
@@ -277,52 +334,87 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
               shiny::column(
                 width = 6,
                 # Metadata column selection
-                shiny::selectInput(inputId = ns("exclusion_meta_col"), choices = NULL, label = "Column", multiple = F, width = "100%")
+                bsplus::bs_embed_tooltip(
+                  shiny::selectInput(
+                    inputId = ns("exclusion_meta_col"),
+                    choices = NULL,
+                    label = "Column",
+                    multiple = F,
+                    width = "100%"),
+                  title = tooltip_data$data_upload$exclusion_meta_col,
+                  placement = "top")
               ),
               shiny::column(
                 width = 6,
                 # Value in the metadata column
-                shiny::selectizeInput(inputId = ns("exclusion_meta_val"), choices = NULL, label = "Value", multiple = T, width = "100%")
-
+                bsplus::bs_embed_tooltip(
+                  shiny::selectizeInput(
+                    inputId = ns("exclusion_meta_val"),
+                    choices = NULL,
+                    label = "Value",
+                    multiple = T,
+                    width = "100%"),
+                  title = tooltip_data$data_upload$exclusion_meta_val,
+                  placement = "top")
               )
             ),
 
             # Rows to exclude
-            shiny::selectizeInput(inputId = ns("exclusion_meta_row"), choices = NULL, label = "Samples", multiple = T, width = "100%"),
+            bsplus::bs_embed_tooltip(
+              shiny::selectizeInput(
+                inputId = ns("exclusion_meta_row"),
+                choices = NULL,
+                label = "Samples",
+                multiple = T,
+                width = "100%"),
+              title = tooltip_data$data_upload$exclusion_meta_row,
+              placement = "top"),
 
             # Action buttons to apply filters, clear filters or reset filtered metadata
             shiny::fluidRow(
               shiny::column(
                 width = 3,
-                shiny::actionButton(
-                  inputId = ns("selection_drop"),
-                  label = "Drop",
-                  width = "100%"
-                )
+                bsplus::bs_embed_tooltip(
+                  shiny::actionButton(
+                    inputId = ns("selection_drop"),
+                    label = "Drop",
+                    width = "100%"
+                  ),
+                  title = tooltip_data$data_upload$selection_drop,
+                  placement = "top")
               ),
               shiny::column(
                 width = 3,
-                shiny::actionButton(
-                  inputId = ns("selection_keep"),
-                  label = "Keep",
-                  width = "100%"
-                )
+                bsplus::bs_embed_tooltip(
+                  shiny::actionButton(
+                    inputId = ns("selection_keep"),
+                    label = "Keep",
+                    width = "100%"
+                  ),
+                  title = tooltip_data$data_upload$selection_keep,
+                  placement = "top")
               ),
               shiny::column(
                 width = 3,
-                shiny::actionButton(
-                  inputId = ns("clear_filters"),
-                  label = "Clear filters",
-                  width = "100%"
-                )
+                bsplus::bs_embed_tooltip(
+                  shiny::actionButton(
+                    inputId = ns("clear_filters"),
+                    label = "Clear filters",
+                    width = "100%"
+                  ),
+                  title = tooltip_data$data_upload$clear_filters,
+                  placement = "top")
               ),
               shiny::column(
                 width = 3,
-                shiny::actionButton(
-                  inputId = ns("reset_meta"),
-                  label = "Reset table",
-                  width = "100%"
-                )
+                bsplus::bs_embed_tooltip(
+                  shiny::actionButton(
+                    inputId = ns("reset_meta"),
+                    label = "Reset table",
+                    width = "100%"
+                  ),
+                  title = tooltip_data$data_upload$reset_meta,
+                  placement = "top")
               )
             )
           )
@@ -391,6 +483,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   # Preview all / subset switch
   session$userData[[id]]$select_meta_table = shiny::observeEvent(input$select_meta_table, {
     shiny::req(r6$tables$imp_meta)
+    if (r6$preloaded_data) {return()}
     data_table = table_switch(table_name = input$select_meta_table, r6 = r6)
     output$metadata_preview_table = renderDataTable({
       DT::datatable(data_table, options = list(paging = TRUE))
@@ -440,7 +533,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     {
 
       shiny::req(r6$tables$indexed_meta)
-
+      if (r6$preloaded_data) {return()}
       meta_table = table_switch(table_name = input$select_meta_table, r6 = r6)
       if (input$select_meta_table == 'Imported metadata table') {
         rownames(meta_table) = meta_table[,input$select_id_meta]
@@ -473,6 +566,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
   # Batch col selection
   session$userData[[id]]$select_batch_col = shiny::observeEvent(input$select_batch_col, {
     shiny::req(r6$tables$indexed_meta)
+    if (r6$preloaded_data) {return()}
     r6$set_batch_column(batch_column = input$select_batch_col)
   })
 
@@ -491,6 +585,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
         input$pool_pattern))
 
       if (input$select_type_col == "") {return()}
+      if (r6$preloaded_data) {return()}
 
       r6$set_type_column(type_column = input$select_type_col)
       r6$set_blank_indices(blank_pattern = input$blank_pattern)
@@ -515,6 +610,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
     input$reset_meta),
     {
       shiny::req(r6$tables$raw_meta)
+      if (r6$preloaded_data) {return()}
 
       meta_table = table_switch(table_name = input$select_meta_table, r6 = r6)
       if (input$select_meta_table == 'Imported metadata table') {
@@ -672,42 +768,58 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           # Data upload
           shiny::column(
             width = 5,
-            shiny::fileInput(
-              inputId = ns("file_data"),
-              label = NULL,
-              multiple = F,
-              accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-              width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::fileInput(
+                inputId = ns("file_data"),
+                label = NULL,
+                multiple = F,
+                accept = c(".csv", ".tsv", ".txt", ".xlsx"),
+                placeholder = "Data table",
+                width = "100%"),
+              title = tooltip_data$data_upload$file_data,
+              placement = "top")
           ),
           shiny::column(
             width = 1,
-            shinyWidgets::awesomeRadio(
-              inputId = ns("data_file_format"),
-              label = NULL, 
-              choices = c("Wide", "Long"),
-              selected = "Wide",
-              status = "warning"
-            )
+            bsplus::bs_embed_tooltip(
+              shinyWidgets::awesomeRadio(
+                inputId = ns("data_file_format"),
+                label = NULL, 
+                choices = c("Wide", "Long"),
+                selected = "Wide",
+                status = "warning"
+              ),
+              title = tooltip_data$data_upload$data_file_format,
+              placement = "top")
+            
           ),
           # Table select
           shiny::column(
             width = 3,
-            shiny::selectInput(
-              inputId = ns('select_data_table'),
-              label = NULL,
-              choices = c('Imported data table', 'Raw data table'),
-              selected = 'Imported data table',
-              width = '100%'
-            )
+            bsplus::bs_embed_tooltip(
+              shiny::selectInput(
+                inputId = ns('select_data_table'),
+                label = NULL,
+                choices = c('Imported data table', 'Raw data table'),
+                selected = 'Imported data table',
+                width = '100%'
+              ),
+              title = tooltip_data$data_upload$select_data_table,
+              placement = "top")
+            
           ),
           # Download button
           shiny::column(
             width = 3,
-            shiny::downloadButton(
-              outputId = ns("download_datatable"),
-              label = "Download",
-              style = "width:100%;"
-            )
+            bsplus::bs_embed_tooltip(
+              shiny::downloadButton(
+                outputId = ns("download_datatable"),
+                label = "Download",
+                style = "width:100%;"
+              ),
+              title = tooltip_data$data_upload$download_datatable,
+              placement = "top")
+            
           )
         ),
         # Table preview box
@@ -767,38 +879,56 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
         width = 4,
         shiny::tags$h3("Select columns"),
         # Select ID column
-        shiny::selectInput(inputId = ns("select_id_data"), choices = NULL, label = "Sample IDs", multiple = F, width = "100%"),
-
-        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-        shiny::selectInput(
-          inputId = ns('operation_order'),
-          label = "Pre-analysis Selection and Order",
-          choices = c("Imputation", "Batch correction", "Filtering"),
-          selected = c("Imputation", "Batch correction", "Filtering"),
-          multiple = T,
-          width = "100%"
-        ),
-
-        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-        shiny::fluidRow(
+        bsplus::bs_embed_tooltip(
           shiny::selectInput(
-            inputId = ns('batch_effect_correction'),
-            label = "Batch effect correction",
-            choices = c('None', 'No controls', 'Pool', 'QC'),
-            selected = "None",
-            multiple = FALSE,
-            width = '100%'
-          )
+            inputId = ns("select_id_data"),
+            choices = NULL,
+            label = "Sample IDs",
+            multiple = F,
+            width = "100%"),
+          title = tooltip_data$data_upload$select_id_data,
+          placement = "top"),
+
+        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+        bsplus::bs_embed_tooltip(
+          shiny::selectInput(
+            inputId = ns('operation_order'),
+            label = "Pre-analysis Selection and Order",
+            choices = c("Imputation", "Batch correction", "Filtering"),
+            selected = c("Imputation", "Batch correction", "Filtering"),
+            multiple = T,
+            width = "100%"
+          ),
+          title = tooltip_data$data_upload$operation_order,
+          placement = "top"),
+
+        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+        shiny::fluidRow(
+          bsplus::bs_embed_tooltip(
+            shiny::selectInput(
+              inputId = ns('batch_effect_correction'),
+              label = "Batch effect correction",
+              choices = c('None', 'No controls', 'Pool', 'QC'),
+              selected = "None",
+              multiple = FALSE,
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$batch_effect_correction,
+            placement = "top")
         ),
 
         shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
         shiny::fluidRow(
-          shiny::selectizeInput(inputId = ns("na_imputation"),
-                                choices = c('None', 'minimum', 'mean', 'median', 'maximum'),
-                                selected = "None",
-                                label = 'Imputation method',
-                                multiple = F,
-                                width = "100%")
+          bsplus::bs_embed_tooltip(
+            shiny::selectizeInput(
+              inputId = ns("na_imputation"),
+              choices = c('None', 'minimum', 'mean', 'median', 'maximum'),
+              selected = "None",
+              label = 'Imputation method',
+              multiple = F,
+              width = "100%"),
+            title = tooltip_data$data_upload$na_imputation,
+            placement = "top")
         ),
 
         # Blank and group filtering
@@ -811,87 +941,148 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
         ),
 
         shiny::fluidRow(
-          shiny::numericInput(
-            inputId = ns("blank_multiplier"),
-            label = 'Blank multiplier',
-            value = 2,
-            min = 0,
-            step = 0.5,
-            width = "100%")
+          bsplus::bs_embed_tooltip(
+            shiny::numericInput(
+              inputId = ns("blank_multiplier"),
+              label = 'Blank multiplier',
+              value = 2,
+              min = 0,
+              step = 0.5,
+              width = "100%"),
+            title = tooltip_data$data_upload$blank_multiplier,
+            placement = "top")
         ),
 
         shiny::fluidRow(
           # Sample threshold
           shiny::column(
             width = 6,
-            shiny::sliderInput(
-              inputId = ns("sample_threshold"),
-              label = "Sample threshold",
-              value = 0.8,
-              min = 0,
-              max = 1,
-              step = 0.05,
-              width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::sliderInput(
+                inputId = ns("sample_threshold"),
+                label = "Sample threshold",
+                value = 0.8,
+                min = 0,
+                max = 1,
+                step = 0.05,
+                width = "100%"),
+              title = tooltip_data$data_upload$sample_threshold,
+              placement = "top")
           ),
           # Group threshold
           shiny::column(
             width = 6,
-            shiny::sliderInput(
-              inputId = ns("group_threshold"),
-              label = "Group threshold",
-              value = 0.8,
-              min = 0,
-              max = 1,
-              step = 0.05,
-              width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::sliderInput(
+                inputId = ns("group_threshold"),
+                label = "Group threshold",
+                value = 0.8,
+                min = 0,
+                max = 1,
+                step = 0.05,
+                width = "100%"),
+              title = tooltip_data$data_upload$group_threshold,
+              placement = "top")
           )
         ),
 
         # Normalisation
         shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-        shiny::selectizeInput(inputId = ns("normalise_to_col"),
-                              label = "Normalise to column",
-                              choices = "None",
-                              width = "100%"),
+        bsplus::bs_embed_tooltip(
+          shiny::selectizeInput(inputId = ns("normalise_to_col"),
+                                label = "Normalise to column",
+                                choices = "None",
+                                width = "100%"),
+          title = tooltip_data$data_upload$normalise_to_col,
+          placement = "top"),
 
         # Manual filtering
         shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
         shiny::h6("Manual filtering"),
         shiny::fluidRow(
-          shiny::selectizeInput(
-            inputId = ns('feature_col_selection'),
-            label = "Column selection",
-            choices = NULL,
-            multiple = F,
-            width = "100%"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectizeInput(
+              inputId = ns('feature_col_selection'),
+              label = "Column selection",
+              choices = NULL,
+              multiple = F,
+              width = "100%"
+            ),
+            title = tooltip_data$data_upload$feature_col_selection,
+            placement = "top")
         ),
         shiny::fluidRow(
           shiny::column(
             width = 6,
-            shiny::selectizeInput(inputId = ns("class_selection"), label = "Select classes", choices = NULL, multiple = TRUE, width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::selectizeInput(
+                inputId = ns("class_selection"),
+                label = "Select classes",
+                choices = NULL,
+                multiple = TRUE,
+                width = "100%"),
+              title = tooltip_data$data_upload$class_selection,
+              placement = "top")
+            
           ),
           shiny::column(
             width = 6,
-            shiny::selectizeInput(inputId = ns("manual_selection"), label = "Select feature", choices = NULL, multiple = TRUE, width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::selectizeInput(
+                inputId = ns("manual_selection"),
+                label = "Select feature",
+                choices = NULL,
+                multiple = TRUE,
+                width = "100%"),
+              title = tooltip_data$data_upload$manual_selection,
+              placement = "top")
+            
           )
         ),
         shiny::fluidRow(
           shiny::column(
             width = 3,
-            shiny::actionButton(inputId = ns("drop_cols"), label =  "Drop", width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::actionButton(
+                inputId = ns("drop_cols"),
+                label =  "Drop",
+                width = "100%"),
+              title = tooltip_data$data_upload$drop_cols,
+              placement = "top")
+            
           ),
           shiny::column(
             width = 3,
-            shiny::actionButton(inputId = ns("keep_cols"), label =  "Keep", width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::actionButton(
+                inputId = ns("keep_cols"),
+                label =  "Keep",
+                width = "100%"),
+              title = tooltip_data$data_upload$keep_cols,
+              placement = "top")
+            
           ),
           shiny::column(
             width = 3,
-            shiny::actionButton(inputId = ns("clear_data_filters"), label =  "Clear filters", width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::actionButton(
+                inputId = ns("clear_data_filters"),
+                label =  "Clear filters",
+                width = "100%"),
+              title = tooltip_data$data_upload$clear_data_filters,
+              placement = "top")
+            
           ),
           shiny::column(
             width = 3,
-            shiny::actionButton(inputId = ns("reset_data_table"), label =  "Reset", width = "100%")
+            bsplus::bs_embed_tooltip(
+              shiny::actionButton(
+                inputId = ns("reset_data_table"),
+                label =  "Reset",
+                width = "100%"),
+              title = tooltip_data$data_upload$reset_data_table,
+              placement = "top")
+            
           )
         )
       )
@@ -1265,39 +1456,68 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           shiny::fluidRow(
             shiny::column(
               width = 3,
-              shiny::fileInput(
-                inputId = ns("feat_add"),
-                label = NULL,
-                multiple = F,
-                accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-                width = "100%"
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::fileInput(
+                  inputId = ns("feat_add"),
+                  label = NULL,
+                  multiple = F,
+                  accept = c(".csv", ".tsv", ".txt", ".xlsx"),
+                  placeholder = "Feature table",
+                  width = "100%"
+                ),
+                title = tooltip_data$data_upload$feat_add,
+                placement = "top")
+            ),
+            shiny::column(
+              width = 2,
+              bsplus::bs_embed_tooltip(
+                shiny::textInput(
+                  inputId = ns('feat_name_add'),
+                  label = NULL,
+                  width = '100%',
+                  placeholder = 'Name, eg: feat_1'
+                ),
+                title = tooltip_data$data_upload$feat_name_add,
+                placement = "top")
+              
+            ),
+            shiny::column(
+              width = 1,
+              bsplus::bs_embed_tooltip(
+                shinyWidgets::awesomeRadio(
+                  inputId = ns("feat_file_format"),
+                  label = NULL, 
+                  choices = c("Wide", "Long"),
+                  selected = "Long",
+                  status = "warning"
+                ),
+                title = tooltip_data$data_upload$feat_file_format,
+                placement = "top")
             ),
             shiny::column(
               width = 3,
-              shiny::textInput(
-                inputId = ns('feat_name_add'),
-                label = NULL,
-                width = '100%',
-                placeholder = 'Name, eg: feat_1'
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::selectInput(
+                  inputId = ns('feat_table_select'),
+                  label = NULL,
+                  choices = c('Imported feature table', 'Feature table'),
+                  width = '100%'
+                ),
+                title = tooltip_data$data_upload$feat_table_select,
+                placement = "top")
+              
             ),
             shiny::column(
               width = 3,
-              shiny::selectInput(
-                inputId = ns('feat_table_select'),
-                label = NULL,
-                choices = c('Imported feature table', 'Feature table'),
-                width = '100%'
-              )
-            ),
-            shiny::column(
-              width = 3,
-              shiny::downloadButton(
-                outputId = ns("download_feature_table"),
-                label = "Download",
-                style = "width:100%;"
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::downloadButton(
+                  outputId = ns("download_feature_table"),
+                  label = "Download",
+                  style = "width:100%;"
+                ),
+                title = tooltip_data$data_upload$download_feature_table,
+                placement = "top")
+              
             )
           ),
           shiny::fluidRow(
@@ -1320,17 +1540,23 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
           shiny::fluidRow(
             shiny::column(
               width = 6,
-              shiny::selectInput(inputId = ns('feat_name_del'),
-                                 label = NULL,
-                                 choices = names(r6$tables$external_feature_tables),
-                                 selected = NULL,
-                                 width = '100%')
+              bsplus::bs_embed_tooltip(
+                shiny::selectInput(inputId = ns('feat_name_del'),
+                                   label = NULL,
+                                   choices = names(r6$tables$external_feature_tables),
+                                   selected = NULL,
+                                   width = '100%'),
+                title = tooltip_data$data_upload$feat_name_del,
+                placement = "top")
             ),
             shiny::column(
               width = 6,
-              shiny::actionButton(inputId = ns('feat_del'),
-                                  label = 'Remove',
-                                  width = '100%')
+              bsplus::bs_embed_tooltip(
+                shiny::actionButton(inputId = ns('feat_del'),
+                                    label = 'Remove',
+                                    width = '100%'),
+                title = tooltip_data$data_upload$feat_del,
+                placement = "top")
             )
           )
         )
