@@ -1,5 +1,6 @@
 #------------------------------------------------------------------ MOFA UI ----
 mofa_ui = function(id) {
+  base::source("./man/tooltips_data.R")
   ns = shiny::NS(id)
   bs4Dash::tabsetPanel(
     type = "tabs",
@@ -36,25 +37,39 @@ mofa_ui = function(id) {
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shinyWidgets::prettySwitch(inputId = ns("data_scale_views"),
-                                           label = "Scale views",
-                                           value = FALSE,
-                                           fill = TRUE, status = "primary")
+                bsplus::bs_embed_tooltip(
+                  shinyWidgets::prettySwitch(
+                    inputId = ns("data_scale_views"),
+                    label = "Scale views",
+                    value = FALSE,
+                    fill = TRUE, status = "primary"),
+                  title = tooltip_data$mofa$data_scale_views,
+                  placement = "top"
+                )
               ),
               shiny::column(
                 width = 6,
-                shinyWidgets::prettySwitch(inputId = ns("data_scale_groups"),
-                                           label = "Scale groups",
-                                           value = FALSE,
-                                           fill = TRUE, status = "primary")
+                bsplus::bs_embed_tooltip(
+                  shinyWidgets::prettySwitch(
+                    inputId = ns("data_scale_groups"),
+                    label = "Scale groups",
+                    value = FALSE,
+                    fill = TRUE, status = "primary"),
+                  title = tooltip_data$mofa$data_scale_groups,
+                  placement = "top"
+                )
               ),
-              shiny::numericInput(
-                inputId = ns('mofa_seed'),
-                label = 'Seed',
-                value = 1,
-                min = 1,
-                step = 1,
-                width = '80%'
+              bsplus::bs_embed_tooltip(
+                shiny::numericInput(
+                  inputId = ns('mofa_seed'),
+                  label = 'Seed',
+                  value = 42,
+                  min = 1,
+                  step = 1,
+                  width = '80%'
+                ),
+                title = tooltip_data$mofa$mofa_seed,
+                placement = "top"
               )
             )
           ),
@@ -63,34 +78,54 @@ mofa_ui = function(id) {
             shiny::h3("Model options"),
 
             shiny::fluidRow(
-              shiny::numericInput(
-                inputId = ns("model_num_factors"),
-                label = "Number of factors",
-                value = 6,
-                min = 1,
-                width = "100%"
+              bsplus::bs_embed_tooltip(
+                shiny::numericInput(
+                  inputId = ns("model_num_factors"),
+                  label = "Number of factors",
+                  value = 6,
+                  min = 1,
+                  width = "100%"
+                ),
+                title = tooltip_data$mofa$model_num_factors,
+                placement = "top"
               ),
               shiny::column(
                 width = 6,
-                shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_factors"),
-                                           label = "Spikeslab factors",
-                                           value = FALSE,
-                                           fill = TRUE, status = "primary"),
-                shinyWidgets::prettySwitch(inputId = ns("model_ard_factors"),
-                                           label = "ARD factors",
-                                           value = FALSE,
-                                           fill = TRUE, status = "primary")
+                bsplus::bs_embed_tooltip(
+                  shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_factors"),
+                                             label = "Spikeslab factors",
+                                             value = FALSE,
+                                             fill = TRUE, status = "primary"),
+                  title = tooltip_data$mofa$model_spikeslab_factors,
+                  placement = "top"
+                ),
+                bsplus::bs_embed_tooltip(
+                  shinyWidgets::prettySwitch(inputId = ns("model_ard_factors"),
+                                             label = "ARD factors",
+                                             value = FALSE,
+                                             fill = TRUE, status = "primary"),
+                  title = tooltip_data$mofa$model_ard_factors,
+                  placement = "top"
+                )
               ),
               shiny::column(
                 width = 6,
-                shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_weights"),
-                                           label = "Spikeslab weights",
-                                           value = TRUE,
-                                           fill = TRUE, status = "primary"),
-                shinyWidgets::prettySwitch(inputId = ns("model_ard_weights"),
-                                           label = "ARD weights",
-                                           value = TRUE,
-                                           fill = TRUE, status = "primary")
+                bsplus::bs_embed_tooltip(
+                  shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_weights"),
+                                             label = "Spikeslab weights",
+                                             value = TRUE,
+                                             fill = TRUE, status = "primary"),
+                  title = tooltip_data$mofa$model_spikeslab_weights,
+                  placement = "top"
+                ),
+                bsplus::bs_embed_tooltip(
+                  shinyWidgets::prettySwitch(inputId = ns("model_ard_weights"),
+                                             label = "ARD weights",
+                                             value = TRUE,
+                                             fill = TRUE, status = "primary"),
+                  title = tooltip_data$mofa$model_ard_weights,
+                  placement = "top"
+                )
               )
             )
           ),
@@ -101,30 +136,50 @@ mofa_ui = function(id) {
             shiny::fluidRow(
               shiny::column(
                 width = 6,
-                shiny::numericInput(inputId = ns("training_iterations"),
-                                    label = "Max iterations",
-                                    value = 1000,
-                                    width = "100%"),
-                shiny::numericInput(inputId = ns("training_start_elbo"),
-                                    label = "startELBO",
-                                    value = 1,
-                                    width = "100%"),
-                shinyWidgets::prettySwitch(inputId = ns("training_stochastic"),
-                                           label = "Stochastic",
-                                           value = FALSE,
-                                           fill = TRUE, status = "primary")
+                bsplus::bs_embed_tooltip(
+                  shiny::numericInput(inputId = ns("training_iterations"),
+                                      label = "Max iterations",
+                                      value = 1000,
+                                      width = "100%"),
+                  title = tooltip_data$mofa$training_iterations,
+                  placement = "top"
+                ),
+                bsplus::bs_embed_tooltip(
+                  shiny::numericInput(inputId = ns("training_start_elbo"),
+                                      label = "startELBO",
+                                      value = 1,
+                                      width = "100%"),
+                  title = tooltip_data$mofa$training_start_elbo,
+                  placement = "top"
+                ),
+                bsplus::bs_embed_tooltip(
+                  shinyWidgets::prettySwitch(inputId = ns("training_stochastic"),
+                                             label = "Stochastic",
+                                             value = FALSE,
+                                             fill = TRUE, status = "primary"),
+                  title = tooltip_data$mofa$training_stochastic,
+                  placement = "top"
+                )
               ),
               shiny::column(
                 width = 6,
-                shiny::selectInput(inputId = ns("training_convergence_mode"),
-                                   label = "Convergence mode",
-                                   choices = c("fast", "medium", "slow"),
-                                   selected = "fast",
-                                   width = "100%"),
-                shiny::numericInput(inputId = ns("training_freq_elbo"),
-                                    label = "freqELBO",
-                                    value = 5,
-                                    width = "100%")
+                bsplus::bs_embed_tooltip(
+                  shiny::selectInput(inputId = ns("training_convergence_mode"),
+                                     label = "Convergence mode",
+                                     choices = c("fast", "medium", "slow"),
+                                     selected = "fast",
+                                     width = "100%"),
+                  title = tooltip_data$mofa$training_convergence_mode,
+                  placement = "top"
+                ),
+                bsplus::bs_embed_tooltip(
+                  shiny::numericInput(inputId = ns("training_freq_elbo"),
+                                      label = "freqELBO",
+                                      value = 5,
+                                      width = "100%"),
+                  title = tooltip_data$mofa$training_freq_elbo,
+                  placement = "top"
+                )
               )
             )
           )
@@ -352,11 +407,11 @@ mofa_server = function(id, r6, module_controler, main_input) {
                           convergence_mode = input$training_convergence_mode,
                           startELBO = as.numeric(input$training_start_elbo),
                           freqELBO = as.numeric(input$training_freq_elbo),
-                          stochastic = input$training_stochastic)
+                          stochastic = input$training_stochastic,
+                          seed = input$mofa_seed)
           r6$train_model(mofa_object = r6$mofa_objects$pretrained,
                          outfile = base::file.path("./models", timestamped_name("model.hdf5")),
-                         save_data = T,
-                         seed = input$mofa_seed)
+                         save_data = T)
           r6$add_metadata_to_mofa()
         },warning = function(w){
           print_tmw(r6$name, w)

@@ -504,7 +504,8 @@ Mofa_class = R6::R6Class(
                             startELBO = 1,
                             freqELBO = 5,
                             stochastic = F,
-                            weight_views = F) {
+                            weight_views = F,
+                            seed = 42) {
 
       # checks
       if (length(likelihoods) != length(self$params$omics)){
@@ -514,7 +515,8 @@ Mofa_class = R6::R6Class(
       # Retrieve all options
       data_opts = MOFA2::get_default_data_options(pretrained)
       model_opts = MOFA2::get_default_model_options(pretrained)
-      train_opts = MOFA2::get_default_training_options(pretrained)
+      train_opts = MOFA2::get_default_training_options(pretrained,
+                                                       seed = seed)
 
       # Set data options
       data_opts$scale_views = scale_views
@@ -549,13 +551,8 @@ Mofa_class = R6::R6Class(
 
     train_model = function(mofa_object = self$mofa_objects$pretrained,
                            outfile = NULL,
-                           save_data = FALSE,
-                           seed = 1) {
-      # model = MOFA2::run_mofa(object = mofa_object,
-      #                         outfile = outfile,
-      #                         use_basilisk = F,
-      #                         save_data = save_data)
-      base::set.seed(seed)
+                           save_data = FALSE) {
+      
       model = MOFA2::run_mofa(object = mofa_object,
                               outfile = outfile,
                               use_basilisk = T,

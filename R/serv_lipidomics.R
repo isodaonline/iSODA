@@ -212,7 +212,7 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                 multiple = F,
                 width = "100%"),
               title = tooltip_data$data_upload$select_group_col,
-              placement = "top"),
+              placement = "top")
 
           ),
           shiny::column(
@@ -1835,25 +1835,35 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             shiny::column(
               width = 4,
               shiny::h4('Sample selection'),
-              shiny::selectInput(
-                inputId = ns('gseaprep_table_select'),
-                label = 'Select table',
-                choices = NULL,
-                width = '90%'
-              ),
-              shiny::selectInput(
-                inputId = ns('gseaprep_group_col'),
-                label = 'Group column',
-                choices = NULL,
-                width = '90%'
-              ),
-              shiny::selectInput(
-                inputId = ns('gseaprep_groups'),
-                label = 'Select two groups',
-                choices = NULL,
-                width = '90%',
-                multiple = T
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::selectInput(
+                  inputId = ns('gseaprep_table_select'),
+                  label = 'Select table',
+                  choices = NULL,
+                  width = '90%'
+                ),
+                title = tooltip_data$data_upload$gseaprep_table_select,
+                placement = "top"),
+              bsplus::bs_embed_tooltip(
+                shiny::selectInput(
+                  inputId = ns('gseaprep_group_col'),
+                  label = 'Group column',
+                  choices = NULL,
+                  width = '90%'
+                ),
+                title = tooltip_data$data_upload$gseaprep_group_col,
+                placement = "top"),
+              bsplus::bs_embed_tooltip(
+                shiny::selectInput(
+                  inputId = ns('gseaprep_groups'),
+                  label = 'Select two groups',
+                  choices = NULL,
+                  width = '90%',
+                  multiple = T
+                ),
+                title = tooltip_data$data_upload$gseaprep_groups,
+                placement = "top")
+              
             ),
             shiny::column(
               width = 8,
@@ -1861,78 +1871,102 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
               shiny::fluidRow(
                 shiny::column(
                   width = 4,
-                  shiny::selectInput(
-                    inputId = ns('gseaprep_test'),
-                    label = 'Statistical test',
-                    choices = c('Wilcoxon', 't-Test'),
-                    selected = 't-Test',
-                    width = '100%'
-                  )
+                  bsplus::bs_embed_tooltip(
+                    shiny::selectInput(
+                      inputId = ns('gseaprep_test'),
+                      label = 'Statistical test',
+                      choices = c('Wilcoxon', 't-Test'),
+                      selected = 't-Test',
+                      width = '100%'
+                    ),
+                    title = tooltip_data$data_upload$gseaprep_test,
+                    placement = "top")
                 ),
                 shiny::column(
                   width = 4,
-                  shiny::selectInput(
-                    inputId = ns('gseaprep_adjustment'),
-                    label = 'Adjustment',
-                    choices = c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"),
-                    selected = 'BH',
-                    width = '100%'
-                  )
+                  bsplus::bs_embed_tooltip(
+                    shiny::selectInput(
+                      inputId = ns('gseaprep_adjustment'),
+                      label = 'Adjustment',
+                      choices = c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"),
+                      selected = 'BH',
+                      width = '100%'
+                    ),
+                    title = tooltip_data$data_upload$gseaprep_adjustment,
+                    placement = "top")
                 ),
                 shiny::column(
                   width = 4,
-                  shiny::selectInput(
-                    inputId = ns('gseaprep_method'),
-                    label = 'FC calculation',
-                    choices = c('median', 'mean'),
-                    selected = 'mean',
-                    width = '100%'
-                  )
+                  bsplus::bs_embed_tooltip(
+                    shiny::selectInput(
+                      inputId = ns('gseaprep_method'),
+                      label = 'FC calculation',
+                      choices = c('median', 'mean'),
+                      selected = 'mean',
+                      width = '100%'
+                    ),
+                    title = tooltip_data$data_upload$gseaprep_method,
+                    placement = "top")
                 )
               ),
-              shinyWidgets::radioGroupButtons(
-                inputId = ns('fa_feature_selection'),
-                label = NULL,
-                choices = c('Statistical selection (ORA only, EA: all features)', 'User selection'),
-                status = "info",
-                justified = TRUE
-              ),
+              bsplus::bs_embed_tooltip(
+                shinyWidgets::radioGroupButtons(
+                  inputId = ns('fa_feature_selection'),
+                  label = NULL,
+                  choices = c('Statistical selection (ORA only)', 'User selection'),
+                  status = "info",
+                  justified = TRUE
+                ),
+                title = tooltip_data$data_upload$fa_feature_selection,
+                placement = "top"),
               shiny::fluidRow(
                 shiny::column(
                   width = 6,
-                  shiny::numericInput(
-                    inputId = ns('gseaprep_pval'),
-                    label = "ORA p-value cut-off",
-                    value = 0.05,
-                    min = 0,
-                    max = 0.99,
-                    step = 0.01,
-                    width = '100%'
-                  ),
+                  bsplus::bs_embed_tooltip(
+                    shiny::numericInput(
+                      inputId = ns('gseaprep_pval'),
+                      label = "p-value cut-off",
+                      value = 0.05,
+                      min = 0,
+                      max = 0.99,
+                      step = 0.01,
+                      width = '100%'
+                    ),
+                    title = tooltip_data$data_upload$gseaprep_pval,
+                    placement = "top"),
+                  bsplus::bs_embed_tooltip(
                   shiny::numericInput(
                     inputId = ns('or_fc_threshold'),
-                    label = 'ORA fold change cut-off',
+                    label = 'Fold change cut-off',
                     value = 2,
                     min = 0,
                     step = 0.05,
                     width = '100%'
-                  )
+                  ),
+                  title = tooltip_data$data_upload$or_fc_threshold,
+                  placement = "top")
                 ),
                 shiny::column(
                   width = 6,
-                  shiny::selectInput(
-                    inputId = ns('fa_feature_col'),
-                    label = "Feature annotations column",
-                    choices = NULL,
-                    width = '100%'
-                  ),
-                  shiny::selectizeInput(
-                    inputId = ns("fa_feature_values"),
-                    label = "Group(s) to keep",
-                    choices = NULL,
-                    multiple = TRUE,
-                    width = '100%'
-                  )
+                  bsplus::bs_embed_tooltip(
+                    shiny::selectInput(
+                      inputId = ns('fa_feature_col'),
+                      label = "Feature annotations column",
+                      choices = NULL,
+                      width = '100%'
+                    ),
+                    title = tooltip_data$data_upload$fa_feature_col,
+                    placement = "top"),
+                  bsplus::bs_embed_tooltip(
+                    shiny::selectizeInput(
+                      inputId = ns("fa_feature_values"),
+                      label = "Group(s) to keep",
+                      choices = NULL,
+                      multiple = TRUE,
+                      width = '100%'
+                    ),
+                    title = tooltip_data$data_upload$fa_feature_values,
+                    placement = "top")
                 )
               )
             )
@@ -1964,22 +1998,29 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                   shiny::fluidRow(
                     shiny::column(
                       width = 6,
-                      shiny::selectInput(
-                        inputId = ns('gsea_go'),
-                        label = 'Feature sets',
-                        choices = r6$hardcoded_settings$enrichment_analysis$terms,
-                        selected = NULL,
-                        width = '100%'
-                      )
+                      bsplus::bs_embed_tooltip(
+                        shiny::selectInput(
+                          inputId = ns('gsea_go'),
+                          label = 'Feature sets',
+                          choices = r6$hardcoded_settings$enrichment_analysis$terms,
+                          selected = NULL,
+                          width = '100%'
+                        ),
+                        title = tooltip_data$data_upload$gsea_go,
+                        placement = "top")
                     ),
                     shiny::column(
                       width = 6,
-                      shiny::selectInput(
-                        inputId = ns('gsea_adjustment'),
-                        label = 'Adjustment (feature sets)',
-                        choices = c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"),
-                        selected = "BH",
-                        width = '100%'
+                      bsplus::bs_embed_tooltip(
+                        shiny::selectInput(
+                          inputId = ns('gsea_adjustment'),
+                          label = 'Adjustment (feature sets)',
+                          choices = c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"),
+                          selected = "BH",
+                          width = '100%'
+                        ),
+                        title = tooltip_data$data_upload$gsea_adjustment,
+                        placement = "top"
                       )
                     )
                   ),
@@ -1987,54 +2028,68 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                   shiny::fluidRow(
                     shiny::column(
                       width = 6,
-                      shiny::numericInput(
-                        inputId = ns('ea_min_size'),
-                        label = 'Min. feature set size',
-                        value = 3,
-                        min = 1,
-                        max = NA,
-                        step = 5,
-                        width = '100%'
+                      bsplus::bs_embed_tooltip(
+                        shiny::numericInput(
+                          inputId = ns('ea_min_size'),
+                          label = 'Min. feature set size',
+                          value = 3,
+                          min = 1,
+                          max = NA,
+                          step = 5,
+                          width = '100%'
+                        ),
+                        title = tooltip_data$data_upload$ea_min_size,
+                        placement = "top"
                       )
                     ),
                     shiny::column(
                       width = 6,
-                      shiny::numericInput(
-                        inputId = ns('ea_max_size'),
-                        label = 'Max. feature set size',
-                        value = 800,
-                        min = 1,
-                        max = NA,
-                        step = 50,
-                        width = '100%'
+                      bsplus::bs_embed_tooltip(
+                        shiny::numericInput(
+                          inputId = ns('ea_max_size'),
+                          label = 'Max. feature set size',
+                          value = 800,
+                          min = 1,
+                          max = NA,
+                          step = 50,
+                          width = '100%'
+                        ),
+                        title = tooltip_data$data_upload$ea_max_size,
+                        placement = "top"
                       )
                     )
                   ),
-
-                  shiny::sliderInput(
-                    inputId = ns('gsea_pval'),
-                    label = 'p-value cutoff (feature sets)',
-                    min = 0.01,
-                    max = 0.9,
-                    value = 0.05,
-                    step = 0.01,
-                    width = '100%'
+                  bsplus::bs_embed_tooltip(
+                    shiny::sliderInput(
+                      inputId = ns('gsea_pval'),
+                      label = 'p-value cutoff (feature sets)',
+                      min = 0.01,
+                      max = 0.9,
+                      value = 0.05,
+                      step = 0.01,
+                      width = '100%'
+                    ),
+                    title = tooltip_data$data_upload$gsea_pval,
+                    placement = "top"
                   )
                 ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 12,
-                    shiny::numericInput(
-                      inputId = ns('ea_seed'),
-                      label = "Seed",
-                      value = 1,
-                      min = 1,
-                      step = 1,
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::numericInput(
+                        inputId = ns('ea_seed'),
+                        label = "Seed",
+                        value = 1,
+                        min = 1,
+                        step = 1,
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$ea_seed,
+                      placement = "top"
                     )
                   )
                 ),
-
                 collapsible = T,
                 collapsed  = T,
                 maximizable = F,
@@ -2048,18 +2103,26 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
               shiny::fluidRow(
                 shiny::column(
                   width = 6,
-                  shiny::downloadButton(
-                    outputId = ns("download_ea_feature_table"),
-                    label = "Feature table",
-                    style = "width:98%;"
+                  bsplus::bs_embed_tooltip(
+                    shiny::downloadButton(
+                      outputId = ns("download_ea_feature_table"),
+                      label = "Feature table",
+                      style = "width:98%;"
+                    ),
+                    title = tooltip_data$data_upload$download_ea_feature_table,
+                    placement = "top"
                   )
                 ),
                 shiny::column(
                   width = 6,
-                  shiny::downloadButton(
-                    outputId = ns("download_ea_table"),
-                    label = "EA table",
-                    style = "width:100%;"
+                  bsplus::bs_embed_tooltip(
+                    shiny::downloadButton(
+                      outputId = ns("download_ea_table"),
+                      label = "EA table",
+                      style = "width:100%;"
+                    ),
+                    title = tooltip_data$data_upload$download_ea_table,
+                    placement = "top"
                   )
                 )
               )
@@ -2089,91 +2152,118 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
                 shiny::fluidRow(
                   shiny::column(
                     width = 6,
-                    shiny::selectInput(
-                      inputId = ns('or_go_ont'),
-                      label = 'Feature sets',
-                      choices = r6$hardcoded_settings$over_representation_analysis$terms,
-                      selected = NULL,
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::selectInput(
+                        inputId = ns('or_go_ont'),
+                        label = 'Feature sets',
+                        choices = r6$hardcoded_settings$over_representation_analysis$terms,
+                        selected = NULL,
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$or_go_ont,
+                      placement = "top"
                     )
                   ),
                   shiny::column(
                     width = 6,
-                    shiny::selectInput(
-                      inputId = ns('or_pval_adjustment'),
-                      label = 'Adjustment (feature sets)',
-                      choices = c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"),
-                      selected = "BH",
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::selectInput(
+                        inputId = ns('or_pval_adjustment'),
+                        label = 'Adjustment (feature sets)',
+                        choices = c("holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none"),
+                        selected = "BH",
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$or_pval_adjustment,
+                      placement = "top"
                     )
                   )
                 ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 6,
-                    shiny::numericInput(
-                      inputId = ns('ora_min_gssize'),
-                      label = 'Min. feature set size',
-                      value = 10,
-                      min = 1,
-                      max = NA,
-                      step = 5,
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::numericInput(
+                        inputId = ns('ora_min_gssize'),
+                        label = 'Min. feature set size',
+                        value = 10,
+                        min = 1,
+                        max = NA,
+                        step = 5,
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$ora_min_gssize,
+                      placement = "top"
                     )
                   ),
                   shiny::column(
                     width = 6,
-                    shiny::numericInput(
-                      inputId = ns('ora_max_gssize'),
-                      label = 'Max. feature set size',
-                      value = 500,
-                      min = 1,
-                      max = NA,
-                      step = 50,
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::numericInput(
+                        inputId = ns('ora_max_gssize'),
+                        label = 'Max. feature set size',
+                        value = 500,
+                        min = 1,
+                        max = NA,
+                        step = 50,
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$ora_max_gssize,
+                      placement = "top"
                     )
                   )
                 ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 6,
-                    shiny::sliderInput(
-                      inputId = ns('or_pval_cutoff'),
-                      label = 'p-value cutoff (feature sets)',
-                      min = 0.01,
-                      max = 0.9,
-                      value = 0.05,
-                      step = 0.01,
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::sliderInput(
+                        inputId = ns('or_pval_cutoff'),
+                        label = 'p-value cutoff (feature sets)',
+                        min = 0.01,
+                        max = 0.9,
+                        value = 0.05,
+                        step = 0.01,
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$or_pval_cutoff,
+                      placement = "top"
                     )
                   ),
                   shiny::column(
                     width = 6,
-                    shiny::sliderInput(
-                      inputId = ns('or_qval_cutoff'),
-                      label = 'q-value cutoff (feature sets)',
-                      min = 0.01,
-                      max = 0.9,
-                      value = 0.05,
-                      step = 0.01,
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::sliderInput(
+                        inputId = ns('or_qval_cutoff'),
+                        label = 'q-value cutoff (feature sets)',
+                        min = 0.01,
+                        max = 0.9,
+                        value = 0.05,
+                        step = 0.01,
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$or_qval_cutoff,
+                      placement = "top"
                     )
                   )
                 ),
                 shiny::fluidRow(
                   shiny::column(
                     width = 12,
-                    shiny::numericInput(
-                      inputId = ns('ora_seed'),
-                      label = "Seed",
-                      value = 1,
-                      min = 1,
-                      step = 1,
-                      width = '100%'
+                    bsplus::bs_embed_tooltip(
+                      shiny::numericInput(
+                        inputId = ns('ora_seed'),
+                        label = "Seed",
+                        value = 1,
+                        min = 1,
+                        step = 1,
+                        width = '100%'
+                      ),
+                      title = tooltip_data$data_upload$ora_seed,
+                      placement = "top"
                     )
                   )
                 ),
-
                 collapsible = T,
                 collapsed  = T,
                 maximizable = F,
@@ -2187,18 +2277,26 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
               shiny::fluidRow(
                 shiny::column(
                   width = 6,
-                  shiny::downloadButton(
-                    outputId = ns("download_ora_feature_table"),
-                    label = "Feature table",
-                    style = "width:98%;"
+                  bsplus::bs_embed_tooltip(
+                    shiny::downloadButton(
+                      outputId = ns("download_ora_feature_table"),
+                      label = "Feature table",
+                      style = "width:98%;"
+                    ),
+                    title = tooltip_data$data_upload$download_ora_feature_table,
+                    placement = "top"
                   )
                 ),
                 shiny::column(
                   width = 6,
-                  shiny::downloadButton(
-                    outputId = ns("download_ora_table"),
-                    label = "ORA table",
-                    style = "width:100%;"
+                  bsplus::bs_embed_tooltip(
+                    shiny::downloadButton(
+                      outputId = ns("download_ora_table"),
+                      label = "ORA table",
+                      style = "width:100%;"
+                    ),
+                    title = tooltip_data$data_upload$download_ora_table,
+                    placement = "top"
                   )
                 )
               )

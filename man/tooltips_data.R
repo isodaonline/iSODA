@@ -51,8 +51,52 @@ tooltip_data = list(
     feat_table_select = "Selected table to display",
     download_feature_table = "Download the displayed table",
     feat_name_del = "Select the feature table to remove",
-    feat_del = "Remove selected feature table"
+    feat_del = "Remove selected feature table",
 
+    # Functional analysis
+    gseaprep_table_select = "Data used as input",
+    gseaprep_group_col = "Sample metadata column from which to pick groups",
+    gseaprep_groups = "Two groups of samples to compare",
+    gseaprep_test = "Test applied to features comparing the two sample groups",
+    gseaprep_adjustment = "p-value adjustment to for the statistical test",
+    gseaprep_method = "Fold change calculation function for the two groups",
+    fa_feature_selection = "Select features for the functional analysis input. \n\t-Statistical selection: only for ORA, will be ignored in EA. Uses the statistical results from above to select features. \n\t-User selection: uses feature metadata to select features. If no such table was provided, feature metadata can be added via the volcano, heatmap or feature correlation plot. Otherwise, all features are passed on.",
+    gseaprep_pval = "Keep only features below this p-value (ORA only, ignored in EA)",
+    or_fc_threshold = "Keep only features above this fold change (ORA only, ignored in EA)",
+    fa_feature_col = "Column from the feature annotations table from which to select features (if none, all are passed, or alternatively, use volcano, heatmap or feature correlation plot to populate the table",
+    fa_feature_values = "Keep features associated to this/these annotations",
+    gsea_go = "Feature sets (equivalent to gene sets) to investigate. Default GeneOntology genesets are provided by iSODA for the gene-based data. Custom ontologies can be provided via the feature annotation table:\n\t-Typically these are polymorphic relationships where one feature can be associated to 0, one or multiple feature sets.\n\t-When a feature is associated to multiple feature sets, they can be reported as a pipe-separated string.",
+    gsea_adjustment = "p-value adjutment for the enrichment analysis test",
+    ea_min_size = "Minimum features found per set to be valid",
+    ea_max_size = "Maximum features found per set to be valid",
+    gsea_pval = "p-value threshold for the feature sets via the enrichment analysis test",
+    ea_seed = "Seed to ensure reproductibility during enrichment analysis",
+    download_ea_feature_table = "Download the features used as input for the enrichment analysis along with the associated statistical values",
+    download_ea_table = "Download the enrichment analysis results, i.e. the feature sets and the associated values",
+    or_go_ont = "Feature sets (equivalent to gene sets) to investigate. Default GeneOntology genesets are provided by iSODA for the gene-based data. Custom ontologies can be provided via the feature annotation table:\n\t-Typically these are polymorphic relationships where one feature can be associated to 0, one or multiple feature sets.\n\t-When a feature is associated to multiple feature sets, they can be reported as a pipe-separated string.",
+    or_pval_adjustment = "p-value adjutment for the over-representation analysis test",
+    ora_min_gssize = "Minimum features found per set to be valid",
+    ora_max_gssize = "Maximum features found per set to be valid",
+    or_pval_cutoff = "p-value threshold for the feature sets via the over-representation analysis test",
+    or_qval_cutoff = "q-value threshold for the feature sets via the over-representation analysis test",
+    ora_seed = "Seed to ensure reproductibility during over-representation analysis",
+    download_ora_feature_table = "Download the features used as input for the over-representation analysis along with the associated statistical values",
+    download_ora_table = "Download the over-representation analysis results, i.e. the feature sets and the associated values"
+  ),
+  mofa = list(
+    data_scale_views = "If views have different ranges/variances, it is good practice to scale each view to unit variance.",
+    data_scale_groups = "If groups have different ranges/variances, it is good practice to scale each group to unit variance.",
+    mofa_seed = "Seed to ensure reproductibility during MOFA",
+    model_num_factors = "Number of factors to compute",
+    model_spikeslab_factors = "Use spike-slab sparsity prior in the factors",
+    model_ard_factors = "Use ARD prior in the factors",
+    model_spikeslab_weights = "Use spike-slab sparsity prior in the weights",
+    model_ard_weights = "Use ARD prior in the weights",
+    training_iterations = "Maximum number of iterations. Convergence is assessed using the ELBO statistic",
+    training_start_elbo = "The first iteration to compute the ELBO",
+    training_stochastic = "Whether to use stochastic variational inference (only required for very big data sets)",
+    training_convergence_mode = "convergence criteria, either 'fast', 'medium' or slow', corresponding to 0.0005%, 0.00005% or 0.000005% deltaELBO change",
+    training_freq_elbo = "The first iteration to compute the ELBO"
     
   )
 )
