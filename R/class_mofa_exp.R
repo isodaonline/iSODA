@@ -515,8 +515,7 @@ Mofa_class = R6::R6Class(
       # Retrieve all options
       data_opts = MOFA2::get_default_data_options(pretrained)
       model_opts = MOFA2::get_default_model_options(pretrained)
-      train_opts = MOFA2::get_default_training_options(pretrained,
-                                                       seed = seed)
+      train_opts = MOFA2::get_default_training_options(pretrained)
 
       # Set data options
       data_opts$scale_views = scale_views
@@ -540,6 +539,7 @@ Mofa_class = R6::R6Class(
       train_opts$weight_views = weight_views
 
       # Set parameters to the object
+      base::set.seed(seed)
       pretrained = MOFA2::prepare_mofa(
         object = pretrained,
         data_options = data_opts,

@@ -152,13 +152,14 @@ sidebar_ui = function() {
 
 #--------------------------------------------------------------- Setup body ----
 body_ui = function() {
+  
   bs4Dash::dashboardBody(
 
     # Detect UI functions
     shinyjs::useShinyjs(),
     shinybrowser::detect(),
     waiter::autoWaiter(html = spin_3k(), color = "rgba(255, 255, 255, 0)"),
-
+    
     bs4Dash::tabItems(
 
       # Start page
@@ -246,8 +247,6 @@ ui = bs4Dash::dashboardPage(header, sidebar, body)
 #------------------------------------------------------------------- Server ----
 
 server = function(input, output, session) {
-
-  
   
   # Create logfile
   log_file <<- paste0("./logs/", get_day_time_code(), ".log")
@@ -260,6 +259,7 @@ server = function(input, output, session) {
   
   # Source the tooltips file and utils
   base::source("./man/tooltips_data.R")
+  # tooltip_data <<- tooltip_data
   base::source('./R/utils.R')
 
   options(shiny.maxRequestSize=300*1024^2)
@@ -463,4 +463,4 @@ server = function(input, output, session) {
 }
 
 #---------------------------------------------------------------------- End ----
-shinyApp(ui, server)
+shiny::shinyApp(ui = ui, server = server)

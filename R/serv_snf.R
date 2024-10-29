@@ -7,62 +7,14 @@ snf_ui = function(id) {
     #------------------------------------------------------------ Setup tab ----
     shiny::tabPanel(
       title = "Setup",
-      shiny::fluidRow(
-        shiny::column(
-          width=12,
-
-          # Modules table
-          shiny::br(),
-          bs4Dash::box(
-            id = ns('module_table_box'),
-            title = 'Available data',
-            width = 12,
-            DT::dataTableOutput(outputId = ns("modules_table"))
-
-          ),
-        )
-      ),
-      shiny::fluidRow(
-        shiny::column(width = 3),
-        shiny::column(
-          width = 6,
-          shiny::actionButton(
-            inputId = ns('run_snf'),
-            label = "Run SNF",
-            icon = icon("play"),
-            style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
-            width = '100%'
-          )
-        ),
-        shiny::column(width = 3)
-
+      shiny::uiOutput(
+        outputId = ns('snf_upload')
       )
     ),
     shiny::tabPanel(
       title = "Visualization",
-      shiny::fluidRow(
-        shiny::column(
-          width = 11,
-          shinyWidgets::checkboxGroupButtons(inputId = ns("show_plots_snf"),
-                                             label = NULL,
-                                             status = "default",
-                                             choices = get_snf_plot_list(),
-                                             checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
-                                             size = "normal",
-                                             justified = TRUE)
-        ),
-        shiny::column(
-          width = 1,
-          shinyWidgets::actionBttn(inputId = ns("clear_plots"),
-                                   label = "Clear",
-                                   style = "material-flat",
-                                   color = "danger",
-                                   block = T,
-                                   icon = icon("x"))
-        )
-      ),
       shiny::uiOutput(
-        outputId = ns("plotbox_field")
+        outputId = ns('snf_visualization')
       )
     )
   )
@@ -75,7 +27,68 @@ snf_server = function(id, r6, module_controler, main_input) {
     id,
     function(input, output, session) {
       ns = session$ns
-
+      
+      output$snf_upload = shiny::renderUI({
+        shiny::tagList(shiny::fluidRow(
+          shiny::column(
+            width=12,
+            
+            # Modules table
+            shiny::br(),
+            bs4Dash::box(
+              id = ns('module_table_box'),
+              title = 'Available data',
+              width = 12,
+              DT::dataTableOutput(outputId = ns("modules_table"))
+              
+            ),
+          )
+        ),
+        shiny::fluidRow(
+          shiny::column(width = 3),
+          shiny::column(
+            width = 6,
+            shiny::actionButton(
+              inputId = ns('run_snf'),
+              label = "Run SNF",
+              icon = icon("play"),
+              style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
+              width = '100%'
+              )
+            ),
+          shiny::column(width = 3)
+          )
+        )
+      })
+      output$snf_visualization = shiny::renderUI({
+        shiny::tagList(
+          shiny::fluidRow(
+            shiny::column(
+              width = 11,
+              shinyWidgets::checkboxGroupButtons(inputId = ns("show_plots_snf"),
+                                                 label = NULL,
+                                                 status = "default",
+                                                 choices = get_snf_plot_list(),
+                                                 checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
+                                                 size = "normal",
+                                                 justified = TRUE)
+            ),
+            shiny::column(
+              width = 1,
+              shinyWidgets::actionBttn(inputId = ns("clear_plots"),
+                                       label = "Clear",
+                                       style = "material-flat",
+                                       color = "danger",
+                                       block = T,
+                                       icon = icon("x"))
+            )
+          ),
+          shiny::uiOutput(
+            outputId = ns("plotbox_field")
+          )
+        )
+      })
+      
       input_modules = shiny::reactiveValues(
         table = NULL,
         uuids = NULL,

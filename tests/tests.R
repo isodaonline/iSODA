@@ -203,8 +203,8 @@ self$get_ora_object()
 
 self$preloaded_data = T
 
-base::saveRDS(self, "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds")
-self = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds")
+base::saveRDS(self, "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds.isoda")
+self = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/cellminer_iSODArds.isoda")
 self$plot_samples_correlation()
 self$plots$samples_correlation
 

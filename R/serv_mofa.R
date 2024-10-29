@@ -1,238 +1,29 @@
 #------------------------------------------------------------------ MOFA UI ----
 mofa_ui = function(id) {
-  base::source("./man/tooltips_data.R")
+  # base::source("./man/tooltips_data.R")
+  tooltip_data = list()
   ns = shiny::NS(id)
   bs4Dash::tabsetPanel(
     type = "tabs",
-
+    
     #------------------------------------------------------------ Setup tab ----
     shiny::tabPanel(
       title = "Setup",
-      shiny::fluidRow(
-        shiny::column(
-          width=12,
-
-          # Modules table
-          shiny::br(),
-          bs4Dash::box(
-            id = ns('module_table_box'),
-            title = 'Available data',
-            width = 12,
-            DT::dataTableOutput(outputId = ns("modules_table"))
-
-          )
-        )
-      ),
-      bs4Dash::box(
-        id = ns('mofa_options_box'),
-        title = 'Options',
-        width = 12,
-        collapsed = T,
-        shiny::fluidRow(
-
-          shiny::column(
-            width = 4,
-            shiny::h3("Data options"),
-
-            shiny::fluidRow(
-              shiny::column(
-                width = 6,
-                bsplus::bs_embed_tooltip(
-                  shinyWidgets::prettySwitch(
-                    inputId = ns("data_scale_views"),
-                    label = "Scale views",
-                    value = FALSE,
-                    fill = TRUE, status = "primary"),
-                  title = tooltip_data$mofa$data_scale_views,
-                  placement = "top"
-                )
-              ),
-              shiny::column(
-                width = 6,
-                bsplus::bs_embed_tooltip(
-                  shinyWidgets::prettySwitch(
-                    inputId = ns("data_scale_groups"),
-                    label = "Scale groups",
-                    value = FALSE,
-                    fill = TRUE, status = "primary"),
-                  title = tooltip_data$mofa$data_scale_groups,
-                  placement = "top"
-                )
-              ),
-              bsplus::bs_embed_tooltip(
-                shiny::numericInput(
-                  inputId = ns('mofa_seed'),
-                  label = 'Seed',
-                  value = 42,
-                  min = 1,
-                  step = 1,
-                  width = '80%'
-                ),
-                title = tooltip_data$mofa$mofa_seed,
-                placement = "top"
-              )
-            )
-          ),
-          shiny::column(
-            width = 4,
-            shiny::h3("Model options"),
-
-            shiny::fluidRow(
-              bsplus::bs_embed_tooltip(
-                shiny::numericInput(
-                  inputId = ns("model_num_factors"),
-                  label = "Number of factors",
-                  value = 6,
-                  min = 1,
-                  width = "100%"
-                ),
-                title = tooltip_data$mofa$model_num_factors,
-                placement = "top"
-              ),
-              shiny::column(
-                width = 6,
-                bsplus::bs_embed_tooltip(
-                  shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_factors"),
-                                             label = "Spikeslab factors",
-                                             value = FALSE,
-                                             fill = TRUE, status = "primary"),
-                  title = tooltip_data$mofa$model_spikeslab_factors,
-                  placement = "top"
-                ),
-                bsplus::bs_embed_tooltip(
-                  shinyWidgets::prettySwitch(inputId = ns("model_ard_factors"),
-                                             label = "ARD factors",
-                                             value = FALSE,
-                                             fill = TRUE, status = "primary"),
-                  title = tooltip_data$mofa$model_ard_factors,
-                  placement = "top"
-                )
-              ),
-              shiny::column(
-                width = 6,
-                bsplus::bs_embed_tooltip(
-                  shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_weights"),
-                                             label = "Spikeslab weights",
-                                             value = TRUE,
-                                             fill = TRUE, status = "primary"),
-                  title = tooltip_data$mofa$model_spikeslab_weights,
-                  placement = "top"
-                ),
-                bsplus::bs_embed_tooltip(
-                  shinyWidgets::prettySwitch(inputId = ns("model_ard_weights"),
-                                             label = "ARD weights",
-                                             value = TRUE,
-                                             fill = TRUE, status = "primary"),
-                  title = tooltip_data$mofa$model_ard_weights,
-                  placement = "top"
-                )
-              )
-            )
-          ),
-          shiny::column(
-            width = 4,
-            shiny::h3("Training options"),
-
-            shiny::fluidRow(
-              shiny::column(
-                width = 6,
-                bsplus::bs_embed_tooltip(
-                  shiny::numericInput(inputId = ns("training_iterations"),
-                                      label = "Max iterations",
-                                      value = 1000,
-                                      width = "100%"),
-                  title = tooltip_data$mofa$training_iterations,
-                  placement = "top"
-                ),
-                bsplus::bs_embed_tooltip(
-                  shiny::numericInput(inputId = ns("training_start_elbo"),
-                                      label = "startELBO",
-                                      value = 1,
-                                      width = "100%"),
-                  title = tooltip_data$mofa$training_start_elbo,
-                  placement = "top"
-                ),
-                bsplus::bs_embed_tooltip(
-                  shinyWidgets::prettySwitch(inputId = ns("training_stochastic"),
-                                             label = "Stochastic",
-                                             value = FALSE,
-                                             fill = TRUE, status = "primary"),
-                  title = tooltip_data$mofa$training_stochastic,
-                  placement = "top"
-                )
-              ),
-              shiny::column(
-                width = 6,
-                bsplus::bs_embed_tooltip(
-                  shiny::selectInput(inputId = ns("training_convergence_mode"),
-                                     label = "Convergence mode",
-                                     choices = c("fast", "medium", "slow"),
-                                     selected = "fast",
-                                     width = "100%"),
-                  title = tooltip_data$mofa$training_convergence_mode,
-                  placement = "top"
-                ),
-                bsplus::bs_embed_tooltip(
-                  shiny::numericInput(inputId = ns("training_freq_elbo"),
-                                      label = "freqELBO",
-                                      value = 5,
-                                      width = "100%"),
-                  title = tooltip_data$mofa$training_freq_elbo,
-                  placement = "top"
-                )
-              )
-            )
-          )
-        )
-      ),
-      shiny::fluidRow(
-        shiny::column(
-          width = 12,
-          shiny::br()
-        ),
-        shiny::column(width = 3),
-        shiny::column(
-          width = 6,
-          shiny::actionButton(
-            inputId = ns('run_mofa'),
-            label = "Run MOFA",
-            icon = icon("play"),
-            style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
-            width = '100%'
-          )
-        ),
-        shiny::column(width = 3)
+      shiny::uiOutput(
+        outputId = ns('mofa_upload')
       )
     ),
     shiny::tabPanel(
       title = "Visualization",
-      shiny::fluidRow(
-        shiny::column(
-          width = 11,
-          shinyWidgets::checkboxGroupButtons(inputId = ns("show_plots_mofa"),
-                                             label = NULL,
-                                             status = "default",
-                                             choices = get_mofa_plot_list(),
-                                             checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
-                                             size = "normal",
-                                             justified = TRUE)
-        ),
-        shiny::column(
-          width = 1,
-          shinyWidgets::actionBttn(inputId = ns("clear_plots"),
-                                   label = "Clear",
-                                   style = "material-flat",
-                                   color = "danger",
-                                   block = T,
-                                   icon = icon("x"))
-        )
+      shiny::uiOutput(
+        outputId = ns('mofa_visualization')
       ),
       shiny::uiOutput(
         outputId = ns("plotbox_field")
       )
     )
   )
-
+  
 }
 
 
@@ -242,21 +33,245 @@ mofa_server = function(id, r6, module_controler, main_input) {
     id,
     function(input, output, session) {
       ns = session$ns
-
-
+      
+      output$mofa_upload = shiny::renderUI({
+        shiny::tagList(
+          shiny::fluidRow(
+            shiny::column(
+              width=12,
+              
+              # Modules table
+              shiny::br(),
+              bs4Dash::box(
+                id = ns('module_table_box'),
+                title = 'Available data',
+                width = 12,
+                DT::dataTableOutput(outputId = ns("modules_table"))
+                
+              )
+            )
+          ),
+          bs4Dash::box(
+            id = ns('mofa_options_box'),
+            title = 'Options',
+            width = 12,
+            collapsed = T,
+            shiny::fluidRow(
+              
+              shiny::column(
+                width = 4,
+                shiny::h3("Data options"),
+                
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 6,
+                    bsplus::bs_embed_tooltip(
+                      shinyWidgets::prettySwitch(
+                        inputId = ns("data_scale_views"),
+                        label = "Scale views",
+                        value = FALSE,
+                        fill = TRUE, status = "primary"),
+                      title = tooltip_data$mofa$data_scale_views,
+                      placement = "top"
+                    )
+                  ),
+                  shiny::column(
+                    width = 6,
+                    bsplus::bs_embed_tooltip(
+                      shinyWidgets::prettySwitch(
+                        inputId = ns("data_scale_groups"),
+                        label = "Scale groups",
+                        value = FALSE,
+                        fill = TRUE, status = "primary"),
+                      title = tooltip_data$mofa$data_scale_groups,
+                      placement = "top"
+                    )
+                  ),
+                  bsplus::bs_embed_tooltip(
+                    shiny::numericInput(
+                      inputId = ns('mofa_seed'),
+                      label = 'Seed',
+                      value = 42,
+                      min = 1,
+                      step = 1,
+                      width = '80%'
+                    ),
+                    title = tooltip_data$mofa$mofa_seed,
+                    placement = "top"
+                  )
+                )
+              ),
+              shiny::column(
+                width = 4,
+                shiny::h3("Model options"),
+                
+                shiny::fluidRow(
+                  bsplus::bs_embed_tooltip(
+                    shiny::numericInput(
+                      inputId = ns("model_num_factors"),
+                      label = "Number of factors",
+                      value = 6,
+                      min = 1,
+                      width = "100%"
+                    ),
+                    title = tooltip_data$mofa$model_num_factors,
+                    placement = "top"
+                  ),
+                  shiny::column(
+                    width = 6,
+                    bsplus::bs_embed_tooltip(
+                      shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_factors"),
+                                                 label = "Spikeslab factors",
+                                                 value = FALSE,
+                                                 fill = TRUE, status = "primary"),
+                      title = tooltip_data$mofa$model_spikeslab_factors,
+                      placement = "top"
+                    ),
+                    bsplus::bs_embed_tooltip(
+                      shinyWidgets::prettySwitch(inputId = ns("model_ard_factors"),
+                                                 label = "ARD factors",
+                                                 value = FALSE,
+                                                 fill = TRUE, status = "primary"),
+                      title = tooltip_data$mofa$model_ard_factors,
+                      placement = "top"
+                    )
+                  ),
+                  shiny::column(
+                    width = 6,
+                    bsplus::bs_embed_tooltip(
+                      shinyWidgets::prettySwitch(inputId = ns("model_spikeslab_weights"),
+                                                 label = "Spikeslab weights",
+                                                 value = TRUE,
+                                                 fill = TRUE, status = "primary"),
+                      title = tooltip_data$mofa$model_spikeslab_weights,
+                      placement = "top"
+                    ),
+                    bsplus::bs_embed_tooltip(
+                      shinyWidgets::prettySwitch(inputId = ns("model_ard_weights"),
+                                                 label = "ARD weights",
+                                                 value = TRUE,
+                                                 fill = TRUE, status = "primary"),
+                      title = tooltip_data$mofa$model_ard_weights,
+                      placement = "top"
+                    )
+                  )
+                )
+              ),
+              shiny::column(
+                width = 4,
+                shiny::h3("Training options"),
+                
+                shiny::fluidRow(
+                  shiny::column(
+                    width = 6,
+                    bsplus::bs_embed_tooltip(
+                      shiny::numericInput(inputId = ns("training_iterations"),
+                                          label = "Max iterations",
+                                          value = 1000,
+                                          width = "100%"),
+                      title = tooltip_data$mofa$training_iterations,
+                      placement = "top"
+                    ),
+                    bsplus::bs_embed_tooltip(
+                      shiny::numericInput(inputId = ns("training_start_elbo"),
+                                          label = "startELBO",
+                                          value = 1,
+                                          width = "100%"),
+                      title = tooltip_data$mofa$training_start_elbo,
+                      placement = "top"
+                    ),
+                    bsplus::bs_embed_tooltip(
+                      shinyWidgets::prettySwitch(inputId = ns("training_stochastic"),
+                                                 label = "Stochastic",
+                                                 value = FALSE,
+                                                 fill = TRUE, status = "primary"),
+                      title = tooltip_data$mofa$training_stochastic,
+                      placement = "top"
+                    )
+                  ),
+                  shiny::column(
+                    width = 6,
+                    bsplus::bs_embed_tooltip(
+                      shiny::selectInput(inputId = ns("training_convergence_mode"),
+                                         label = "Convergence mode",
+                                         choices = c("fast", "medium", "slow"),
+                                         selected = "fast",
+                                         width = "100%"),
+                      title = tooltip_data$mofa$training_convergence_mode,
+                      placement = "top"
+                    ),
+                    bsplus::bs_embed_tooltip(
+                      shiny::numericInput(inputId = ns("training_freq_elbo"),
+                                          label = "freqELBO",
+                                          value = 5,
+                                          width = "100%"),
+                      title = tooltip_data$mofa$training_freq_elbo,
+                      placement = "top"
+                    )
+                  )
+                )
+              )
+            )
+          ),
+          shiny::fluidRow(
+            shiny::column(
+              width = 12,
+              shiny::br()
+            ),
+            shiny::column(width = 3),
+            shiny::column(
+              width = 6,
+              shiny::actionButton(
+                inputId = ns('run_mofa'),
+                label = "Run MOFA",
+                icon = icon("play"),
+                style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
+                width = '100%'
+              )
+            ),
+            shiny::column(width = 3)
+          )
+        )
+      })
+      output$mofa_visualization = shiny::renderUI({
+        shiny::tagList(
+          shiny::fluidRow(
+            shiny::column(
+              width = 11,
+              shinyWidgets::checkboxGroupButtons(inputId = ns("show_plots_mofa"),
+                                                 label = NULL,
+                                                 status = "default",
+                                                 choices = get_mofa_plot_list(),
+                                                 checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon")),
+                                                 size = "normal",
+                                                 justified = TRUE)
+            ),
+            shiny::column(
+              width = 1,
+              shinyWidgets::actionBttn(inputId = ns("clear_plots"),
+                                       label = "Clear",
+                                       style = "material-flat",
+                                       color = "danger",
+                                       block = T,
+                                       icon = icon("x"))
+            )
+          )
+        )
+      })
+      
       input_modules = shiny::reactiveValues(
         table = NULL,
         uuids = NULL,
         idx_list = NULL
       )
-
-
+      
+      
       # Omics modules loaded (in table)
       session$userData[[id]]$snf_observe = shiny::observe({
-
+        
         shiny::req(main_input$main_sidebar)
         if (main_input$main_sidebar == "mofa_tab") {
-
+          
           run = NULL
           exp_name = NULL
           exp_type = NULL
@@ -265,10 +280,10 @@ mofa_server = function(id, r6, module_controler, main_input) {
           likelihood_list = NULL
           uuid_list = NULL
           idx_list = NULL
-
+          
           for (i in 1:length(module_controler$exp_r6)){
             if (!is.null(module_controler$exp_r6[[i]]$tables$raw_data)) {
-
+              
               name = module_controler$exp_r6[[i]]$name
               uuid = generate_id()
               run = c(run,
@@ -287,17 +302,17 @@ mofa_server = function(id, r6, module_controler, main_input) {
                                     )
               )
               likelihood_list = c(likelihood_list,
-                                    base::sprintf(
-                                      '<select id="%s-modLikelihood-%s" class="shiny-input-select"><option value="gaussian" selected>gaussian</option><option value="poisson">poisson</option><option value="bernoulli">bernoulli</option></select>',
-                                      id, uuid
-                                    )
+                                  base::sprintf(
+                                    '<select id="%s-modLikelihood-%s" class="shiny-input-select"><option value="gaussian" selected>gaussian</option><option value="poisson">poisson</option><option value="bernoulli">bernoulli</option></select>',
+                                    id, uuid
+                                  )
               )
               uuid_list = c(uuid_list, uuid)
               idx_list = c(idx_list, i)
             }
           }
-
-
+          
+          
           m = base::data.frame(
             "Run" = run,
             "Name" = exp_name,
@@ -306,12 +321,12 @@ mofa_server = function(id, r6, module_controler, main_input) {
             "Table" = table_select_list,
             "Likelihood" = likelihood_list
           )
-
+          
           input_modules$table = m
           input_modules$uuids = uuid_list
           input_modules$idx_list = idx_list
-
-
+          
+          
           output$modules_table = DT::renderDataTable(
             m, escape = FALSE, selection = 'none', server = FALSE,
             options = list(dom = 't', paging = FALSE, ordering = FALSE), rownames= FALSE,
@@ -326,10 +341,10 @@ mofa_server = function(id, r6, module_controler, main_input) {
           )
         }
       })
-
+      
       # Start MOFA
       session$userData[[id]]$run_mofa = shiny::observeEvent(input$run_mofa, {
-
+        
         # Disable button while running
         shinyjs::disable("run_mofa")
         waiter::waiter_show(
@@ -337,7 +352,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
           html = spin_circle(),
           color = "#00A86B"
         )
-
+        
         # Check on experiment counts
         if (length(input_modules$idx_list) < 2) {
           waiter::waiter_hide(id = ns("run_mofa"))
@@ -345,20 +360,20 @@ mofa_server = function(id, r6, module_controler, main_input) {
           print_tme(m = id, e = 'Upload more than one experiment.')
         }
         print_tm(r6$name, "MOFA: starting...")
-
+        
         r6$tables$metadata = NULL
         r6$tables$omics_tables = list()
-
+        
         m = input_modules$table
         uuids = input_modules$uuids
         idx_list = input_modules$idx_list
         likelihoods = list()
-
+        
         base::withCallingHandlers({
           for (i in base::seq_len(nrow(m))) {
             uuid = uuids[i]
             idx = idx_list[i]
-
+            
             if (input[[paste0("modSelected-", uuid)]]) {
               exp_name = module_controler$exp_r6[[idx]]$name
               exp_type = module_controler$exp_r6[[idx]]$type
@@ -377,7 +392,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
             }
           }
           r6$clean_datasets()
-
+          
         },warning = function(w){
           print_tmw(r6$name, w)
         }, error=function(e){
@@ -420,19 +435,19 @@ mofa_server = function(id, r6, module_controler, main_input) {
           shinyjs::enable("run_mofa")
           print_tme(r6$name, e)
         })
-
-
+        
+        
         print_tm(r6$name, "MOFA: model ready.")
-
+        
         # Enable button
         waiter::waiter_hide(
           id = ns("run_mofa")
         )
         shinyjs::enable("run_mofa")
       })
-
+      
       # #----------------------------------------------------------- Plotting ----
-
+      
       # Initialise dimensions object
       dimensions_obj = shiny::reactiveValues()
       shiny::observe({
@@ -448,7 +463,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
         dimensions_obj$xpx = shinybrowser::get_width()
         dimensions_obj$ypx = shinybrowser::get_height()
       })
-
+      
       color_palette = grDevices::colorRampPalette(RColorBrewer::brewer.pal(n = 11, name = 'Spectral'))(40)
       # # Plotting events
       explained_variance_events(r6, dimensions_obj, color_palette, input, output, session)
@@ -458,11 +473,11 @@ mofa_server = function(id, r6, module_controler, main_input) {
       feature_top_weights_events(r6, dimensions_obj, color_palette, input, output, session)
       mofa_heatmap_events(r6, dimensions_obj, color_palette, input, output, session)
       scatter_plot_events(r6, dimensions_obj, r6_settings, input, output, session)
-
-
+      
+      
       # Plot selection
       session$userData[[id]]$show_plots_mofa = shiny::observeEvent(input$show_plots_mofa, {
-
+        
         # Update x dimensions in px and bs, and y in px
         if (length(input$show_plots_mofa) < 2) {
           dimensions_obj$xbs = 12
@@ -477,7 +492,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
           dimensions_obj$xpx = shinybrowser::get_width()/2
           dimensions_obj$ypx = shinybrowser::get_height()/2.2
         }
-
+        
         # Plots selected: 1 to 4
         if (length(input$show_plots_mofa) == 1) {
           mofa_plot_one(r6 = r6,
@@ -486,7 +501,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
                         input = input,
                         output = output,
                         session = session)
-
+          
         } else if (length(input$show_plots_mofa) == 2) {
           mofa_plot_two(r6 = r6,
                         dimensions_obj = dimensions_obj,
@@ -494,7 +509,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
                         input = input,
                         output = output,
                         session = session)
-
+          
         } else if (length(input$show_plots_mofa) == 3) {
           mofa_plot_three(r6 = r6,
                           dimensions_obj = dimensions_obj,
@@ -502,7 +517,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
                           input = input,
                           output = output,
                           session = session)
-
+          
         } else if (length(input$show_plots_mofa) >= 4) {
           mofa_plot_four(r6 = r6,
                          dimensions_obj = dimensions_obj,
@@ -510,17 +525,17 @@ mofa_server = function(id, r6, module_controler, main_input) {
                          input = input,
                          output = output,
                          session = session)
-
+          
           shinyWidgets::updateCheckboxGroupButtons(
             session = session,
             inputId = "show_plots_mofa",
             disabledChoices = setdiff(unname(get_mofa_plot_list()), input$show_plots_mofa)
           )
-
+          
         }
-
-
-
+        
+        
+        
         if ((length(input$show_plots_mofa) > 1) & (length(input$show_plots_mofa) < 4)) {
           shinyWidgets::updateCheckboxGroupButtons(
             session = session,
@@ -535,7 +550,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
           )
         }
       })
-
+      
       session$userData[[id]]$clear_plots = shiny::observeEvent(input$clear_plots, {
         print_tm(r6$name, "Clearing plots")
         shinyWidgets::updateCheckboxGroupButtons(
@@ -547,7 +562,7 @@ mofa_server = function(id, r6, module_controler, main_input) {
           NULL
         )
       })
-
+      
     }
   )
 }
