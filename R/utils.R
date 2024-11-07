@@ -70,11 +70,14 @@ r6_switch = function(exp_type, name, id, slot){
 table_switch = function(table_name, r6) {
   switch(EXPR = table_name,
          'Imported metadata table' = r6$tables$imp_meta,
+         'Indexed metadata table' = r6$tables$indexed_meta,
          'Raw metadata table' = r6$tables$raw_meta,
          'Imported data table' = r6$tables$imp_data,
+         'Indexed data table' = r6$tables$indexed_data,
          'Raw data table' = r6$tables$raw_data,
-         'Imported feature table' = r6$tables$imp_feature_table,
-         'Feature table' = r6$tables$feature_table,
+         'Imported feature table' = r6$tables$imp_feat,
+         'Indexed feature table' = r6$tables$indexed_feat,
+         'Raw feature table' = r6$tables$raw_feat,
          'Blank table' = r6$tables$blank_table,
          'Class normalized table' = r6$tables$class_norm_data,
          'Total normalized table' = r6$tables$total_norm_data,
@@ -141,7 +144,18 @@ lipidomics_plot_list = function() {
   return(plot_list)
 }
 
-proteomics_plot_list = function() {
+generic_plot_list = function() {
+  plot_list = c("Dendrogram" = "select_dendrogram",
+                "Volcano plot" = "select_volcano_plot",
+                "Heatmap" = "select_heatmap",
+                "Samples correlation" = "select_samples_correlation",
+                "Feature correlation" = "select_feature_correlation",
+                "PCA" = "select_pca"
+  )
+  return(plot_list)
+}
+
+proteomics_plot_list = function() { # DEPRECATED
   plot_list = c("Dendrogram" = "select_dendrogram",
                 "Volcano plot" = "select_volcano_plot",
                 "Heatmap" = "select_heatmap",
@@ -211,7 +225,17 @@ get_indexed_table = function(id_col,
   if (is.null(input_table)) {
     base::stop('Import data table before setting an ID column')
   }
+  
+  # Check if id_col exists
+  if (is.null(id_col)) {
+    base::stop('ID column missing')
+  }
 
+  # If id_col is numeric
+  if (is.numeric(id_col) && id_col == as.integer(id_col)) {
+    id_col = colnames(input_table)[id_col]
+  }
+  
   # Check if id_col is a valid column name
   if (!id_col %in% colnames(input_table)) {
     stop(paste("Requested ID column '", id_col, "' not found in the table"))
@@ -260,7 +284,7 @@ get_indexed_table = function(id_col,
   return(input_table)
 }
 
-feature_signal_filtering = function(raw_data,
+measurement_filtering = function(raw_data,
                                     blank_table,
                                     indexed_meta,
                                     batch_column,
@@ -321,7 +345,9 @@ feature_signal_filtering = function(raw_data,
       salvaged_features = c(salvaged_features, names(above_threshold)[above_threshold])
     }
     excluded_features = sort(unique(setdiff(excluded_features, salvaged_features)))
-    raw_data = raw_data[,-which(colnames(raw_data) %in% excluded_features)]
+    if (length(excluded_features) > 1) {
+      raw_data = raw_data[,-which(colnames(raw_data) %in% excluded_features)]
+    }
   }
   return(raw_data)
 }
@@ -1161,65 +1187,51 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
   }
 }
 
-get_feature_metadata = function(data_table, dtype) {
+get_feature_metadata = function(feature_table, dtype) {
 
-  if (!(dtype %in% c('lipidomics', 'metabolomics', 'proteomics', 'transcriptomics', 'genomics'))) {
-    print('Error: dtype should be one of [lipidomics, metabolomics, proteomics, transcriptomics, genomics]')
-    return()
-  }
+  feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
+                                                     uniques = FALSE)
+  # Collect carbon and unsaturation counts
+  c_count_1 = c() # Main carbon count / total carbon count (TGs)
+  s_count_1 = c() # Main saturation count
+  c_count_2 = c() # Secondary carbon count (asyl groups or TGs)
+  s_count_2 = c() # Secondary saturation (asyl groups or TGs)
+  for (c in unique(feature_table[, 'Lipid class'])) {
+    idx = rownames(feature_table)[feature_table[, 'Lipid class'] == c]
 
-  if (dtype == 'lipidomics') {
-    feature_table = data.frame(row.names = sort(colnames(data_table)))
-    feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
-                                                       uniques = FALSE)
-    # Collect carbon and unsaturation counts
-    c_count_1 = c() # Main carbon count / total carbon count (TGs)
-    s_count_1 = c() # Main saturation count
-    c_count_2 = c() # Secondary carbon count (asyl groups or TGs)
-    s_count_2 = c() # Secondary saturation (asyl groups or TGs)
-    for (c in unique(feature_table[, 'Lipid class'])) {
-      idx = rownames(feature_table)[feature_table[, 'Lipid class'] == c]
-
-      if (c == "TG") {
-        # For triglycerides
-        for (i in stringr::str_split(string = idx, pattern = " |:|-FA")) {
-          c_count_1 = c(c_count_1, i[2])
-          c_count_2 = c(c_count_2, i[4])
-          s_count_1 = c(s_count_1, i[3])
-          s_count_2 = c(s_count_2, i[5])
-        }
-      } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) >0) {
-        # For species with asyl groups ("/" or "_")
-        for (i in stringr::str_split(string = idx, pattern = " |:|_|/")) {
-          c_count_1 = c(c_count_1, gsub("[^0-9]", "", i[2]))
-          c_count_2 = c(c_count_2, i[4])
-          s_count_1 = c(s_count_1, i[3])
-          s_count_2 = c(s_count_2, i[5])
-        }
-      } else {
-        # For the rest
-        for (i in stringr::str_split(string = idx, pattern = " |:")) {
-          c_count_1 = c(c_count_1, i[2])
-          c_count_2 = c(c_count_2, 0)
-          s_count_1 = c(s_count_1, i[3])
-          s_count_2 = c(s_count_2, 0)
-        }
+    if (c == "TG") {
+      # For triglycerides
+      for (i in stringr::str_split(string = idx, pattern = " |:|-FA")) {
+        c_count_1 = c(c_count_1, i[2])
+        c_count_2 = c(c_count_2, i[4])
+        s_count_1 = c(s_count_1, i[3])
+        s_count_2 = c(s_count_2, i[5])
+      }
+    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) >0) {
+      # For species with asyl groups ("/" or "_")
+      for (i in stringr::str_split(string = idx, pattern = " |:|_|/")) {
+        c_count_1 = c(c_count_1, gsub("[^0-9]", "", i[2]))
+        c_count_2 = c(c_count_2, i[4])
+        s_count_1 = c(s_count_1, i[3])
+        s_count_2 = c(s_count_2, i[5])
+      }
+    } else {
+      # For the rest
+      for (i in stringr::str_split(string = idx, pattern = " |:")) {
+        c_count_1 = c(c_count_1, i[2])
+        c_count_2 = c(c_count_2, 0)
+        s_count_1 = c(s_count_1, i[3])
+        s_count_2 = c(s_count_2, 0)
       }
     }
-
-    feature_table[,'Carbon count (chain 1)'] = as.numeric(c_count_1)
-    feature_table[,'Carbon count (chain 2)'] = as.numeric(c_count_2)
-    feature_table[,'Carbon count (sum)'] = as.numeric(c_count_1) + as.numeric(c_count_2)
-    feature_table[,'Double bonds (chain 1)'] = as.numeric(s_count_1)
-    feature_table[,'Double bonds (chain 2)'] = as.numeric(s_count_2)
-    feature_table[,'Double bonds (sum)'] = as.numeric(s_count_1) + as.numeric(s_count_2)
-
-  } else if (dtype %in% c('metabolomics', 'proteomics', 'transcriptomics', 'genomics')) {
-
-    features = colnames(data_table)
-    feature_table = data.frame(row.names = features)
   }
 
+  feature_table[,'Carbon count (chain 1)'] = as.numeric(c_count_1)
+  feature_table[,'Carbon count (chain 2)'] = as.numeric(c_count_2)
+  feature_table[,'Carbon count (sum)'] = as.numeric(c_count_1) + as.numeric(c_count_2)
+  feature_table[,'Double bonds (chain 1)'] = as.numeric(s_count_1)
+  feature_table[,'Double bonds (chain 2)'] = as.numeric(s_count_2)
+  feature_table[,'Double bonds (sum)'] = as.numeric(s_count_1) + as.numeric(s_count_2)
 
   return(feature_table)
 }
@@ -1327,6 +1339,143 @@ lips_get_del_cols = function(data_table,
 }
 
 #------------------------------------------------------- Plotting functions ----
+
+plot_sample_types_per_batch = function(
+    imp_meta,
+    type_column,
+    batch_column = NULL,
+    blank_pattern,
+    qc_pattern,
+    pool_pattern) {
+  if (is.null(batch_column)) {
+    batch_column = 'tmp_batch'
+    imp_meta[,batch_column] = 1
+  }
+  batches = unique(imp_meta[,batch_column])
+  batch_blanks = c()
+  batch_qcs = c()
+  batch_pools = c()
+  batch_mixed = c()
+  batch_samples = c()
+  
+  for (batch in batches) {
+    batch_idx = rownames(imp_meta)[imp_meta[,batch_column] == batch]
+    
+    index_blanks = rownames(imp_meta)[grep(
+      pattern = blank_pattern,
+      x = imp_meta[batch_idx, type_column],
+      ignore.case = TRUE)]
+    
+    index_qcs = rownames(imp_meta)[grep(
+      pattern = qc_pattern,
+      x = imp_meta[batch_idx, type_column],
+      ignore.case = TRUE)]
+    
+    index_pools = rownames(imp_meta)[grep(
+      pattern = pool_pattern,
+      x = imp_meta[batch_idx, type_column],
+      ignore.case = TRUE)]
+    
+    mixed_samples = unique(c(intersect(index_blanks, index_qcs), intersect(index_qcs, index_pools), intersect(index_blanks, index_pools)))
+    
+    index_samples = base::setdiff(rownames(imp_meta), c(index_blanks, index_qcs, index_pools))
+    
+    batch_blanks = c(batch_blanks, length(index_blanks))
+    batch_qcs = c(batch_qcs, length(index_qcs))
+    batch_pools = c(batch_pools, length(index_pools))
+    batch_mixed = c(batch_mixed, length(mixed_samples))
+    batch_samples = c(batch_samples, length(index_samples))
+    
+  }
+  
+  data = base::data.frame(
+    "Batch" = as.character(batches),
+    "Samples" = batch_samples,
+    "Blanks" = batch_blanks,
+    "QCs" = batch_qcs,
+    "Pools" = batch_pools,
+    "Mixed" = batch_mixed)
+  
+  fig = plotly::plot_ly(x = data$Batch, y = data$Samples, type = 'bar', name = 'Samples')
+  for (col in colnames(data)[3:length(data)]) {
+    fig = plotly::add_trace(
+      p = fig,
+      y = data[[col]],
+      type = 'bar',
+      name = col)
+  }
+  fig = plotly::layout(
+    p = fig,
+    yaxis = list(title = 'Count'),
+    barmode = 'stack')
+  fig = plotly::layout(
+    p = fig,
+    dragmode = FALSE,
+    bargap = 0.2
+  )
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE,
+    scrollZoom = FALSE
+  )
+  
+  return(fig)
+  
+}
+
+plot_sample_groups_per_batch = function(
+    imp_meta,
+    batch_column = NULL,
+    group_column) {
+  
+  if (is.null(batch_column)) {
+    batch_column = 'tmp_batch'
+    imp_meta[,batch_column] = 1
+  }
+  
+  imp_meta[,group_column] = factor(imp_meta[,group_column], levels = unique(imp_meta[,group_column]))
+  
+  batches = unique(imp_meta[,batch_column])
+  data = list(
+    "Batch" = batches
+  )
+  
+  for (batch in batches) {
+    batch_idx = rownames(imp_meta)[imp_meta[,batch_column] == batch]
+    freq = base::table(imp_meta[batch_idx, group_column])
+    for (grp in names(freq)) {
+      data[[grp]] = c(data[[grp]], as.numeric(freq[grp]))
+    }
+  }
+  
+  data = data.frame(data, check.names = F)
+  
+  fig = plotly::plot_ly(x = data$Batch)
+  for (col in levels(imp_meta[,group_column])) {
+    fig = plotly::add_trace(
+      p = fig,
+      y = data[[col]],
+      type = 'bar',
+      name = col)
+  }
+  fig = plotly::layout(
+    p = fig,
+    yaxis = list(title = 'Count'),
+    barmode = 'stack')
+  fig = plotly::layout(
+    p = fig,
+    dragmode = FALSE,
+    bargap = 0.2
+  )
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE,
+    scrollZoom = FALSE
+  )
+  
+  return(fig)
+  
+}
 
 fa_comp_hm_calc = function(data_table = NULL,
                            feature_table = NULL,
@@ -2241,86 +2390,140 @@ faster_cor=function(data_table, method="pearson") {
 }
 
 #--------------------------------------------------------- Example datasets ----
-example_omics = function(name,
-                         type,
-                         meta_file,
-                         data_file,
-                         meta_file_format = "Wide",
-                         data_file_format = "Wide",
-                         param_file = NULL,
-                         id_col_meta,
-                         type_column,
-                         group_column,
-                         batch_column,
-                         blank_pattern = "blank",
-                         qc_pattern = "quality",
-                         pool_pattern = "pool",
-                         excluded_samples = NULL,
-                         drop_blanks = T,
-                         drop_qcs = T,
-                         drop_pools = T,
-                         id_col_data,
-                         blank_multiplier = 2,
-                         sample_threshold = 0.8,
-                         group_threshold = 0.8,
-                         excluded_features = NULL,
-                         imputation_method = "None",
-                         batch_effect_correction = "None",
-                         operation_order = c("Imputation", "Batch correction", "Filtering"),
-                         norm_col = "None") {
+initialize_omics = function(name,
+                            type,
+                            meta_file,
+                            data_file,
+                            feat_file = NULL,
+                            meta_file_format = "Wide",
+                            data_file_format = "Wide",
+                            feat_file_format = "Long",
+                            id_col_meta = NULL,
+                            id_col_data = NULL,
+                            id_col_feat = NULL,
+                            param_file = NULL,
+                            type_column = NULL,
+                            group_column = NULL,
+                            batch_column = NULL,
+                            blank_pattern = "blank",
+                            qc_pattern = "quality",
+                            pool_pattern = "pool",
+                            excluded_samples = NULL,
+                            drop_blanks = F,
+                            drop_qcs = F,
+                            drop_pools = F,
+                            blank_multiplier = 2,
+                            sample_threshold = 0.8,
+                            group_threshold = 0.8,
+                            excluded_features = NULL,
+                            imputation_method = "None",
+                            batch_effect_correction = "None",
+                            operation_order = c("Imputation", "Batch correction", "Filtering"),
+                            norm_col = "None",
+                            verbose = F) {
 
-  ####---- Initialize
+  ####---- Initialize ----
   self = Omics_exp$new(name = name,
                        type = type,
                        id = NULL,
                        slot = NULL,
                        preloaded = F,
                        param_file = param_file)
+  if (verbose) {print("Initialized omics")}
 
+  ####---- Imported tables ----
+  self$import_meta(path = meta_file, input_format = meta_file_format)
+  self$import_data(path = data_file, input_format = data_file_format)
+  self$import_feat(path = feat_file, input_format = feat_file_format)
+  if (verbose) {print("Imported tables")}
+  
+  ####---- Indexed tables ----
+  if (!is.null(id_col_meta)) {self$set_indexed_meta(id_col = id_col_meta)}
+  if (!is.null(id_col_data)) {self$set_indexed_data(id_col = id_col_data)}
+  self$set_indexed_feat(id_col = id_col_feat)
+  if (base::all(c(!is.null(id_col_meta), !is.null(id_col_data)))) {
+    self$check_indexed_table_consistency()
+  }
+  if (verbose) {print("Indexed tables")}
+  
+  ####---- Raw tables ----
+  if (base::all(
+    !is.null(self$tables$indexed_meta),
+    !is.null(self$tables$indexed_data),
+    !is.null(self$tables$indexed_feat)
+  )) {
+    
+    # Set sample column types
+    if (base::all(c(
+      !is.null(type_column),
+      !is.null(group_column),
+      !is.null(batch_column)))) {
+      self$set_type_column(type_column = type_column)
+      self$set_group_column(group_column = group_column)
+      self$set_batch_column(batch_column = batch_column)
+      
+      self$set_blank_indices(blank_pattern = blank_pattern)
+      self$set_qc_indices(qc_pattern = qc_pattern)
+      self$set_pool_indices(pool_pattern = pool_pattern)
+      self$set_sample_indices()
+    }
+    
+    # Sample exclusion
+    self$exclude_samples(
+      selection = excluded_samples,
+      drop = T
+    )
+    
+    # Non-sample exclusion
+    self$non_sample_exclusion(
+      select_blanks = drop_blanks,
+      select_qcs = drop_qcs,
+      select_pools = drop_pools,
+      exclude = TRUE)
+    
+    # Feature exclusion
+    self$exclude_features(
+      selection = excluded_features,
+      drop = T
+    )
+    
+    # Apply measurement filtering
+    if (base::all(c(
+      !is.null(type_column),
+      !is.null(group_column),
+      !is.null(blank_multiplier),
+      !is.null(sample_threshold),
+      !is.null(group_threshold)))) {
+      
+      self$param_measurement_filter(operation_order = operation_order,
+                                    batch_effect_correction = batch_effect_correction,
+                                    imputation_method = imputation_method,
+                                    blank_multiplier = blank_multiplier,
+                                    sample_threshold = sample_threshold,
+                                    group_threshold = group_threshold,
+                                    norm_col = norm_col)
+      
+      self$measurement_filter()
+    }
+    
+    # Set all raw tables
+    self$set_raw_meta()
+    self$set_raw_data()
+    self$set_raw_feat()
+    if (verbose) {print("Set raw tables")}
+    
+    # Derive data tables
+    if (!is.null(group_column)) {
+      self$derive_data_tables()
+      if (verbose) {print("Derived data tables")}
+    }
 
-  ####---- Meta import
-  self$import_meta(meta_file, meta_file_format)
-  self$set_indexed_meta(id_col = id_col_meta)
-
-  self$set_type_column(type_column = type_column)
-  self$set_group_column(group_column = group_column)
-  self$set_batch_column(batch_column = batch_column)
-
-  self$set_blank_indices(blank_pattern = blank_pattern)
-  self$set_qc_indices(qc_pattern = qc_pattern)
-  self$set_pool_indices(pool_pattern = pool_pattern)
-  self$set_sample_indices()
-
-
-
-  self$exclude_samples(manual_selection = excluded_samples,
-                       select_blanks = drop_blanks,
-                       select_qcs = drop_qcs,
-                       select_pools = drop_pools,
-                       exclude = T)
-
-  self$set_raw_meta()
-
-  ####---- Data import
-  self$import_data(data_file, data_file_format)
-  self$set_indexed_data(id_col = id_col_data)
-  self$feature_manual_exclusion(selection = excluded_features,
-                                drop = T)
-  self$set_raw_data(operation_order = operation_order,
-                    blank_multiplier = blank_multiplier, # 2
-                    sample_threshold = sample_threshold, # 0.8
-                    group_threshold = group_threshold, # 0.8
-                    imputation_method = imputation_method, # 'minimum' 'mean' 'median' 'max'
-                    batch_effect_correction = batch_effect_correction, # None No controls Pool QC
-                    norm_col = norm_col)
-
-  ####---- Derive data tables
-  self$derive_data_tables()
-
-  ####---- Return
+  }
+  ####---- Return ----
   return(self)
 }
-
+  
+    
 
 
 #---------------------------------------------- Enrichment & GSEA utilities ----

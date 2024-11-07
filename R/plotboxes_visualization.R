@@ -844,7 +844,7 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('volcano_plot_feature_metadata'),
         label = "Feature annotations",
-        choices = c('None', colnames(r6$tables$feature_table)),
+        choices = c('None', colnames(r6$tables$raw_feat)),
         selected = r6$params$volcano_plot$feature_metadata,
         multiple = FALSE
       ),
@@ -1154,8 +1154,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   # Push expression to meta
   shiny::observeEvent(input$volcano_plot_push_expression,{
     r6$push_volcano_to_meta()
-    # r6$tables$feature_table$volcano_plot_expression = "None"
-    # r6$tables$feature_table[rownames(r6$tables$volcano_plot), "volcano_plot_expression"] = r6$tables$volcano_plot[, "expression"]
     print_tm(r6$name, "Volcano plot: pushed expression to the metadata")
 
   })
@@ -1268,7 +1266,7 @@ heatmap_server = function(r6, output, session) {
         inputId = ns("heatmap_map_cols"),
         label = "Map feature data",
         multiple = TRUE,
-        choices = colnames(r6$tables$feature_table)[!(colnames(r6$tables$feature_table) %in% names(r6$tables$feature_list))],
+        choices = colnames(r6$tables$raw_feat)[!(colnames(r6$tables$raw_feat) %in% names(r6$tables$feature_list))],
         selected = r6$params$heatmap$map_feature_data
       ),
 
@@ -1617,8 +1615,8 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   # Push k clusters features to meta
   shiny::observeEvent(input$heatmap_push_feature_clusters,{
     if ('k_clusters_heatmap' %in% colnames(r6$tables$heatmap$feature_clusters)){
-      r6$tables$feature_table$k_clusters_heatmap = "None"
-      r6$tables$feature_table[rownames(r6$tables$heatmap$feature_clusters), 'k_clusters_heatmap'] = r6$tables$heatmap$feature_clusters$k_clusters_heatmap
+      r6$tables$raw_feat$k_clusters_heatmap = "None"
+      r6$tables$raw_feat[rownames(r6$tables$heatmap$feature_clusters), 'k_clusters_heatmap'] = r6$tables$heatmap$feature_clusters$k_clusters_heatmap
       print_tm(r6$name, "Heatmap: pushed feature clusters to the metadata")
     } else {
       print_tm(r6$name, "Heatmap: no clusters to be pushed")
@@ -2111,14 +2109,14 @@ feature_correlation_server = function(r6, output, session) {
         inputId = ns("feature_correlation_map_rows"),
         label = "Map data on rows",
         multiple = TRUE,
-        choices = colnames(r6$tables$feature_table)[!(colnames(r6$tables$feature_table) %in% names(r6$tables$feature_list))],
+        choices = colnames(r6$tables$raw_feat)[!(colnames(r6$tables$raw_feat) %in% names(r6$tables$feature_list))],
         selected = r6$params$feature_correlation$row_annotations
       ),
       shiny::selectizeInput(
         inputId = ns("feature_correlation_map_cols"),
         label = "Map data on cols",
         multiple = TRUE,
-        choices = colnames(r6$tables$feature_table)[!(colnames(r6$tables$feature_table) %in% names(r6$tables$feature_list))],
+        choices = colnames(r6$tables$raw_feat)[!(colnames(r6$tables$raw_feat) %in% names(r6$tables$feature_list))],
         selected = r6$params$feature_correlation$col_annotations
       ),
 
@@ -2358,8 +2356,8 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
   # Push k clusters to meta
   shiny::observeEvent(input$feature_correlation_push_clusters,{
     if ('k_clusters' %in% colnames(r6$tables$feature_correlation_clusters)){
-      r6$tables$feature_table$correlation_clusters = "None"
-      r6$tables$feature_table[rownames(r6$tables$feature_correlation_clusters), 'correlation_clusters'] = r6$tables$feature_correlation_clusters$k_clusters
+      r6$tables$raw_feat$correlation_clusters = "None"
+      r6$tables$raw_feat[rownames(r6$tables$feature_correlation_clusters), 'correlation_clusters'] = r6$tables$feature_correlation_clusters$k_clusters
       print_tm(r6$name, "Feature correlation: pushed clusters to the metadata")
     } else {
       print_tm(r6$name, "Feature correlation: no clusters to be pushed")
@@ -2466,7 +2464,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("pca_feature_group"),
         label = "Feature metadata",
-        choices = c('None', colnames(r6$tables$feature_table)),
+        choices = c('None', colnames(r6$tables$raw_feat)),
         selected = r6$params$pca$feature_groups_col
       ),
       shiny::selectizeInput(
@@ -2909,7 +2907,7 @@ fa_analysis_plot_server = function(r6, output, session) {
             label = "Select lipid class (A)",
             choices = c("All (incl. TG)" = "All",
                         "All (excl. TG)" = "All_noTG",
-                        unique(r6$tables$feature_table[['Lipid class']])[!(unique(r6$tables$feature_table[['Lipid class']]) %in% c("PA"))]),
+                        unique(r6$tables$raw_feat[['Lipid class']])[!(unique(r6$tables$raw_feat[['Lipid class']]) %in% c("PA"))]),
             selected = r6$params$fa_analysis_plot$selected_lipidclass,
             multiple = FALSE,
             width = "98%"
@@ -2920,7 +2918,7 @@ fa_analysis_plot_server = function(r6, output, session) {
           shiny::selectizeInput(
             inputId = ns("fa_analysis_plot_selected_fa"),
             label = "Select fatty acid (B)",
-            choices = get_fa_tails(r6$tables$feature_table),
+            choices = get_fa_tails(r6$tables$raw_feat),
             selected = r6$params$fa_analysis_plot$selected_fa,
             multiple = TRUE,
             width = "98%"
@@ -3213,7 +3211,7 @@ fa_comp_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_comp_plot_selected_lipidclass"),
         label = "Select lipid class",
-        choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table[["Lipid class"]])),
+        choices = c("All (excl. PA)" = "All", unique(r6$tables$raw_feat[["Lipid class"]])),
         selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
@@ -3309,9 +3307,9 @@ fa_comp_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   # auto-update the lipid classes
   shiny::observeEvent(input$fa_comp_plot_composition, {
     if(input$fa_comp_plot_composition == "fa_tail") {
-      lipidclass_choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table[["Lipid class"]]))
+      lipidclass_choices = c("All (excl. PA)" = "All", unique(r6$tables$raw_feat[["Lipid class"]]))
     } else {
-      lipidclass_choices = unique(r6$tables$feature_table[["Lipid class"]])
+      lipidclass_choices = unique(r6$tables$raw_feat[["Lipid class"]])
     }
 
     if(r6$params$fa_comp_plot$selected_lipidclass == "All") {
@@ -3549,7 +3547,7 @@ double_bonds_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("double_bonds_plot_selected_lipid_class"),
         label = "Lipid class",
-        choices = sort(unique(r6$tables$feature_table$`Lipid class`)),
+        choices = sort(unique(r6$tables$raw_feat$`Lipid class`)),
         selected = r6$params$double_bonds_plot$selected_lipid_class,
         multiple = FALSE,
         width = '100%'

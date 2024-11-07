@@ -50,6 +50,17 @@ Omics_exp = R6::R6Class(
 
     #----------------------------------------------------------- Parameters ----
     params = list(
+      
+      # Feature signal filtering
+      measurement_filter = list(
+        operation_order = c('Imputation', 'Batch correction', 'Filtering'),
+        batch_effect_correction = "None",
+        imputation_method = "None",
+        blank_multiplier = 2,
+        sample_threshold = 0.8,
+        group_threshold = 0.8,
+        norm_col = "None"
+      ),
 
       # Dendrogram parameters
       dendrogram = list(
@@ -656,23 +667,11 @@ Omics_exp = R6::R6Class(
     indices = list(
       id_col_meta = NA,
       id_col_data = NA,
-      type_col = NA, # Deprecated
-      group_col = NA, # Deprecated
-      batch_col = NA, # Deprecated
+      id_col_feat = NA,
 
       type_column = NA,
       group_column = NA,
       batch_column = NA,
-
-      idx_blanks = NULL, # Deprecated
-      idx_qcs = NULL, # Deprecated
-      idx_pools = NULL, # Deprecated
-      idx_samples = NULL, # Deprecated
-
-      rownames_blanks = NULL, # Deprecated
-      rownames_qcs = NULL, # Deprecated
-      rownames_pools = NULL, # Deprecated
-      rownames_samples = NULL, # Deprecated
 
       index_blanks = NULL,
       index_qcs = NULL,
@@ -681,6 +680,7 @@ Omics_exp = R6::R6Class(
 
       excluded_samples = NULL,
       excluded_features = NULL,
+      filtered_out_features = NULL,
 
       feature_id_type = NULL
     ),
@@ -689,18 +689,27 @@ Omics_exp = R6::R6Class(
 
     tables = list(
 
+      # Metadata tables
       imp_meta = NULL,
+      indexed_meta = NULL,
       raw_meta = NULL,
 
+      # Data tables
       imp_data = NULL,
+      indexed_data = NULL,
       raw_data = NULL,
+      
+      # Feature tables
+      imp_feat = NULL,
+      indexed_feat = NULL,
+      raw_feat = NULL,
 
+      # Non sample tables
       blank_table = NULL,
       qc_table = NULL,
       pool_table = NULL,
 
       #Feature tables
-      imp_feature_table = NULL,
       feature_table = NULL,
       feature_list = NULL,
 
@@ -763,24 +772,9 @@ Omics_exp = R6::R6Class(
     #-------------------------------------------------------------- Local table
 
     table_switch_local = function(table_name) {
-      switch(EXPR = table_name,
-             'Imported metadata table' = self$tables$imp_meta,
-             'Raw metadata table' = self$tables$raw_meta,
-             'Imported data table' = self$tables$imp_data,
-             'Raw data table' = self$tables$raw_data,
-             'Feature table' = self$tables$feature_table,
-             'Blank table' = self$tables$blank_table,
-             'Class normalized table' = self$tables$class_norm_data,
-             'Total normalized table' = self$tables$total_norm_data,
-             'Z-scored table' = self$tables$z_scored_data,
-             'Z-scored class normalized table' = self$tables$z_scored_class_norm_data,
-             'Z-scored total normalized table' = self$tables$z_scored_total_norm_data,
-             'Class table' = self$tables$class_table,
-             'Class table z-scored' = self$tables$class_table_z_scored,
-             'Class table total normalized' = self$tables$class_table_total_norm,
-             'Class table z-scored total normalized' = self$tables$class_table_z_scored_total_norm,
-             'Species summary table' = self$tables$summary_species_table,
-             'Class summary table' = self$tables$summary_class_table
+      table_switch(
+        table_name = table_name,
+        r6 = self
       )
     },
 
@@ -829,7 +823,17 @@ Omics_exp = R6::R6Class(
                             hardcoded_settings = self$hardcoded_settings)
       base::dput(parameter_file, file = file_name)
     },
-
+    
+    param_measurement_filter = function(operation_order, batch_effect_correction, imputation_method, blank_multiplier, sample_threshold, group_threshold, norm_col) {
+      self$params$measurement_filter$operation_order = operation_order
+      self$params$measurement_filter$batch_effect_correction = batch_effect_correction
+      self$params$measurement_filter$imputation_method = imputation_method
+      self$params$measurement_filter$blank_multiplier = blank_multiplier
+      self$params$measurement_filter$sample_threshold = sample_threshold
+      self$params$measurement_filter$group_threshold = group_threshold
+      self$params$measurement_filter$norm_col = norm_col
+    },
+    
     toggle_dendrogram = function() {
       if (self$params$dendrogram$update) {
         self$params$dendrogram$update = F
@@ -1633,14 +1637,32 @@ Omics_exp = R6::R6Class(
 
     exclude_samples = function(indexed_meta = self$tables$indexed_meta,
                                excluded_samples = self$indices$excluded_samples,
-                               manual_selection = NULL,
-                               select_blanks = F,
-                               select_qcs = F,
-                               select_pools = F,
-                               index_blanks = self$indices$index_blanks,
-                               index_qcs = self$indices$index_qcs,
-                               index_pools = self$indices$index_pools,
-                               exclude = TRUE) {
+                               selection = NULL,
+                               drop = T
+                               ) {
+      if (!is.null(selection)) {
+        remaining_samples = rownames(indexed_meta)[!(rownames(indexed_meta) %in% excluded_samples)]
+        selected_samples = selection[selection %in% remaining_samples]
+        if (drop) {
+          excluded_samples = c(excluded_samples, selected_samples)
+        } else {
+          excluded_samples = c(excluded_samples,
+                               remaining_samples[!(remaining_samples %in% selected_samples)])
+        }
+        excluded_samples = sort(unique(excluded_samples))
+        self$indices$excluded_samples = excluded_samples
+      }
+    },
+    
+    non_sample_exclusion = function(indexed_meta = self$tables$indexed_meta,
+                                    excluded_samples = self$indices$excluded_samples,
+                                    select_blanks = F,
+                                    select_qcs = F,
+                                    select_pools = F,
+                                    index_blanks = self$indices$index_blanks,
+                                    index_qcs = self$indices$index_qcs,
+                                    index_pools = self$indices$index_pools,
+                                    exclude = TRUE) {
 
       # Filter out from indexed_meta samples that were already excluded
       if (!is.null(excluded_samples)) {
@@ -1648,11 +1670,6 @@ Omics_exp = R6::R6Class(
       }
 
       selected_samples = NULL
-
-      # Manual selection
-      if (!is.null(manual_selection)) {
-        selected_samples = c(selected_samples, rownames(indexed_meta)[rownames(indexed_meta) %in% manual_selection])
-      }
 
       # Add blanks
       if (select_blanks) {
@@ -1685,10 +1702,10 @@ Omics_exp = R6::R6Class(
       self$indices$excluded_samples = NULL
     },
 
-    feature_manual_exclusion = function(indexed_data = self$tables$indexed_data,
-                                        excluded_features = self$indices$excluded_features,
-                                        selection = NULL,
-                                        drop = T) {
+    exclude_features = function(indexed_data = self$tables$indexed_data,
+                                excluded_features = self$indices$excluded_features,
+                                selection = NULL,
+                                drop = T) {
 
       if (!is.null(selection)) {
         remaining_features = colnames(indexed_data)[!(colnames(indexed_data) %in% excluded_features)]
@@ -1700,9 +1717,8 @@ Omics_exp = R6::R6Class(
                                 remaining_features[!(remaining_features %in% selected_features)])
         }
         excluded_features = sort(unique(excluded_features))
+        self$indices$excluded_features = excluded_features
       }
-
-      self$indices$excluded_features = excluded_features
     },
 
     reset_feature_exclusion = function() {
@@ -1712,7 +1728,8 @@ Omics_exp = R6::R6Class(
     #-------------------------------------------------------- Table methods ----
 
     import_meta = function(path, input_format = "Wide") {
-      
+      if (is.null(path)) {base::stop("Sample annotations file not provided")}
+      if (!base::file.exists(path)) {base::stop("Sample annotations file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
       imp_meta = soda_read_table(file_path = path,
                                  sep = NA,
@@ -1722,36 +1739,32 @@ Omics_exp = R6::R6Class(
     },
 
     import_data = function(path, input_format = "Wide") {
-      
+      if (is.null(path)) {base::stop("Measurement data file not provided")}
+      if (!base::file.exists(path)) {base::stop("Measurement data file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
       imp_data = soda_read_table(file_path = path,
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
+      
+      
       self$tables$imp_data = imp_data
     },
     
-    import_feature_table = function(name, feature_file, input_format = "Long") {
-      
+    import_feat = function(path, input_format = "Long") {
+      if (is.null(path)) {return()}
+      if (!base::file.exists(path)) {base::stop("Feature annotations file not found")}
       transpose = base::ifelse(input_format == "Wide", T, F)
-      ext_feature_table = soda_read_table(file_path = feature_file,
-                                          sep = NA,
-                                          first_column_as_index = T,
-                                          transpose = transpose)
-      self$tables$external_feature_tables[[name]] = ext_feature_table
+      imp_feat = soda_read_table(file_path = path,
+                                 sep = NA,
+                                 first_column_as_index = F,
+                                 transpose = transpose)
+      self$tables$imp_feat = imp_feat
     },
-    
-    del_feature_table = function(name) {
-      self$tables$external_feature_tables[[name]] = NULL
-      if (length(names(self$tables$external_feature_tables)) == 0) {
-        names(self$tables$external_feature_tables) = NULL
-      }
-    },
-    
 
     set_indexed_meta = function(id_col = self$indices$id_col_meta,
                                 imp_meta = self$tables$imp_meta) {
-
+      
       indexed_meta = get_indexed_table(id_col = id_col,
                                        input_table = imp_meta)
       indexed_meta[is.na(indexed_meta)] = "NA"
@@ -1762,7 +1775,7 @@ Omics_exp = R6::R6Class(
 
     },
 
-    set_indexed_data = function(id_col,
+    set_indexed_data = function(id_col = self$indices$id_col_data,
                                 imp_data = self$tables$imp_data) {
 
       indexed_df = get_indexed_table(id_col = id_col,
@@ -1777,9 +1790,76 @@ Omics_exp = R6::R6Class(
       self$tables$indexed_data = indexed_data
 
     },
+    
+    set_indexed_feat = function(id_col = self$indices$id_col_feat,
+                                id_col_data = self$indices$id_col_data,
+                                imp_feat = self$tables$imp_feat,
+                                indexed_data = self$tables$indexed_data,
+                                type = self$type) {
+      if (is.null(imp_feat)) {
+        if (is.null(indexed_data)) {
+          return()
+        } else {
+          indexed_feat = base::data.frame(base::matrix(data = NA, nrow = ncol(indexed_data), ncol = 0))
+          rownames(indexed_feat) = colnames(indexed_data)
+          id_col = id_col_data
+        }
+      } else {
+        indexed_feat = get_indexed_table(id_col = id_col,
+                                         input_table = imp_feat)
+      }
+      
+      if (type == "Lipidomics") {
+        indexed_feat = get_feature_metadata(
+          feature_table = indexed_feat)
+      }
+      
+      # Store
+      self$indices$id_col_feat = id_col
+      self$tables$indexed_feat = indexed_feat
+      
+    },
+    
+    check_indexed_table_consistency = function(indexed_data = self$tables$indexed_data,
+                                               indexed_meta = self$tables$indexed_meta,
+                                               indexed_feat = self$tables$indexed_feat) {
+      # Check meta - data
+      shared_samples = base::intersect(rownames(indexed_meta), rownames(indexed_data))
+      if (length(shared_samples) < 3) {
+        base::stop("Less than three shared samples between sample annotations and measurement data tables")
+      } else {
+        diff_samples = base::setdiff(rownames(indexed_meta), rownames(indexed_data))
+        if (length(diff_samples) > 0) {
+          base::warning(paste0("Dropping ", length(diff_samples), " samples not shared between tables"))
+          indexed_data = indexed_data[shared_samples,]
+          indexed_meta = indexed_meta[shared_samples,]
+          self$tables$indexed_data = indexed_data
+          self$tables$indexed_meta = indexed_meta
+        }
+      }
+      
+      # Check data - feat
+      shared_features = base::intersect(colnames(indexed_data), rownames(indexed_feat))
+      if (length(shared_features) < 3) {
+        base::stop("Less than three shared features between measurement data and feature annotations tables")
+      } else {
+        diff_features = base::setdiff(colnames(indexed_data), rownames(indexed_feat))
+        if (length(diff_features) > 0) {
+          indexed_data = indexed_data[,shared_features]
+          indexed_feat = indexed_feat[shared_features,]
+          self$tables$indexed_data = indexed_data
+          self$tables$indexed_feat = indexed_feat
+        }
+      }
+    },
 
     set_raw_meta = function(indexed_meta = self$tables$indexed_meta,
                             excluded_samples = self$indices$excluded_samples){
+      
+      if (is.null(indexed_meta)) {
+        base::stop('Error while setting Raw meta: missing indexed meta')
+      }
+      
       if (!is.null(excluded_samples)) {
         indexed_meta = indexed_meta[-which(rownames(indexed_meta) %in% excluded_samples), ]
       }
@@ -1792,45 +1872,159 @@ Omics_exp = R6::R6Class(
     },
 
     set_raw_data = function(indexed_data = self$tables$indexed_data,
-                            indexed_meta = self$tables$indexed_meta,
                             excluded_samples = self$indices$excluded_samples,
                             excluded_features = self$indices$excluded_features,
-                            index_blanks = self$indices$index_blanks,
-                            index_qcs = self$indices$index_qcs,
-                            index_pools = self$indices$index_pools,
-                            batch_column = self$indices$batch_column,
-                            group_column = self$indices$group_column,
-                            operation_order = c("Imputation", "Batch correction", "Filtering"),
-                            blank_multiplier = 2, # 2
-                            sample_threshold = 0.8, # 0.8
-                            group_threshold = 0.8, # 0.8
-                            imputation_method = "None", # 'minimum', 'mean', 'median', 'max'
-                            batch_effect_correction = "None", # None, No controls, Pool, QC
-                            norm_col = "None"
-                            ) {
-
-      #Set raw_data, exclude samples and features
-      raw_data = indexed_data[rownames(indexed_meta), ]
-
+                            filtered_out_features = self$indices$filtered_out_features,
+                            indexed_meta = self$tables$indexed_meta,
+                            norm_col = self$params$measurement_filter$norm_col
+    ) {
+      
+      # Check on indexed data
+      if (is.null(indexed_data)) {
+        base::stop('Error while setting Raw data: missing indexed data')
+      } else {
+        raw_data = indexed_data
+      }
+      
+      # Merge excluded_features and filtered_out_features
+      excluded_features = c(excluded_features, filtered_out_features)
+      
+      # Exclude features
       if (!is.null(excluded_features)) {
-        raw_data = raw_data[, -which(colnames(raw_data) %in% excluded_features)]
+        if (length(excluded_features) > 0) {
+          raw_data = raw_data[, -which(colnames(raw_data) %in% excluded_features)]
+        }
       }
-
+      
+      # Exclude samples
       if (!is.null(excluded_samples)) {
-        raw_data = raw_data[-which(rownames(raw_data) %in% excluded_samples),]
+        if (length(excluded_samples) > 0) {
+          raw_data = raw_data[-which(rownames(raw_data) %in% excluded_samples),]
+        }
+      }
+      
+      # Normalization
+      if (norm_col != "None") {
+        indexed_meta = indexed_meta[rownames(raw_data),]
+        if (is_num_coercible(indexed_meta[,norm_col]) & !base::any(is.na(indexed_meta[,norm_col]))) {
+          raw_data = raw_data/as.numeric(indexed_meta[,norm_col])
+        } else {
+          base::warning("Normalization skipped, selected column contains either non numeric or missing data.")
+        }
+      }
+      
+      self$tables$raw_data = raw_data
+    },
+    
+    
+    set_raw_feat = function(indexed_data = self$tables$indexed_data,
+                            indexed_feat = self$tables$indexed_feat,
+                            excluded_features = self$indices$excluded_features,
+                            filtered_out_features = self$indices$filtered_out_features) {
+
+      if (is.null(indexed_data)) {
+        base::stop('Error while setting Raw feat: missing indexed data')
+      }
+      
+      # Get the features from the indexed data
+      features_data = colnames(indexed_data)
+      features_feat = rownames(indexed_feat)
+      
+      # Merge excluded_features and filtered_out_features
+      excluded_features = c(excluded_features, filtered_out_features)
+      
+      # Remove excluded features
+      if (!is.null(excluded_features)) {
+        if (length(excluded_features) > 0) {
+          features_data = features_data[-which(features_data %in% excluded_features)]
+        }
       }
 
-      # Get non-sample tables
-      blank_table = indexed_data[index_blanks,]
-      qc_table = indexed_data[index_qcs,]
-      pool_table = indexed_data[index_pools,]
+      shared_keys = base::intersect(features_data, features_feat)
+      missing_keys = base::setdiff(features_data, features_feat)
+      raw_feat = indexed_feat[shared_keys, ]
+      
+      new_rows = data.frame(matrix(NA, nrow = length(missing_keys), ncol = ncol(raw_feat)))
+      rownames(new_rows) = missing_keys
+      colnames(new_rows) = colnames(raw_feat)
+      
+      if (nrow(new_rows) > 0) {
+        raw_feat = rbind(raw_feat, new_rows)
+      }
+      self$tables$raw_feat = raw_feat
 
-      # Process raw_data
+    },
+    
+    reset_raw_meta = function() {
+      self$reset_sample_exclusion()
+      self$set_raw_meta()
+    },
+    
+    reset_raw_data = function() {
+      self$reset_feature_exclusion()
+      self$set_raw_data()
+    },
+    
+    reset_raw_feat = function() {
+      self$reset_feature_exclusion()
+      self$set_raw_feat()
+    },
+    
+    
+    measurement_filter = function(indexed_data = self$tables$indexed_data,
+                                  indexed_meta = self$tables$indexed_meta,
+                                  excluded_samples = self$indices$excluded_samples,
+                                  excluded_features = self$indices$excluded_features,
+                                  index_blanks = self$indices$index_blanks,
+                                  index_qcs = self$indices$index_qcs,
+                                  index_pools = self$indices$index_pools,
+                                  batch_column = self$indices$batch_column,
+                                  group_column = self$indices$group_column,
+                                  operation_order = self$params$measurement_filter$operation_order,
+                                  blank_multiplier = self$params$measurement_filter$blank_multiplier,
+                                  sample_threshold = self$params$measurement_filter$sample_threshold,
+                                  group_threshold = self$params$measurement_filter$group_threshold,
+                                  imputation_method = self$params$measurement_filter$imputation_method,
+                                  batch_effect_correction = self$params$measurement_filter$batch_effect_correction) {
+      
+      if (is.null(indexed_data)) {
+        base::stop('Error while filtering measurement data: missing indexed data')
+      } else {
+        data_table = indexed_data
+      }
+      
+      # Exclude features
+      if (!is.null(excluded_features)) {
+        if (length(excluded_features) > 0) {
+          data_table = data_table[, -which(colnames(data_table) %in% excluded_features)]
+        }
+      }
+      # Exclude rows  
+      if (!is.null(excluded_samples)) {
+        if (length(excluded_samples) > 0) {
+          data_table = data_table[-which(rownames(data_table) %in% excluded_samples),]
+        }
+      }
+      
+      # Remove any columns with either only 0s or NAs that can have survived
+      empty_cols = colSums(data_table, na.rm = T)
+      empty_cols = which(empty_cols == 0)
+      if (length(empty_cols) > 0) {
+        empty_cols = names(empty_cols)
+        data_table = data_table[,-which(colnames(data_table) %in% empty_cols)]
+      }
+      
+      # Get non-sample tables
+      blank_table = indexed_data[index_blanks, colnames(data_table)]
+      qc_table = indexed_data[index_qcs, colnames(data_table)]
+      pool_table = indexed_data[index_pools, colnames(data_table)]
+      
+      # Process data_table indexed_meta
       for (func_name in operation_order) {
         if (func_name == "Imputation") {
           if (imputation_method != "None") {
-            raw_data = impute_na(data_table = raw_data,
-                                 method = imputation_method)
+            data_table = impute_na(data_table = data_table,
+                                   method = imputation_method)
             blank_table = impute_na(data_table = blank_table,
                                     method = imputation_method)
             qc_table = impute_na(data_table = qc_table,
@@ -1841,21 +2035,21 @@ Omics_exp = R6::R6Class(
         } else if (func_name == "Batch correction") {
           if (batch_effect_correction != "None") {
             corrected_data = batch_effect_correction_combat(
-              raw_data = raw_data,
+              raw_data = data_table,
               batch_effect_correction = batch_effect_correction,
               batch_column = batch_column,
               indexed_meta = indexed_meta,
               blank_table = blank_table,
               qc_table = qc_table,
               pool_table = pool_table)
-            raw_data = corrected_data$raw_data
+            data_table = corrected_data$raw_data
             blank_table = corrected_data$blank_table
           }
-
+          
         } else if (func_name == "Filtering") {
           if (nrow(blank_table) > 0) {
-            raw_data = feature_signal_filtering(
-              raw_data = raw_data,
+            data_table = measurement_filtering(
+              raw_data = data_table,
               blank_table = blank_table,
               indexed_meta = indexed_meta,
               batch_column = batch_column,
@@ -1869,31 +2063,19 @@ Omics_exp = R6::R6Class(
         }
       }
 
-      # Remove any columns with either only 0s or NAs that can have survived
-      empty_cols = colSums(raw_data, na.rm = T)
-      empty_cols = which(empty_cols == 0)
-      if (length(empty_cols) > 0) {
-        empty_cols = names(empty_cols)
-        raw_data = raw_data[,-which(colnames(raw_data) %in% empty_cols)]
-        blank_table = blank_table[,colnames(raw_data)]
-        qc_table = qc_table[,colnames(raw_data)]
-        pool_table = pool_table[,colnames(raw_data)]
-      }
-
-      # Normalization
-      if (norm_col != "None") {
-        indexed_meta = indexed_meta[rownames(raw_data),]
-        if (is_num_coercible(indexed_meta[,norm_col]) & !base::any(is.na(indexed_meta[,norm_col]))) {
-          raw_data = raw_data/as.numeric(indexed_meta[,norm_col])
-        } else {
-          base::warning("Normalization skipped, selected column contains either non numeric or missing data.")
+      dropped_features = base::setdiff(colnames(indexed_data), colnames(data_table))
+      
+      if (length(dropped_features) > 0) {
+        if (!is.null(excluded_features)) {
+          if (length(excluded_features) > 0) {
+            dropped_features = base::setdiff(dropped_features, excluded_features)
+          }
         }
       }
-
-      self$tables$raw_data = raw_data
-
+      
+      self$indices$filtered_out_features = dropped_features
     },
-
+    
     add_go_data = function(name,
                            feature_names,
                            keyType,
@@ -1957,12 +2139,6 @@ Omics_exp = R6::R6Class(
       if (length(names(self$tables$external_enrichment_tables)) == 0) {
         names(self$tables$external_enrichment_tables) = NULL
       }
-    },
-
-    get_feature_table = function() {
-      data_table = self$tables$imp_data
-      data_table = data_table[,2:ncol(data_table)]
-      self$tables$imp_feature_table = get_feature_metadata(data_table = data_table, dtype = base::tolower(self$type))
     },
 
     update_feature_table = function(sep = "|") {
@@ -2068,12 +2244,11 @@ Omics_exp = R6::R6Class(
 
     derive_data_tables = function(params_list = NULL) {
       # Derive tables
-      self$get_feature_table()
-      self$update_feature_table()
+      # self$update_feature_table()
       self$normalise_total()
       self$normalise_z_score()
       self$normalise_total_z_score()
-      self$get_group_summary_species()
+      # self$get_group_summary_species()
 
       if (self$type == "Lipidomics") {
         self$normalise_class()
@@ -2086,7 +2261,6 @@ Omics_exp = R6::R6Class(
       }
 
       # Set plotting parameters
-      self$indices$feature_id_type = 'SYMBOL'
 
       self$param_dendrogram(auto_refresh = F,
                             dataset = 'Z-scored table',
@@ -2372,7 +2546,7 @@ Omics_exp = R6::R6Class(
     # Volcano table
     get_volcano_table = function(data_table = self$params$volcano_plot_comparison$data_table,
                                  sample_table = self$tables$raw_meta,
-                                 feature_table = self$tables$feature_table,
+                                 feature_table = self$tables$raw_feat,
                                  group_col = self$params$volcano_plot_comparison$group_col,
                                  group_1 = self$params$volcano_plot_comparison$group_1,
                                  group_2 = self$params$volcano_plot_comparison$group_2,
@@ -2406,7 +2580,7 @@ Omics_exp = R6::R6Class(
     # Double bond plot table
     get_double_bonds_table = function(data_table = self$params$double_bonds_comparison$data_table,
                                       sample_table = self$tables$raw_meta,
-                                      feature_table = self$tables$feature_table,
+                                      feature_table = self$tables$raw_feat,
                                       group_col = self$params$double_bonds_comparison$group_col,
                                       group_1 = self$params$double_bonds_comparison$group_1,
                                       group_2 = self$params$double_bonds_comparison$group_2,
@@ -2438,7 +2612,7 @@ Omics_exp = R6::R6Class(
     # EA feature table
     get_ea_feature_table = function(data_table = self$tables$total_norm_data,
                                     sample_table = self$tables$raw_meta,
-                                    feature_table = self$tables$feature_table,
+                                    feature_table = self$tables$raw_feat,
                                     group_col = self$params$ea_selection$group_col,
                                     group_1 = self$params$ea_selection$group_1,
                                     group_2 = self$params$ea_selection$group_2,
@@ -2466,7 +2640,7 @@ Omics_exp = R6::R6Class(
     # ORA feature table
     get_ora_feature_table = function(data_table = self$tables$total_norm_data,
                                      sample_table = self$tables$raw_meta,
-                                     feature_table = self$tables$feature_table,
+                                     feature_table = self$tables$raw_feat,
                                      group_col = self$params$ora_selection$group_col,
                                      group_1 = self$params$ora_selection$group_1,
                                      group_2 = self$params$ora_selection$group_2,
@@ -2494,7 +2668,7 @@ Omics_exp = R6::R6Class(
 
     # Get EA object
     get_ea_object = function(ea_feature_table = self$tables$ea_feature_table,
-                             feature_table = self$tables$feature_table,
+                             feature_table = self$tables$raw_feat,
                              keyType = self$indices$feature_id_type,
                              custom_col = self$params$ea_process$custom_col,
                              selected_features = self$params$ea_process$selected_features,
@@ -2529,7 +2703,7 @@ Omics_exp = R6::R6Class(
     get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
                               custom_col = self$params$ora_process$custom_col,
                               selected_features = self$params$ora_process$selected_features,
-                              feature_table = self$tables$feature_table,
+                              feature_table = self$tables$raw_feat,
                               pval_cutoff_features = self$params$ora_process$pval_cutoff_features,
                               padjust_features = self$params$ora_process$padjust_features,
                               pval_cutoff = self$params$ora_process$pval_cutoff,
@@ -2994,7 +3168,7 @@ Omics_exp = R6::R6Class(
                             impute_min = self$params$heatmap$impute_min,
                             center = self$params$heatmap$center,
                             meta_table = self$tables$raw_meta,
-                            meta_table_features = self$tables$feature_table,
+                            meta_table_features = self$tables$raw_feat,
                             apply_clustering = self$params$heatmap$apply_clustering,
                             k_clusters_samples = self$params$heatmap$k_clusters_samples,
                             k_clusters_features = self$params$heatmap$k_clusters_features,
@@ -3325,7 +3499,7 @@ Omics_exp = R6::R6Class(
 
     ## Feature correlation plot
     plot_feature_correlation = function(dataset = self$params$feature_correlation$dataset,
-                                        meta_table = self$tables$feature_table,
+                                        meta_table = self$tables$raw_feat,
                                         map_feature_terms = self$params$feature_correlation$map_feature_terms,
                                         correlation_method = self$params$feature_correlation$correlation_method,
                                         use = self$params$feature_correlation$use,
@@ -3514,7 +3688,7 @@ Omics_exp = R6::R6Class(
     ## PCA scores and loading plots
     plot_pca = function(data_table = self$params$pca$data_table,
                         meta_table = self$tables$raw_meta,
-                        feature_table = self$tables$feature_table,
+                        feature_table = self$tables$raw_feat,
                         sample_groups_col = self$params$pca$sample_groups_col,
                         feature_groups_col = self$params$pca$feature_groups_col,
                         impute_median = self$params$pca$impute_median,
@@ -3628,7 +3802,7 @@ Omics_exp = R6::R6Class(
 
     ## FA analysis
     plot_fa_analysis = function(data_table = self$params$fa_analysis_plot$data_table,
-                                feature_table = self$tables$feature_table,
+                                feature_table = self$tables$raw_feat,
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$params$fa_analysis_plot$group_col,
                                 selected_view = self$params$fa_analysis_plot$selected_view,
@@ -3808,7 +3982,7 @@ Omics_exp = R6::R6Class(
     # plot Fatty acid composition heatmaps
     plot_fa_comp = function(data_table = self$params$fa_comp_plot$data_table,
                             sample_meta = self$tables$raw_meta,
-                            feature_table = self$tables$feature_table,
+                            feature_table = self$tables$raw_feat,
                             composition = self$params$fa_comp_plot$composition,
                             group_col = self$params$fa_comp_plot$group_col,
                             group_1 = self$params$fa_comp_plot$group_1,
@@ -3944,48 +4118,6 @@ Omics_exp = R6::R6Class(
             tickfont = list(size = fd$y_tick_font_size)
           )
         )
-
-      # plotly::layout(annotations =
-      #                  list(x = 1,
-      #                       y = -0.175,
-      #                       text = "NOTE: error bars are standard deviation",
-      #                       showarrow = FALSE,
-      #                       xref = "paper",
-      #                       yref = "paper",
-      #                       xanchor = "right",
-      #                       yanchor = "auto",
-      #                       xshift = 0,
-      #                       yshift = 0,
-      #                       font = list(size = 10)),
-      #                title = list(text = fd$title,
-      #                             x = 0,
-      #                             xanchor = "left",
-      #                             font = list(size = fd$title_font_size)),
-      #                legend = list(orientation = 'h',
-      #                              xanchor = "center",
-      #                              x = 0.5,
-      #                              title = list(text = fd$legend_label),
-      #                              font = list(
-      #                                size = fd$legend_font_size
-      #                              )),
-      #                showlegend = fd$legend_show,
-      #                xaxis = list(
-      #                  title = list(
-      #                    text = fd$x_label,
-      #                    font = list(size = fd$x_label_font_size)
-      #                  ),
-      #                  showticklabels = fd$x_tick_show,
-      #                  tickfont = list(size = fd$x_tick_font_size)
-      #                ),
-      #                yaxis = list(
-      #                  title = list(
-      #                    text = fd$y_label,
-      #                    font = list(size = fd$y_label_font_size)
-      #                  ),
-      #                  showticklabels = fd$y_tick_show,
-      #                  tickfont = list(size = fd$y_tick_font_size)
-      #                )
-      # )
 
       fig_bar_left = plotly::plot_ly(
         data = bar_left_data,

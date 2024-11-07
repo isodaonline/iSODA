@@ -1016,12 +1016,12 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             width = 6,
             bsplus::bs_embed_tooltip(
               shiny::selectizeInput(
-                inputId = ns("class_selection"),
+                inputId = ns("feature_value"),
                 label = "Select classes",
                 choices = NULL,
                 multiple = TRUE,
                 width = "100%"),
-              title = tooltip_data$data_upload$class_selection,
+              title = tooltip_data$data_upload$feature_value,
               placement = "top")
             
           ),
@@ -1029,12 +1029,12 @@ lipidomics_server = function(id, ns, input, output, session, module_controler) {
             width = 6,
             bsplus::bs_embed_tooltip(
               shiny::selectizeInput(
-                inputId = ns("manual_selection"),
+                inputId = ns("feature_selection"),
                 label = "Select feature",
                 choices = NULL,
                 multiple = TRUE,
                 width = "100%"),
-              title = tooltip_data$data_upload$manual_selection,
+              title = tooltip_data$data_upload$feature_selection,
               placement = "top")
             
           )
