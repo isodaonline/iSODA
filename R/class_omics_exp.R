@@ -2262,6 +2262,8 @@ Omics_exp = R6::R6Class(
         self$get_group_summary_classes()
       }
 
+      self$indices$feature_id_type = "SYMBOL"
+      
       # Set plotting parameters
 
       self$param_dendrogram(auto_refresh = F,

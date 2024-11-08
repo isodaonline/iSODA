@@ -779,7 +779,7 @@ events_sample_filtering = function(input, output, session, id, r6) {
         
       })
   
-  # Download metadata tables
+  # Download the samples table
   output$sample_annotations_download = shiny::downloadHandler(
     filename = function() {
       timestamped_name(paste0(stringr::str_replace_all(input$sample_annotations_preview_table, " ", "_"), ".csv"))
@@ -1051,6 +1051,18 @@ events_measurement_filtering = function(input, output, session, id, r6) {
           print_tme("Test", paste0("Error:" , e))
         })
       })
+  
+  # Download the measurements table
+  output$measurement_download = shiny::downloadHandler(
+    filename = function() {
+      timestamped_name(paste0(stringr::str_replace_all(input$measurement_data_preview_table, " ", "_"), ".csv"))
+    },
+    content = function(file) {
+      content = r6$table_switch_local(input$measurement_data_preview_table)
+      write.csv(content, file)
+    }
+  )
+  
 }
 #--------------------------------------------------- Features tab functions ----
 render_feature_filtering = function(ns, r6) {
@@ -1340,7 +1352,16 @@ events_feature_filtering = function(input, output, session, id, r6) {
     
   })
   
-  
+  # Download the features table
+  output$feat_download = shiny::downloadHandler(
+    filename = function() {
+      timestamped_name(paste0(stringr::str_replace_all(input$feature_annotations_preview_table, " ", "_"), ".csv"))
+    },
+    content = function(file) {
+      content = r6$table_switch_local(input$feature_annotations_preview_table)
+      write.csv(content, file)
+    }
+  )
   
 }
 #---------------------------------------------- Visualization tab functions ----
@@ -1794,19 +1815,7 @@ render_functional_comparison_tab = function(ns, r6) {
         
         shiny::fluidRow(
           shiny::column(
-            width = 6,
-            bsplus::bs_embed_tooltip(
-              shiny::downloadButton(
-                outputId = ns("download_ea_feature_table"),
-                label = "Feature table",
-                style = "width:98%;"
-              ),
-              title = tooltip_data$data_upload$download_ea_feature_table,
-              placement = "top"
-            )
-          ),
-          shiny::column(
-            width = 6,
+            width = 12,
             bsplus::bs_embed_tooltip(
               shiny::downloadButton(
                 outputId = ns("download_ea_table"),
@@ -1968,19 +1977,7 @@ render_functional_comparison_tab = function(ns, r6) {
         
         shiny::fluidRow(
           shiny::column(
-            width = 6,
-            bsplus::bs_embed_tooltip(
-              shiny::downloadButton(
-                outputId = ns("download_ora_feature_table"),
-                label = "Feature table",
-                style = "width:98%;"
-              ),
-              title = tooltip_data$data_upload$download_ora_feature_table,
-              placement = "top"
-            )
-          ),
-          shiny::column(
-            width = 6,
+            width = 12,
             bsplus::bs_embed_tooltip(
               shiny::downloadButton(
                 outputId = ns("download_ora_table"),
@@ -1999,6 +1996,10 @@ render_functional_comparison_tab = function(ns, r6) {
 
 }
 events_functional_comparison_tab = function(input, output, session, id, r6, ns) {
+  
+  # Floating reactives
+  reactive_ea_table = shiny::reactiveVal(NULL)
+  reactive_ora_table = shiny::reactiveVal(NULL)
   
   # GSEA groups
   session$userData[[id]]$gsea_groups = shiny::observeEvent(input$gseaprep_group_col,{
@@ -2092,6 +2093,7 @@ events_functional_comparison_tab = function(input, output, session, id, r6, ns) 
                        terms_pAdjustMethod = input$gsea_adjustment,
                        seed = input$ea_seed)
       
+      reactive_ea_table(r6$tables$ea_table)
       
       results = nrow(r6$tables$ea_object)
       if (results == 0) {
@@ -2170,6 +2172,8 @@ events_functional_comparison_tab = function(input, output, session, id, r6, ns) 
                         maxGSSize  = input$ora_max_gssize,
                         seed = input$ora_seed)
       
+      reactive_ora_table(r6$tables$ora_table)
+      
       if (!is.null(r6$tables$ora_object)) {
         results = nrow(r6$tables$ora_object)
         if (results == 0) {
@@ -2194,6 +2198,36 @@ events_functional_comparison_tab = function(input, output, session, id, r6, ns) 
     shinyjs::enable("run_ora")
     
   })
+  
+  # Download the EA table
+  output$download_ea_table = shiny::downloadHandler(
+    filename = function() {
+      timestamped_name("ea_table.tsv")
+    },
+    content = function(file) {
+      content = reactive_ea_table()
+      utils::write.table(
+        x = content,
+        file = file,
+        na = "",
+        sep = "\t")
+    }
+  )
+  
+  # Download the ORA table
+  output$download_ora_table = shiny::downloadHandler(
+    filename = function() {
+      timestamped_name("ora_table.tsv")
+    },
+    content = function(file) {
+      content = reactive_ora_table()
+      utils::write.table(
+        x = content,
+        file = file,
+        na = "",
+        sep = "\t")
+    }
+  )
   
 }
 #------------------------------------------------- Enrichment tab functions ----
@@ -2226,6 +2260,7 @@ render_enrichment_tab = function(ns, r6) {
   )
 }
 events_enrichment_tab = function(input, output, session, id, r6, module_controler) {
+  
   # Initialise dimensions object
   dimensions_obj_gsea = shiny::reactiveValues(
     x_box = module_controler$dims$x_box,
@@ -2320,7 +2355,7 @@ events_enrichment_tab = function(input, output, session, id, r6, module_controle
     }
   })
   
-  
+  # Clear plots
   session$userData[[id]]$clear_plots_gsea = shiny::observeEvent(input$clear_plots_gsea, {
     print_tm(r6$name, "Clearing plots")
     shinyWidgets::updateCheckboxGroupButtons(
@@ -2332,6 +2367,7 @@ events_enrichment_tab = function(input, output, session, id, r6, module_controle
       NULL
     )
   })
+  
 }
 #---------------------------------------- Over-representation tab functions ----
 render_over_representation_tab = function(ns, r6) {
@@ -2471,7 +2507,7 @@ events_over_representation_tab = function(input, output, session, id, r6, module
   })
 }
 #--------------------------------------------------- Download tab functions ----
-render_download_tab = function(ns, r6) {
+render_save_results_tab = function(ns, r6) {
   shiny::tagList(
     shiny::fluidRow(
       shiny::column(
@@ -2537,7 +2573,7 @@ render_download_tab = function(ns, r6) {
     )
   )
 }
-events_download_tab = function(input, output, session, id, r6, ns) {
+events_save_results_tab = function(input, output, session, id, r6, ns) {
   
   # Download isoda file locally
   output$isoda_file_download = shiny::downloadHandler(

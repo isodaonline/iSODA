@@ -283,6 +283,9 @@ qc_pattern
 pool_pattern
 
 
+self = base::readRDS("/home/dolivierj/Downloads/20241108-144206_lips_1.isoda")
+self$params$dendrogram
+
 .isoda
 .misoda
 

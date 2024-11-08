@@ -83,9 +83,9 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
         )
       ),
       shiny::tabPanel(
-        title = "Download",
+        title = "Save results",
         shiny::uiOutput(
-          outputId = ns('download_ui')
+          outputId = ns('save_results_ui')
         )
       )
     )
@@ -391,8 +391,8 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
       })
       
       # Render download UI
-      output$download_ui = shiny::renderUI({
-        render_download_tab(
+      output$save_results_ui = shiny::renderUI({
+        render_save_results_tab(
           ns = ns,
           r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
         )
@@ -478,7 +478,7 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
     module_controler = module_controler
   )
   #----------------------------------------------------------- DOWNLOAD TAB ----
-  events_download_tab(
+  events_save_results_tab(
     input = input,
     output = output,
     session = session,
