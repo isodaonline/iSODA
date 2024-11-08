@@ -2392,6 +2392,7 @@ faster_cor=function(data_table, method="pearson") {
 #--------------------------------------------------------- Example datasets ----
 initialize_omics = function(name,
                             type,
+                            version = NA,
                             meta_file,
                             data_file,
                             feat_file = NULL,
@@ -2427,7 +2428,7 @@ initialize_omics = function(name,
                        type = type,
                        id = NULL,
                        slot = NULL,
-                       preloaded = F,
+                       version = version,
                        param_file = param_file)
   if (verbose) {print("Initialized omics")}
 

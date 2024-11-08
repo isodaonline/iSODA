@@ -63,6 +63,7 @@ library(R6)
 library(data.table)
 library(matrixStats)
 library(bsplus)
+library(uuid)
 
 # Use basilisk
 # reticulate::use_condaenv(condaenv = 'mofa_1')
@@ -248,6 +249,10 @@ ui = bs4Dash::dashboardPage(header, sidebar, body)
 
 server = function(input, output, session) {
   
+  # Get software version
+  desc = read.delim("DESCRIPTION", header = FALSE)
+  isoda_version = gsub("[^0-9.-]", "", desc[3,1])
+  
   # Create logfile
   log_file <<- paste0("./logs/", get_day_time_code(), ".log")
   if (!base::file.exists("./logs/")) {
@@ -255,6 +260,9 @@ server = function(input, output, session) {
   }
   if (!base::file.exists("./models/")) {
     base::dir.create("./models/")
+  }
+  if (!base::file.exists("./isoda_files/")) {
+    base::dir.create("./isoda_files/")
   }
   
   # Source the tooltips file and utils
@@ -352,7 +360,8 @@ server = function(input, output, session) {
       module_controler$module_loaded[[slot]] = TRUE
       experiment_server(id = paste0(c('mod', slot), collapse = '_'),
                         type = exp_type,
-                        module_controler = module_controler)
+                        module_controler = module_controler,
+                        isoda_version = isoda_version)
     }
   })
 

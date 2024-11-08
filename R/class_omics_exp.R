@@ -2,12 +2,12 @@
 Omics_exp = R6::R6Class(
   "Omics_exp",
   public = list(
-    initialize = function(name, type = NA, id = NA, slot = NA, preloaded = F, param_file = NULL){
+    initialize = function(name, type = NA, id = NA, slot = NA, version = NA, param_file = NULL){
       self$name = name
       self$type = type
       self$id = id
       self$slot = slot
-      self$preloaded_data = preloaded
+      self$version = version
 
       if (!is.null(param_file)) {
         if (file.exists(param_file)){
@@ -46,7 +46,9 @@ Omics_exp = R6::R6Class(
     id = NA,
     slot = NA,
     type = NA,
-    preloaded_data = F,
+    version = NA,
+    owner = NA,
+    comment = NA,
 
     #----------------------------------------------------------- Parameters ----
     params = list(

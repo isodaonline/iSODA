@@ -1,6 +1,6 @@
 #------------------------------------------------------ Single omics server ----
 
-single_omics_server = function(id, ns, input, output, session, module_controler, omics_type) {
+single_omics_server = function(id, ns, input, output, session, module_controler, omics_type, isoda_version) {
   # Extract some values and update the module controler
   r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
   m = r6$name
@@ -80,6 +80,12 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
               outputId = ns('over_representation_ui')
             )
           )
+        )
+      ),
+      shiny::tabPanel(
+        title = "Download",
+        shiny::uiOutput(
+          outputId = ns('download_ui')
         )
       )
     )
@@ -274,7 +280,7 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
   # Observe create experiment
   session$userData[[id]]$load_single_omics = shiny::observeEvent(input$load_single_omics, {
     
-    print_tm(m = "Test", in_print = "Loading data")
+    print_tm(m = m, in_print = "Loading data")
     shinyjs::disable("load_single_omics")
     waiter::waiter_show(
       id = "load_single_omics",
@@ -288,6 +294,7 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
         r6 = initialize_omics(
           name = m,
           type = omics_type,
+          version = isoda_version,
           meta_file = input$sample_annotations_upload$datapath,
           data_file = input$measurement_upload$datapath,
           feat_file = input$feature_annotations_upload$datapath,
@@ -303,6 +310,25 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
         r6 = base::readRDS(
           file = input$omics_file_upload$datapath
         )
+      } else if (input$upload_method == "Omics key") {
+        isoda_file = paste0("./isoda_files/", input$omics_uuid_code, '.isoda')
+        if (base::file.exists(isoda_file)) {
+          r6 = base::readRDS(file = isoda_file)
+        } else {
+          base::stop(paste0("No stored omics under ", input$omics_uuid_code))
+        }
+        
+
+      }
+      
+      # Check on omics type
+      if (r6$type != omics_type) {
+        base::stop(paste0("Incorrect .isoda omics type: ", r6$type, ", expected ", omics_type))
+      }
+
+      # Check on file version
+      if (r6$version != isoda_version) {
+        base::warning(paste0("Uploaded a legacy .isoda file (v", r6$version, "), unexpected errors might occur"))
       }
       
       # Store the R6
@@ -364,16 +390,24 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
         )
       })
       
-      print_tm(m = "Test", in_print = "Data successfully loaded")
+      # Render download UI
+      output$download_ui = shiny::renderUI({
+        render_download_tab(
+          ns = ns,
+          r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+        )
+      })
+      
+      print_tm(m = m, in_print = "Data successfully loaded")
       
     },warning = function(w){
-      print_tmw("Test", paste0("Warning: " , w))
+      print_tmw(m, paste0("Warning: " , w))
     },error=function(e){
       waiter::waiter_hide(
         id = "load_single_omics"
       )
       shinyjs::enable("load_single_omics")
-      print_tme("Test", paste0("Error:" , e))
+      print_tme(m, paste0("Error:" , e))
     })
     
     waiter::waiter_hide(
@@ -442,6 +476,15 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
     id = id,
     r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]],
     module_controler = module_controler
+  )
+  #----------------------------------------------------------- DOWNLOAD TAB ----
+  events_download_tab(
+    input = input,
+    output = output,
+    session = session,
+    id = id,
+    r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]],
+    ns = ns
   )
   #-------------------------------------------------------------------- END ----
 }

@@ -2470,4 +2470,156 @@ events_over_representation_tab = function(input, output, session, id, r6, module
     )
   })
 }
-
+#--------------------------------------------------- Download tab functions ----
+render_download_tab = function(ns, r6) {
+  shiny::tagList(
+    shiny::fluidRow(
+      shiny::column(
+        width = 5,
+        shiny::h3('Identify your data'),
+        shiny::span("Optional descriptors for your .isoda file to make it more identifiable"),
+        shiny::fluidRow(
+          shiny::textInput(
+            inputId = ns("isoda_file_owner"),
+            label = "Owner",
+            value = "",
+            width = "100%",
+            placeholder = "User producing the file"
+          )
+        ),
+        shiny::fluidRow(
+          shiny::textInput(
+            inputId = ns('isode_file_comment'),
+            label = "Comment",
+            placeholder = "Comments helping identify the experiment",
+            width = "100%"
+          )
+        )
+      ),
+      shiny::column(
+        width = 1
+      ),
+      shiny::column(
+        width = 6,
+        shiny::h3('Download methods'),
+        shiny::br(),
+        shiny::fluidRow(
+          shiny::column(
+            width = 6,
+            shiny::downloadButton(
+              outputId = ns("isoda_file_download"),
+              label = "Download isoda file",
+              style ="color: #fff; background-color: #00A86B; border-color: #00A86B; width:100%;"
+            ),
+            shiny::br(),
+            shiny::span("Download your experiment as an .isoda file locally on your computer. This file can then be loaded back into iSODA and shared with collaborators to explore your data")
+          ),
+          shiny::column(
+            width = 6,
+            shiny::actionButton(
+              inputId = ns('isoda_file_store'),
+              label = "Store on server",
+              icon = shiny::icon("download"),
+              style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
+              width = "100%"
+            ),
+            shiny::br(),
+            shiny::span("Store your data on the server. You will be provided a key to access it again and to share it with collaborators"),
+            shiny::textOutput(
+              outputId = ns('isoda_file_uuid')
+            ),
+            shiny::textOutput(
+              outputId = ns('isoda_uuid')
+            )
+          )
+        )
+      )
+    )
+  )
+}
+events_download_tab = function(input, output, session, id, r6, ns) {
+  
+  # Floating reactives
+  is_downloading = shiny::reactiveVal(FALSE)
+  
+  # Detect is downloading
+  shiny::observe({
+    if (is_downloading()) {
+      shinyjs::disable("isoda_file_download")
+    } else {
+      shinyjs::enable("isoda_file_download")
+    }
+  })
+  
+  # Download isoda file locally
+  output$isoda_file_download = shiny::downloadHandler(
+    
+    filename = function() {
+      timestamped_name(paste0(r6$name, ".isoda"))
+    },
+    
+    content = function(file) {
+      # User feedback start
+      print_tm(m = r6$name, in_print = "Saving .isoda file locally")
+      is_downloading(TRUE)
+      waiter::waiter_show(
+        id = ns("isoda_file_download"),
+        html = spin_circle(),
+        color = "#00A86B"
+      )
+      
+      # Process
+      if (input$isoda_file_owner != "") {
+        r6$owner = input$isoda_file_owner
+      }
+      
+      if (input$isode_file_comment != "") {
+        r6$comment = input$isode_file_comment
+      }
+      content = r6
+      base::saveRDS(object = content,
+                    file = file)
+      
+      # User feedback end
+      waiter::waiter_hide(
+        id = ns("isoda_file_download")
+      )
+      is_downloading(FALSE)
+    }
+  )
+  
+  # Store to server
+  session$userData[[id]]$isoda_file_store = shiny::observeEvent(input$isoda_file_store, {
+    
+    # User feedback start
+    print_tm(m = r6$name, in_print = "Saving .isoda on the server")
+    shinyjs::disable("isoda_file_store")
+    waiter::waiter_show(
+      id = ns("isoda_file_store"),
+      html = spin_circle(),
+      color = "#00A86B"
+    )
+    
+    # Process
+    uuid_key = uuid::UUIDgenerate(output = "string")
+    file_name = paste0('./isoda_files/', uuid_key, '.isoda')
+    base::saveRDS(object = r6,
+                  file = file_name)
+    print_tm(m = r6$name, in_print = paste0("File saved under UUID ", uuid_key))
+    output$isoda_file_uuid = shiny::renderText(
+      'Copy and store this key to resume work and share with collaborators:'
+    )
+    output$isoda_uuid = shiny::renderText(
+      uuid_key
+    )
+    
+    # User feedback end
+    waiter::waiter_hide(
+      id = ns("isoda_file_store")
+    )
+    shinyjs::enable("isoda_file_store")
+    
+  })
+  
+  
+}
