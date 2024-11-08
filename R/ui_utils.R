@@ -2539,18 +2539,6 @@ render_download_tab = function(ns, r6) {
 }
 events_download_tab = function(input, output, session, id, r6, ns) {
   
-  # Floating reactives
-  is_downloading = shiny::reactiveVal(FALSE)
-  
-  # Detect is downloading
-  shiny::observe({
-    if (is_downloading()) {
-      shinyjs::disable("isoda_file_download")
-    } else {
-      shinyjs::enable("isoda_file_download")
-    }
-  })
-  
   # Download isoda file locally
   output$isoda_file_download = shiny::downloadHandler(
     
@@ -2561,7 +2549,7 @@ events_download_tab = function(input, output, session, id, r6, ns) {
     content = function(file) {
       # User feedback start
       print_tm(m = r6$name, in_print = "Saving .isoda file locally")
-      is_downloading(TRUE)
+      shinyjs::disable("isoda_file_download")
       waiter::waiter_show(
         id = ns("isoda_file_download"),
         html = spin_circle(),
@@ -2584,7 +2572,7 @@ events_download_tab = function(input, output, session, id, r6, ns) {
       waiter::waiter_hide(
         id = ns("isoda_file_download")
       )
-      is_downloading(FALSE)
+      shinyjs::enable("isoda_file_download")
     }
   )
   

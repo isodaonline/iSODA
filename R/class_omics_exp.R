@@ -1830,7 +1830,7 @@ Omics_exp = R6::R6Class(
       if (length(shared_samples) < 3) {
         base::stop("Less than three shared samples between sample annotations and measurement data tables")
       } else {
-        diff_samples = base::setdiff(rownames(indexed_meta), rownames(indexed_data))
+        diff_samples = base::setdiff(rownames(indexed_data), rownames(indexed_meta))
         if (length(diff_samples) > 0) {
           base::warning(paste0("Dropping ", length(diff_samples), " samples not shared between tables"))
           indexed_data = indexed_data[shared_samples,]
