@@ -2531,39 +2531,53 @@ events_over_representation_tab = function(input, output, session, id, r6, module
 #--------------------------------------------------- Download tab functions ----
 render_save_results_tab = function(ns, r6) {
   shiny::tagList(
+    rclipboardSetup(),
     shiny::fluidRow(
       shiny::column(
         width = 6,
-        shiny::h3('Download methods'),
-        shiny::br(),
         shiny::fluidRow(
           shiny::column(
-            width = 6,
+            width = 12,
+            shiny::h3('Download'),
+            shiny::span("Download your experiment as an .isoda file locally on your computer. This file can then be loaded back into iSODA and shared with collaborators to explore your data"),
             shiny::downloadButton(
               outputId = ns("isoda_file_download"),
               label = "Download isoda file",
               style ="color: #fff; background-color: #00A86B; border-color: #00A86B; width:100%;"
-            ),
-            shiny::br(),
-            shiny::span("Download your experiment as an .isoda file locally on your computer. This file can then be loaded back into iSODA and shared with collaborators to explore your data")
-          ),
+            )
+          )
+        ),
+        shiny::fluidRow(
           shiny::column(
-            width = 6,
+            width = 12,
+            shiny::br(),
+            shiny::h3('Store on server'),
+            shiny::span("Store your data on the server. You will be provided a key to access it again and to share it with collaborators"),
             shiny::actionButton(
               inputId = ns('isoda_file_store'),
-              label = "Store on server",
-              icon = shiny::icon("download"),
+              label = "Generate UUID",
+              icon = NULL,
               style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
               width = "100%"
             ),
             shiny::br(),
-            shiny::span("Store your data on the server. You will be provided a key to access it again and to share it with collaborators"),
-            shiny::textOutput(
-              outputId = ns('isoda_file_uuid')
-            ),
-            shiny::textOutput(
-              outputId = ns('isoda_uuid')
+            shiny::span('Copy and store this key to resume work and share with collaborators:'),
+            shiny::fluidRow(
+              shiny::column(
+                width = 11,
+                shiny::tags$pre(
+                  shiny::textOutput(
+                    outputId = ns('isoda_uuid')
+                  ),
+                  style = "background-color: #D3D3D3; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 45px; overflow-x: auto; white-space: nowrap;"
+                )
+              ),
+              shiny::column(
+                width = 1,
+                shiny::uiOutput(outputId = ns("uuid_clip")),
+              )
             )
+            
           )
         )
       ),
@@ -2577,7 +2591,7 @@ render_save_results_tab = function(ns, r6) {
         shiny::fluidRow(
           shiny::textInput(
             inputId = ns("isoda_file_owner"),
-            label = "Owner",
+            label = "User",
             value = "",
             width = "100%",
             placeholder = "User producing the file"
@@ -2596,6 +2610,8 @@ render_save_results_tab = function(ns, r6) {
   )
 }
 events_save_results_tab = function(input, output, session, id, r6, ns) {
+  # Floating reactives
+  storage_uuid = shiny::reactiveVal("")
   
   # Download isoda file locally
   output$isoda_file_download = shiny::downloadHandler(
@@ -2652,12 +2668,10 @@ events_save_results_tab = function(input, output, session, id, r6, ns) {
     base::saveRDS(object = r6,
                   file = file_name)
     print_tm(m = r6$name, in_print = paste0("File saved under UUID ", uuid_key))
-    output$isoda_file_uuid = shiny::renderText(
-      'Copy and store this key to resume work and share with collaborators:'
-    )
     output$isoda_uuid = shiny::renderText(
       uuid_key
     )
+    storage_uuid(uuid_key)
     
     # User feedback end
     waiter::waiter_hide(
@@ -2667,5 +2681,22 @@ events_save_results_tab = function(input, output, session, id, r6, ns) {
     
   })
   
+  # Copy uuid to clipboard 
+  output$uuid_clip = shiny::renderUI({
+    rclipboard::rclipButton(
+      inputId = ns("uuid_clip_button"),
+      label = NULL,
+      clipText = storage_uuid(), 
+      icon = icon("copy"),
+      options = list(delay = list(show = 800, hide = 100), trigger = "hover"),
+      width = "100%",
+      style = "height: 45px;"
+    )
+  })
+  
+  # Feedback to the copy to clipboard
+  session$userData[[id]]$uuid_clip_button = shiny::observeEvent(input$uuid_clip_button, {
+    print_tm(m = r6$name, in_print = "Copied to clipboard")
+  })
   
 }
