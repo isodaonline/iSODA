@@ -21,7 +21,7 @@ render_upload_user_files = function(ns) {
                   placeholder = 'Sample annotations file',
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$file_meta,
+                title = tooltip_data$single_omics$file_meta,
                 placement = "top")
             ),
             shiny::column(
@@ -34,7 +34,7 @@ render_upload_user_files = function(ns) {
                   selected = "Wide",
                   status = "warning"
                 ),
-                title = tooltip_data$data_upload$meta_file_format,
+                title = tooltip_data$single_omics$meta_file_format,
                 placement = "top")
             )
           ),
@@ -49,7 +49,7 @@ render_upload_user_files = function(ns) {
                   multiple = FALSE,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$select_id_meta,
+                title = tooltip_data$single_omics$select_id_meta,
                 placement = "top")
             )
           )
@@ -76,7 +76,7 @@ render_upload_user_files = function(ns) {
                   placeholder = 'Measurements file',
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$file_data,
+                title = tooltip_data$single_omics$file_data,
                 placement = "top")
               
             ),
@@ -90,7 +90,7 @@ render_upload_user_files = function(ns) {
                   selected = "Wide",
                   status = "warning"
                 ),
-                title = tooltip_data$data_upload$data_file_format,
+                title = tooltip_data$single_omics$data_file_format,
                 placement = "top")
             )
           ),
@@ -120,7 +120,7 @@ render_upload_user_files = function(ns) {
                   placeholder = 'Feature annotations file',
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$file_feat,
+                title = tooltip_data$single_omics$file_feat,
                 placement = "top")
             ),
             shiny::column(
@@ -133,7 +133,7 @@ render_upload_user_files = function(ns) {
                   selected = "Long",
                   status = "warning"
                 ),
-                title = tooltip_data$data_upload$feat_file_format,
+                title = tooltip_data$single_omics$feat_file_format,
                 placement = "top")
             )
           ),
@@ -148,7 +148,7 @@ render_upload_user_files = function(ns) {
                   multiple = FALSE,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$select_id_feat,
+                title = tooltip_data$single_omics$select_id_feat,
                 placement = "top")
             )
           )
@@ -166,7 +166,7 @@ render_upload_omics_file = function(ns) {
       placeholder = 'Exported iSODA .isoda file',
       width = '100%'
     ),
-    title = tooltip_data$data_upload$omics_file,
+    title = tooltip_data$single_omics$omics_file,
     placement = "top")
 }
 render_omics_uuid = function(ns) {
@@ -177,7 +177,7 @@ render_omics_uuid = function(ns) {
       placeholder = "single-omics experiment uuid",
       width = "100%"
     ),
-    title = tooltip_data$data_upload$omics_uuid,
+    title = tooltip_data$single_omics$omics_uuid,
     placement = "top")
 }
 #---------------------------------------------------- Samples tab functions ----
@@ -291,7 +291,7 @@ render_sample_filtering = function(ns, r6) {
               selected = 'Raw metadata table',
               width = '100%'
             ),
-            title = tooltip_data$data_upload$select_meta_table,
+            title = tooltip_data$single_omics$select_meta_table,
             placement = "top")
         ),
         shiny::column(
@@ -302,7 +302,7 @@ render_sample_filtering = function(ns, r6) {
               label = NULL,
               style = "width:100%;"
             ),
-            title = tooltip_data$data_upload$download_metatable,
+            title = tooltip_data$single_omics$download_metatable,
             placement = "top")
         )
       ),
@@ -314,7 +314,7 @@ render_sample_filtering = function(ns, r6) {
             label = "Partial display",
             status = "danger"
           ),
-          title = tooltip_data$data_upload$head_sample_annoations,
+          title = tooltip_data$single_omics$head_sample_annoations,
           placement = "top")
       ),
       #### Column selection start ----
@@ -332,7 +332,7 @@ render_sample_filtering = function(ns, r6) {
               multiple = FALSE,
               width = '100%'
             ),
-            title = tooltip_data$data_upload$sample_annotations_type_col,
+            title = tooltip_data$single_omics$sample_annotations_type_col,
             placement = "top")
         ),
         shiny::column(
@@ -346,7 +346,7 @@ render_sample_filtering = function(ns, r6) {
               multiple = FALSE,
               width = '100%'
             ),
-            title = tooltip_data$data_upload$sample_annotations_group_col,
+            title = tooltip_data$single_omics$sample_annotations_group_col,
             placement = "top")
         ),
         shiny::column(
@@ -360,7 +360,7 @@ render_sample_filtering = function(ns, r6) {
               multiple = FALSE,
               width = '100%'
             ),
-            title = tooltip_data$data_upload$sample_annotations_batch_col,
+            title = tooltip_data$single_omics$sample_annotations_batch_col,
             placement = "top")
         )
       ),
@@ -377,7 +377,7 @@ render_sample_filtering = function(ns, r6) {
               value = "blank",
               width = '100%'
             ),
-            title = tooltip_data$data_upload$sample_annotations_blank_pattern,
+            title = tooltip_data$single_omics$sample_annotations_blank_pattern,
             placement = "top")
         ),
         shiny::column(
@@ -389,7 +389,7 @@ render_sample_filtering = function(ns, r6) {
               value = "quality",
               width = '100%'
             ),
-            title = tooltip_data$data_upload$sample_annotations_qc_pattern,
+            title = tooltip_data$single_omics$sample_annotations_qc_pattern,
             placement = "top")
         ),
         shiny::column(
@@ -401,7 +401,7 @@ render_sample_filtering = function(ns, r6) {
               value = "pool",
               width = '100%'
             ),
-            title = tooltip_data$data_upload$sample_annotations_pool_pattern,
+            title = tooltip_data$single_omics$sample_annotations_pool_pattern,
             placement = "top")
         )
       ),
@@ -425,7 +425,7 @@ render_sample_filtering = function(ns, r6) {
               width = '100%',
               checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
             ),
-            title = tooltip_data$data_upload$non_samples_selection,
+            title = tooltip_data$single_omics$non_samples_selection,
             placement = "top"),
           
           # Manual sample exclusion (selection from rows in the filtered metadata table)
@@ -438,7 +438,7 @@ render_sample_filtering = function(ns, r6) {
               multiple = T,
               width = "100%"
             ),
-            title = tooltip_data$data_upload$selection_manual,
+            title = tooltip_data$single_omics$selection_manual,
             placement = "top"),
           
           # Exclusion based on a metadata column value
@@ -454,7 +454,7 @@ render_sample_filtering = function(ns, r6) {
                   label = "Column",
                   multiple = F,
                   width = "100%"),
-                title = tooltip_data$data_upload$exclusion_meta_col,
+                title = tooltip_data$single_omics$exclusion_meta_col,
                 placement = "top"),
               
               # Value in the metadata column
@@ -465,7 +465,7 @@ render_sample_filtering = function(ns, r6) {
                   label = "Value",
                   multiple = T,
                   width = "100%"),
-                title = tooltip_data$data_upload$exclusion_meta_val,
+                title = tooltip_data$single_omics$exclusion_meta_val,
                 placement = "top")
             ),
             shiny::column(
@@ -478,7 +478,7 @@ render_sample_filtering = function(ns, r6) {
                   label = "Samples",
                   multiple = T,
                   width = "100%"),
-                title = tooltip_data$data_upload$exclusion_meta_row,
+                title = tooltip_data$single_omics$exclusion_meta_row,
                 placement = "top")
             )
           ),
@@ -493,7 +493,7 @@ render_sample_filtering = function(ns, r6) {
                   label = "Drop",
                   width = "100%"
                 ),
-                title = tooltip_data$data_upload$selection_drop,
+                title = tooltip_data$single_omics$selection_drop,
                 placement = "top")
             ),
             shiny::column(
@@ -504,7 +504,7 @@ render_sample_filtering = function(ns, r6) {
                   label = "Keep",
                   width = "100%"
                 ),
-                title = tooltip_data$data_upload$selection_keep,
+                title = tooltip_data$single_omics$selection_keep,
                 placement = "top")
             ),
             shiny::column(
@@ -515,7 +515,7 @@ render_sample_filtering = function(ns, r6) {
                   label = "Clear filters",
                   width = "100%"
                 ),
-                title = tooltip_data$data_upload$clear_filters,
+                title = tooltip_data$single_omics$clear_filters,
                 placement = "top")
             ),
             shiny::column(
@@ -526,7 +526,7 @@ render_sample_filtering = function(ns, r6) {
                   label = "Reset table",
                   width = "100%"
                 ),
-                title = tooltip_data$data_upload$reset_meta,
+                title = tooltip_data$single_omics$reset_meta,
                 placement = "top")
             )
           )
@@ -915,7 +915,7 @@ render_measurement_filtering = function(ns, r6) {
               selected = 'Raw data table',
               width = '100%'
             ),
-            title = tooltip_data$data_upload$select_data_table,
+            title = tooltip_data$single_omics$select_data_table,
             placement = "top")
         ),
         shiny::column(
@@ -926,7 +926,7 @@ render_measurement_filtering = function(ns, r6) {
               label = NULL,
               style = "width:100%;"
             ),
-            title = tooltip_data$data_upload$download_datatable,
+            title = tooltip_data$single_omics$download_datatable,
             placement = "top")
         )
       ),
@@ -938,7 +938,7 @@ render_measurement_filtering = function(ns, r6) {
             label = "Partial display",
             status = "danger"
           ),
-          title = tooltip_data$data_upload$head_measurement_data,
+          title = tooltip_data$single_omics$head_measurement_data,
           placement = "top")
       ),
       #### Pre-analysis start ----
@@ -955,7 +955,7 @@ render_measurement_filtering = function(ns, r6) {
           multiple = T,
           width = "100%"
         ),
-        title = tooltip_data$data_upload$operation_order,
+        title = tooltip_data$single_omics$operation_order,
         placement = "top"),
       shiny::fluidRow(
         shiny::column(
@@ -969,7 +969,7 @@ render_measurement_filtering = function(ns, r6) {
               multiple = FALSE,
               width = '100%'
             ),
-            title = tooltip_data$data_upload$batch_effect_correction,
+            title = tooltip_data$single_omics$batch_effect_correction,
             placement = "top")
         ),
         shiny::column(
@@ -982,7 +982,7 @@ render_measurement_filtering = function(ns, r6) {
               label = 'Imputation method',
               multiple = F,
               width = "100%"),
-            title = tooltip_data$data_upload$na_imputation,
+            title = tooltip_data$single_omics$na_imputation,
             placement = "top")
         )
       ),
@@ -999,7 +999,7 @@ render_measurement_filtering = function(ns, r6) {
               min = 0,
               step = 0.5,
               width = "100%"),
-            title = tooltip_data$data_upload$blank_multiplier,
+            title = tooltip_data$single_omics$blank_multiplier,
             placement = "top")
         ),
         shiny::column( # Sample threshold
@@ -1013,7 +1013,7 @@ render_measurement_filtering = function(ns, r6) {
               max = 1,
               step = 0.05,
               width = "100%"),
-            title = tooltip_data$data_upload$sample_threshold,
+            title = tooltip_data$single_omics$sample_threshold,
             placement = "top")
         ),
         shiny::column( # Group threshold
@@ -1027,7 +1027,7 @@ render_measurement_filtering = function(ns, r6) {
               max = 1,
               step = 0.05,
               width = "100%"),
-            title = tooltip_data$data_upload$group_threshold,
+            title = tooltip_data$single_omics$group_threshold,
             placement = "top")
         )
       ),
@@ -1044,7 +1044,7 @@ render_measurement_filtering = function(ns, r6) {
                              choices = c("None", colnames(r6$tables$indexed_feat)),
                              selected = r6$params$measurement_filter$norm_col,
                              width = "100%"),
-          title = tooltip_data$data_upload$normalise_to_col,
+          title = tooltip_data$single_omics$normalise_to_col,
           placement = "top")
       )
       #### end ----
@@ -1218,7 +1218,7 @@ render_feature_filtering = function(ns, r6) {
               selected = 'Raw feature table',
               width = '100%'
             ),
-            title = tooltip_data$data_upload$feat_table_select,
+            title = tooltip_data$single_omics$feat_table_select,
             placement = "top")
         ),
         shiny::column(
@@ -1229,7 +1229,7 @@ render_feature_filtering = function(ns, r6) {
               label = NULL,
               style = "width:100%;"
             ),
-            title = tooltip_data$data_upload$download_feature_table,
+            title = tooltip_data$single_omics$download_feature_table,
             placement = "top")
         )
       ),
@@ -1241,7 +1241,7 @@ render_feature_filtering = function(ns, r6) {
             label = "Partial display",
             status = "danger"
           ),
-          title = tooltip_data$data_upload$head_feature_annotations,
+          title = tooltip_data$single_omics$head_feature_annotations,
           placement = "top")
       ),
       #### Feature ID type if relevant
@@ -1262,7 +1262,7 @@ render_feature_filtering = function(ns, r6) {
               multiple = F,
               width = "100%"
             ),
-            title = tooltip_data$data_upload$feature_col_selection,
+            title = tooltip_data$single_omics$feature_col_selection,
             placement = "top"),
           bsplus::bs_embed_tooltip(
             shiny::selectizeInput(
@@ -1271,7 +1271,7 @@ render_feature_filtering = function(ns, r6) {
               choices = NULL,
               multiple = TRUE,
               width = "100%"),
-            title = tooltip_data$data_upload$feature_value,
+            title = tooltip_data$single_omics$feature_value,
             placement = "top")
         ),
         shiny::column(
@@ -1283,7 +1283,7 @@ render_feature_filtering = function(ns, r6) {
               choices = NULL,
               multiple = TRUE,
               width = "100%"),
-            title = tooltip_data$data_upload$feature_selection,
+            title = tooltip_data$single_omics$feature_selection,
             placement = "top")
         )
       ),
@@ -1295,7 +1295,7 @@ render_feature_filtering = function(ns, r6) {
               inputId = ns("drop_cols"),
               label =  "Drop",
               width = "100%"),
-            title = tooltip_data$data_upload$drop_cols,
+            title = tooltip_data$single_omics$drop_cols,
             placement = "top")
           
         ),
@@ -1306,7 +1306,7 @@ render_feature_filtering = function(ns, r6) {
               inputId = ns("keep_cols"),
               label =  "Keep",
               width = "100%"),
-            title = tooltip_data$data_upload$keep_cols,
+            title = tooltip_data$single_omics$keep_cols,
             placement = "top")
           
         ),
@@ -1317,7 +1317,7 @@ render_feature_filtering = function(ns, r6) {
               inputId = ns("clear_data_filters"),
               label =  "Clear filters",
               width = "100%"),
-            title = tooltip_data$data_upload$clear_data_filters,
+            title = tooltip_data$single_omics$clear_data_filters,
             placement = "top")
           
         ),
@@ -1328,7 +1328,7 @@ render_feature_filtering = function(ns, r6) {
               inputId = ns("reset_data_table"),
               label =  "Reset",
               width = "100%"),
-            title = tooltip_data$data_upload$reset_data_table,
+            title = tooltip_data$single_omics$reset_data_table,
             placement = "top")
           
         )
@@ -1651,7 +1651,7 @@ render_functional_comparison_tab = function(ns, r6) {
             selected = 'Total normalized table',
             width = '90%'
           ),
-          title = tooltip_data$data_upload$gseaprep_table_select,
+          title = tooltip_data$single_omics$gseaprep_table_select,
           placement = "top"),
         bsplus::bs_embed_tooltip(
           shiny::selectInput(
@@ -1660,7 +1660,7 @@ render_functional_comparison_tab = function(ns, r6) {
             choices = colnames(r6$tables$raw_meta),
             width = '90%'
           ),
-          title = tooltip_data$data_upload$gseaprep_group_col,
+          title = tooltip_data$single_omics$gseaprep_group_col,
           placement = "top"),
         bsplus::bs_embed_tooltip(
           shiny::selectInput(
@@ -1670,7 +1670,7 @@ render_functional_comparison_tab = function(ns, r6) {
             width = '90%',
             multiple = T
           ),
-          title = tooltip_data$data_upload$gseaprep_groups,
+          title = tooltip_data$single_omics$gseaprep_groups,
           placement = "top")
         
       ),
@@ -1688,7 +1688,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 selected = 't-Test',
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$gseaprep_test,
+              title = tooltip_data$single_omics$gseaprep_test,
               placement = "top")
           ),
           shiny::column(
@@ -1701,7 +1701,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 selected = 'BH',
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$gseaprep_adjustment,
+              title = tooltip_data$single_omics$gseaprep_adjustment,
               placement = "top")
           ),
           shiny::column(
@@ -1714,7 +1714,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 selected = 'mean',
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$gseaprep_method,
+              title = tooltip_data$single_omics$gseaprep_method,
               placement = "top")
           )
         ),
@@ -1726,7 +1726,7 @@ render_functional_comparison_tab = function(ns, r6) {
             status = "info",
             justified = TRUE
           ),
-          title = tooltip_data$data_upload$fa_feature_selection,
+          title = tooltip_data$single_omics$fa_feature_selection,
           placement = "top"),
         shiny::fluidRow(
           shiny::column(
@@ -1741,7 +1741,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 step = 0.01,
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$gseaprep_pval,
+              title = tooltip_data$single_omics$gseaprep_pval,
               placement = "top"),
             bsplus::bs_embed_tooltip(
               shiny::numericInput(
@@ -1752,7 +1752,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 step = 0.05,
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$or_fc_threshold,
+              title = tooltip_data$single_omics$or_fc_threshold,
               placement = "top")
           ),
           shiny::column(
@@ -1764,7 +1764,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 choices = colnames(r6$tables$raw_feat),
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$fa_feature_col,
+              title = tooltip_data$single_omics$fa_feature_col,
               placement = "top"),
             bsplus::bs_embed_tooltip(
               shiny::selectizeInput(
@@ -1774,7 +1774,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 multiple = TRUE,
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$fa_feature_values,
+              title = tooltip_data$single_omics$fa_feature_values,
               placement = "top")
           )
         )
@@ -1815,7 +1815,7 @@ render_functional_comparison_tab = function(ns, r6) {
                     selected = NULL,
                     width = '100%'
                   ),
-                  title = tooltip_data$data_upload$gsea_go,
+                  title = tooltip_data$single_omics$gsea_go,
                   placement = "top")
               ),
               shiny::column(
@@ -1828,7 +1828,7 @@ render_functional_comparison_tab = function(ns, r6) {
                     selected = "BH",
                     width = '100%'
                   ),
-                  title = tooltip_data$data_upload$gsea_adjustment,
+                  title = tooltip_data$single_omics$gsea_adjustment,
                   placement = "top"
                 )
               )
@@ -1847,7 +1847,7 @@ render_functional_comparison_tab = function(ns, r6) {
                     step = 5,
                     width = '100%'
                   ),
-                  title = tooltip_data$data_upload$ea_min_size,
+                  title = tooltip_data$single_omics$ea_min_size,
                   placement = "top"
                 )
               ),
@@ -1863,7 +1863,7 @@ render_functional_comparison_tab = function(ns, r6) {
                     step = 50,
                     width = '100%'
                   ),
-                  title = tooltip_data$data_upload$ea_max_size,
+                  title = tooltip_data$single_omics$ea_max_size,
                   placement = "top"
                 )
               )
@@ -1878,7 +1878,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 step = 0.01,
                 width = '100%'
               ),
-              title = tooltip_data$data_upload$gsea_pval,
+              title = tooltip_data$single_omics$gsea_pval,
               placement = "top"
             )
           ),
@@ -1894,7 +1894,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   step = 1,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$ea_seed,
+                title = tooltip_data$single_omics$ea_seed,
                 placement = "top"
               )
             )
@@ -1918,7 +1918,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 label = "EA table",
                 style = "width:100%;"
               ),
-              title = tooltip_data$data_upload$download_ea_table,
+              title = tooltip_data$single_omics$download_ea_table,
               placement = "top"
             )
           )
@@ -1957,7 +1957,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   selected = NULL,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$or_go_ont,
+                title = tooltip_data$single_omics$or_go_ont,
                 placement = "top"
               )
             ),
@@ -1971,7 +1971,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   selected = "BH",
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$or_pval_adjustment,
+                title = tooltip_data$single_omics$or_pval_adjustment,
                 placement = "top"
               )
             )
@@ -1989,7 +1989,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   step = 5,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$ora_min_gssize,
+                title = tooltip_data$single_omics$ora_min_gssize,
                 placement = "top"
               )
             ),
@@ -2005,7 +2005,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   step = 50,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$ora_max_gssize,
+                title = tooltip_data$single_omics$ora_max_gssize,
                 placement = "top"
               )
             )
@@ -2023,7 +2023,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   step = 0.01,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$or_pval_cutoff,
+                title = tooltip_data$single_omics$or_pval_cutoff,
                 placement = "top"
               )
             ),
@@ -2039,7 +2039,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   step = 0.01,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$or_qval_cutoff,
+                title = tooltip_data$single_omics$or_qval_cutoff,
                 placement = "top"
               )
             )
@@ -2056,7 +2056,7 @@ render_functional_comparison_tab = function(ns, r6) {
                   step = 1,
                   width = '100%'
                 ),
-                title = tooltip_data$data_upload$ora_seed,
+                title = tooltip_data$single_omics$ora_seed,
                 placement = "top"
               )
             )
@@ -2080,7 +2080,7 @@ render_functional_comparison_tab = function(ns, r6) {
                 label = "ORA table",
                 style = "width:100%;"
               ),
-              title = tooltip_data$data_upload$download_ora_table,
+              title = tooltip_data$single_omics$download_ora_table,
               placement = "top"
             )
           )

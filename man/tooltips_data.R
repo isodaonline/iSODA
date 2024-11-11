@@ -1,5 +1,5 @@
 tooltip_data = list(
-  data_upload = list( # Sublists based on R modules / namespaces
+  single_omics = list( # Sublists based on R modules / namespaces
     # Upload method
     upload_method = "Input type: \n\t-File upload: for new experiments by uploading the user data \n\t-iSODA file: upload an iSODA single-omics file downloaded through the app \n\t-iSODA UUID: load a single-omics experiment from the server using a UUID key produced by iSODA",
     load_single_omics = "Load the experiment using the selected method. Once loaded, the input files cannot be altered",

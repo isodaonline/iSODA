@@ -110,7 +110,7 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
               selected = "File upload",
               status = "warning"
             ),
-            title = tooltip_data$data_upload$upload_method,
+            title = tooltip_data$single_omics$upload_method,
             placement = "top")
         ),
         shiny::fluidRow(
@@ -122,7 +122,7 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
               style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
               width = '100%'
             ),
-            title = tooltip_data$data_upload$load_single_omics,
+            title = tooltip_data$single_omics$load_single_omics,
             placement = "top")
         )
       ),
