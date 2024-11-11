@@ -793,6 +793,28 @@ events_sample_filtering = function(input, output, session, id, r6) {
 }
 #----------------------------------------------- Measurements tab functions ----
 render_measurement_filtering = function(ns, r6) {
+  
+  if (r6$type == "Lipidomics") {
+    table_previews = c('Indexed data table',
+                       'Raw data table',
+                       'Class normalized table',
+                       'Total normalized table',
+                       'Z-scored table',
+                       'Z-scored class normalized table',
+                       'Z-scored total normalized table',
+                       'Class table',
+                       'Class table z-scored',
+                       'Class table total normalized',
+                       'Class table z-scored total normalized')
+  } else {
+    table_previews = c('Indexed data table',
+                       'Raw data table',
+                       'Total normalized table',
+                       'Z-scored table',
+                       'Z-scored total normalized table')
+  }
+  
+  
   shiny::fluidRow(
     shiny::column(
       width = 8,
@@ -833,7 +855,7 @@ render_measurement_filtering = function(ns, r6) {
           shiny::selectInput(
             inputId = ns('measurement_data_preview_table'),
             label = NULL,
-            choices = c('Indexed data table', 'Raw data table'),
+            choices = table_previews,
             selected = 'Raw data table',
             width = '100%'
           )
@@ -2511,31 +2533,6 @@ render_save_results_tab = function(ns, r6) {
   shiny::tagList(
     shiny::fluidRow(
       shiny::column(
-        width = 5,
-        shiny::h3('Identify your data'),
-        shiny::span("Optional descriptors for your .isoda file to make it more identifiable"),
-        shiny::fluidRow(
-          shiny::textInput(
-            inputId = ns("isoda_file_owner"),
-            label = "Owner",
-            value = "",
-            width = "100%",
-            placeholder = "User producing the file"
-          )
-        ),
-        shiny::fluidRow(
-          shiny::textInput(
-            inputId = ns('isode_file_comment'),
-            label = "Comment",
-            placeholder = "Comments helping identify the experiment",
-            width = "100%"
-          )
-        )
-      ),
-      shiny::column(
-        width = 1
-      ),
-      shiny::column(
         width = 6,
         shiny::h3('Download methods'),
         shiny::br(),
@@ -2567,6 +2564,31 @@ render_save_results_tab = function(ns, r6) {
             shiny::textOutput(
               outputId = ns('isoda_uuid')
             )
+          )
+        )
+      ),
+      shiny::column(
+        width = 1
+      ),
+      shiny::column(
+        width = 5,
+        shiny::h3('Identify your data'),
+        shiny::span("Optional descriptors for your .isoda file to make it more identifiable"),
+        shiny::fluidRow(
+          shiny::textInput(
+            inputId = ns("isoda_file_owner"),
+            label = "Owner",
+            value = "",
+            width = "100%",
+            placeholder = "User producing the file"
+          )
+        ),
+        shiny::fluidRow(
+          shiny::textInput(
+            inputId = ns('isode_file_comment'),
+            label = "Comment",
+            placeholder = "Comments helping identify the experiment",
+            width = "100%"
           )
         )
       )
