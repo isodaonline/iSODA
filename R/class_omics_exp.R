@@ -792,6 +792,10 @@ Omics_exp = R6::R6Class(
     #---------------------------------------------------------------- Plots ----
     plots = list(
 
+      # Preview plots
+      sample_type_distribution = NULL,
+      sample_group_distribution = NULL,
+      
       # Interactive visualization
       dendrogram = NULL,
       class_distribution = NULL,
@@ -1770,6 +1774,7 @@ Omics_exp = R6::R6Class(
       indexed_meta = get_indexed_table(id_col = id_col,
                                        input_table = imp_meta)
       indexed_meta[is.na(indexed_meta)] = "NA"
+      indexed_meta[indexed_meta == ""] = "NA"
 
       # Store
       self$indices$id_col_meta = id_col
@@ -2742,6 +2747,116 @@ Omics_exp = R6::R6Class(
 
     #----------------------------------------------------- Plotting methods ----
 
+    # Sample type distribution
+    plot_sample_type_distribution = function(
+    input_table = self$tables$indexed_meta,
+    index_blanks = self$indices$index_blanks,
+    index_qcs = self$indices$index_qcs,
+    index_pools = self$indices$index_pools,
+    index_samples = self$indices$index_samples,
+    batch_column = self$indices$batch_column
+    ) {
+      mixed_samples = unique(c(intersect(index_blanks, index_qcs), intersect(index_qcs, index_pools), intersect(index_blanks, index_pools)))
+      batches = sort(unique(input_table[,batch_column]))
+      plot_df = list()
+      for (batch in batches) {
+        batch_rows = rownames(input_table)[input_table[,batch_column] == batch]
+        plot_df$Batch = c(plot_df$Batch, batch)
+        plot_df$Samples = c(plot_df$Samples, length(base::intersect(batch_rows, index_samples)))
+        plot_df$Blanks = c(plot_df$Blanks, length(base::intersect(batch_rows, index_blanks)))
+        plot_df$QCs = c(plot_df$QCs, length(base::intersect(batch_rows, index_qcs)))
+        plot_df$Pools = c(plot_df$Pools, length(base::intersect(batch_rows, index_pools)))
+        plot_df$Mixed = c(plot_df$Mixed, length(base::intersect(batch_rows, mixed_samples)))
+      }
+      
+      plot_df = data.frame(plot_df)
+      rownames(plot_df) = plot_df$Batch
+      plot_df$Batch = NULL
+      
+      batch_label = base::ifelse(length(batches) > 1, " & batch", "")
+      
+      fig = plotly::plot_ly(x = factor(colnames(plot_df), levels = colnames(plot_df)))
+      for (i in rownames(plot_df)) {
+        fig = plotly::add_trace(
+          p = fig,
+          y = unname(unlist(plot_df[i,,T])),
+          type = 'bar',
+          name = i)
+      }
+      fig = plotly::layout(
+        p = fig,
+        title = paste0("Sample type", batch_label, " distribution"),
+        yaxis = list(title = 'Count'),
+        barmode = 'stack',
+        bargap = 0.2)
+      fig = plotly::layout(
+        p = fig,
+        dragmode = FALSE,
+        bargap = 0.2
+      )
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE,
+        scrollZoom = FALSE
+      )
+      self$plots$sample_type_distribution = fig
+    },
+    
+    # Sample group distribution
+    plot_sample_group_distribution = function(
+    input_table = self$tables$indexed_meta,
+    batch_column = self$indices$batch_column,
+    group_column = self$indices$group_column) {
+      
+      batches = sort(unique(input_table[,batch_column]))
+      groups = sort(unique(input_table[,group_column]))
+      
+      # Check on groups
+      if (length(groups) < 2) {base::stop('Less than two groups in selected group column')}
+      
+      plot_df = list()
+      for (batch in batches) {
+        batch_rows = rownames(input_table)[input_table[,batch_column] == batch]
+        plot_df$Batch = c(plot_df$Batch, batch)
+        for (group in groups) {
+          index_group = rownames(input_table)[input_table[,group_column] == group]
+          plot_df[[group]] = c(plot_df[[group]], length(base::intersect(batch_rows, index_group)))
+        }
+      }
+      
+      plot_df = data.frame(plot_df, check.names = F)
+      rownames(plot_df) = plot_df$Batch
+      plot_df$Batch = NULL
+      
+      batch_label = base::ifelse(length(batches) > 1, " & batch", "")
+      
+      fig = plotly::plot_ly(x = factor(colnames(plot_df), levels = colnames(plot_df)))
+      for (i in rownames(plot_df)) {
+        fig = plotly::add_trace(
+          p = fig,
+          y = unname(unlist(plot_df[i,,T])),
+          type = 'bar',
+          name = i)
+      }
+      fig = plotly::layout(
+        p = fig,
+        title = paste0("Sample groups (", group_column, ")", batch_label, " distribution"),
+        yaxis = list(title = 'Count'),
+        barmode = 'stack',
+        bargap = 0.2)
+      fig = plotly::layout(
+        p = fig,
+        dragmode = FALSE,
+        bargap = 0.2
+      )
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE,
+        scrollZoom = FALSE
+      )
+      self$plots$sample_group_distribution = fig
+    },
+    
     # Dendrogram
     plot_dendrogram = function(dataset = self$params$dendrogram$dataset,
                                meta_table = self$tables$raw_meta,

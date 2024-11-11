@@ -137,7 +137,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # LIPS
-if (F) {
+if (T) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/240605_Ratna/Metadata_50_ANCHOR.csv'
@@ -151,7 +151,8 @@ if (F) {
   id_col_data = 'ID'
   id_col_feat = 'ID'
   type_column = 'SampleType'
-  group_column = 'NAS_groups'
+  # group_column = 'NAS_groups'
+  group_column = 'GroupName'
   batch_column = 'Batch'
   blank_pattern = "blank"
   qc_pattern = "qc"
@@ -203,7 +204,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
-if (T) {
+if (F) {
   name = 'prot_1'
   type = "Proteomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
@@ -274,20 +275,89 @@ self = initialize_omics(
 )
 
 
+self$plot_sample_type_distribution()
+self$plots$sample_type_distribution
 
-imp_meta = self$tables$indexed_meta
-type_column = self$indices$type_column
-batch_column = NULL
-blank_pattern
-qc_pattern
-pool_pattern
+self$plot_sample_group_distribution()
+self$plots$sample_group_distribution
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  if (is.null(batch_column)) {
+    batch_column = 'tmp_batch'
+    input_table[,batch_column] = 1
+  }
+  
+  input_table[,group_column] = factor(input_table[,group_column], levels = unique(input_table[,group_column]))
+  
+  batches = unique(input_table[,batch_column])
+  data = list(
+    "Batch" = batches
+  )
+  
+  for (batch in batches) {
+    batch_idx = rownames(input_table)[input_table[,batch_column] == batch]
+    freq = base::table(input_table[batch_idx, group_column])
+    for (grp in names(freq)) {
+      data[[grp]] = c(data[[grp]], as.numeric(freq[grp]))
+    }
+  }
+  
+  data = data.frame(data, check.names = F)
+  
+  fig = plotly::plot_ly(x = data$Batch)
+  for (col in levels(input_table[,group_column])) {
+    fig = plotly::add_trace(
+      p = fig,
+      y = data[[col]],
+      type = 'bar',
+      name = col)
+  }
+  fig = plotly::layout(
+    p = fig,
+    yaxis = list(title = 'Count'),
+    barmode = 'stack')
+  fig = plotly::layout(
+    p = fig,
+    dragmode = FALSE,
+    bargap = 0.2
+  )
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE,
+    scrollZoom = FALSE
+  )
+  
+  return(fig)
+  
+}
 
 
-self = base::readRDS("/home/dolivierj/Downloads/20241108-144206_lips_1.isoda")
-self$params$dendrogram
 
-.isoda
-.misoda
+
+
+
+
+
+
+
+
+
+
+
 
 #------------------------------------------------------ MOFA TEST CELLMINER ----
 

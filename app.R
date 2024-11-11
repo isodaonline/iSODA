@@ -64,6 +64,7 @@ library(data.table)
 library(matrixStats)
 library(bsplus)
 library(uuid)
+library(rclipboard)
 
 # Use basilisk
 # reticulate::use_condaenv(condaenv = 'mofa_1')

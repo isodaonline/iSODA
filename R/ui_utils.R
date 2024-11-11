@@ -240,7 +240,7 @@ render_sample_filtering = function(ns, r6) {
       ),
       shiny::fluidRow(
         shiny::column(
-          width = 3,
+          width = 6,
           plotly::plotlyOutput(
             outputId = ns('sample_type_plot'),
             width = '100%',
@@ -248,25 +248,9 @@ render_sample_filtering = function(ns, r6) {
           )
         ),
         shiny::column(
-          width = 3,
+          width = 6,
           plotly::plotlyOutput(
             outputId = ns('sample_group_plot'),
-            width = '100%',
-            height = '400px'
-          )
-        ),
-        shiny::column(
-          width = 3,
-          plotly::plotlyOutput(
-            outputId = ns('batch_per_type_plot'),
-            width = '100%',
-            height = '400px'
-          )
-        ),
-        shiny::column(
-          width = 3,
-          plotly::plotlyOutput(
-            outputId = ns('batch_per_group_plot'),
             width = '100%',
             height = '400px'
           )
@@ -541,6 +525,7 @@ events_sample_filtering = function(input, output, session, id, r6) {
   # Floating reactives
   samples_exclude = shiny::reactiveVal()
   table_preview_trigger_meta = shiny::reactiveVal(sample(1:100, 1))
+  trigger_preview_plots = shiny::reactiveVal(sample(1:100, 1))
   
   # Table preview
   session$userData[[id]]$sample_annotations_preview_table = shiny::observeEvent(c(
@@ -571,6 +556,9 @@ events_sample_filtering = function(input, output, session, id, r6) {
       total = nrow(r6$tables$indexed_meta),
       title = 'Sample count'
     )
+    
+    # Trigger the preview plots
+    trigger_preview_plots(sample(1:100, 1))
     
   })
   
@@ -650,6 +638,9 @@ events_sample_filtering = function(input, output, session, id, r6) {
     # Trigger preview display
     table_preview_trigger_meta(sample(1:100, 1))
     
+    # Trigger the preview plots
+    trigger_preview_plots(sample(1:100, 1))
+    
   })
   
   # Observe reset meta
@@ -666,10 +657,13 @@ events_sample_filtering = function(input, output, session, id, r6) {
     # Trigger preview display
     table_preview_trigger_meta(sample(1:100, 1))
     
+    # Trigger the preview plots
+    trigger_preview_plots(sample(1:100, 1))
+    
   })
   
   # Observe sample indices
-  session$userData[[id]]$render_sample_type_plot = shiny::observeEvent(
+  session$userData[[id]]$set_sample_indices = shiny::observeEvent(
     c(input$sample_annotations_type_col,
       input$sample_annotations_group_col,
       input$sample_annotations_batch_col,
@@ -687,152 +681,39 @@ events_sample_filtering = function(input, output, session, id, r6) {
         r6$set_qc_indices(qc_pattern = input$sample_annotations_qc_pattern)
         r6$set_pool_indices(pool_pattern = input$sample_annotations_pool_pattern)
         r6$set_sample_indices()
+        
+        # Trigger the preview plots
+        trigger_preview_plots(sample(1:100, 1))
       })
   
-  # Observe sample type plot
+  # Observe preview plots
   session$userData[[id]]$render_sample_type_plot = shiny::observeEvent(
-    c(input$sample_annotations_type_col,
-      input$sample_annotations_blank_pattern,
-      input$sample_annotations_qc_pattern,
-      input$sample_annotations_pool_pattern,
-      input$sample_annotations_preview_table,
-      input$selection_drop,
-      input$selection_keep), {
-        
-        if (is.null(input$sample_annotations_type_col)) {return()}
-        input_table = r6$table_switch_local(input$sample_annotations_preview_table)
-        
-        index_blanks = rownames(input_table)[grep(
-          pattern = input$sample_annotations_blank_pattern,
-          x = input_table[,input$sample_annotations_type_col],
-          ignore.case = TRUE)]
-        
-        index_qcs = rownames(input_table)[grep(
-          pattern = input$sample_annotations_qc_pattern,
-          x = input_table[,input$sample_annotations_type_col],
-          ignore.case = TRUE)]
-        
-        index_pools = rownames(input_table)[grep(
-          pattern = input$sample_annotations_pool_pattern,
-          x = input_table[,input$sample_annotations_type_col],
-          ignore.case = TRUE)]
-        
-        mixed_samples = unique(c(intersect(index_blanks, index_qcs), intersect(index_qcs, index_pools), intersect(index_blanks, index_pools)))
-        index_samples = base::setdiff(rownames(input_table), c(index_blanks, index_qcs, index_pools))
-        type_distr = c(length(index_samples), length(index_blanks), length(index_qcs), length(index_pools), length(mixed_samples))
-        names(type_distr) = c("Samples", "Blanks", "QCs", "Pools", "Mixed")
-        
-        fig = plotly::plot_ly(
-          x = factor(names(type_distr), levels = names(type_distr)),
-          y = type_distr,
-          name = "Sample type distribution",
-          type = "bar",
-          marker = list(width = 0.5)
-        )
-        fig = plotly::layout(
-          p = fig,
-          dragmode = FALSE,
-          bargap = 0.2
-        )
-        fig = plotly::config(
-          p = fig,
-          displayModeBar = FALSE,
-          scrollZoom = FALSE
-        )
-        
-        output$sample_type_plot = plotly::renderPlotly({
-          fig
-        })
-        
+    trigger_preview_plots(), {
+      
+      if (is.null(input$sample_annotations_type_col)) {return()}
+
+      # r6$plot_sample_type_distribution(input_table = r6$table_switch_local(input$sample_annotations_preview_table))      
+      try_method(
+        r6 = r6,
+        method_name = "plot_sample_type_distribution",
+        input_table = r6$table_switch_local(input$sample_annotations_preview_table))
+      
+      output$sample_type_plot = plotly::renderPlotly({
+        r6$plots$sample_type_distribution
       })
-  
-  # Observe sample group plot 
-  session$userData[[id]]$render_sample_type_plot = shiny::observeEvent(
-    c(input$sample_annotations_group_col,
-      input$sample_annotations_preview_table,
-      input$selection_drop,
-      input$selection_keep), {
-        
-        if (is.null(input$sample_annotations_type_col)) {return()}
-        input_table = r6$table_switch_local(input$sample_annotations_preview_table)
-        
-        group_distr = table(input_table[,input$sample_annotations_group_col]) 
-        fig = plotly::plot_ly(
-          x = names(group_distr),
-          y = group_distr,
-          name = "Sample group distribution",
-          type = "bar",
-          marker = list(width = 0.5)
-        )
-        fig = plotly::layout(
-          p = fig,
-          dragmode = FALSE,
-          bargap = 0.2
-        )
-        fig = plotly::config(
-          p = fig,
-          displayModeBar = FALSE,
-          scrollZoom = FALSE
-        )
-        
-        output$sample_group_plot = plotly::renderPlotly({
-          fig
-        })
-        
+
+
+      # r6$plot_sample_group_distribution(input_table = r6$table_switch_local(input$sample_annotations_preview_table))
+      try_method(
+        r6 = r6,
+        method_name = "plot_sample_group_distribution",
+        input_table = r6$table_switch_local(input$sample_annotations_preview_table))
+      
+      output$sample_group_plot = plotly::renderPlotly({
+        r6$plots$sample_group_distribution
       })
-  
-  # Observe sample type per batch plot 
-  session$userData[[id]]$render_sample_type_per_batch_plot = shiny::observeEvent(
-    c(input$sample_annotations_type_col,
-      input$sample_annotations_batch_col,
-      input$sample_annotations_blank_pattern,
-      input$sample_annotations_qc_pattern,
-      input$sample_annotations_pool_pattern,
-      input$sample_annotations_preview_table,
-      input$selection_drop,
-      input$selection_keep), {
-        
-        if (input$sample_annotations_type_col == "") {return()} 
-        if (input$sample_annotations_batch_col == "") {return()} 
-        
-        input_table = r6$table_switch_local(input$sample_annotations_preview_table)
-        
-        fig = plot_sample_types_per_batch(
-          imp_meta = input_table,
-          type_column = input$sample_annotations_type_col,
-          batch_column = base::ifelse(input$sample_annotations_batch_col != "None", input$sample_annotations_batch_col, NULL),
-          blank_pattern = input$sample_annotations_blank_pattern,
-          qc_pattern = input$sample_annotations_qc_pattern,
-          pool_pattern = input$sample_annotations_pool_pattern)
-        
-        output$batch_per_type_plot = plotly::renderPlotly({
-          fig
-        })
-        
-      })
-  
-  # Observe group type per batch plot 
-  session$userData[[id]]$render_sample_group_per_batch_plot = shiny::observeEvent(
-    c(input$sample_annotations_group_col,
-      input$sample_annotations_batch_col,
-      input$sample_annotations_preview_table,
-      input$selection_drop,
-      input$selection_keep), {
-        
-        if (input$sample_annotations_group_col == "") {return()} 
-        if (input$sample_annotations_batch_col == "") {return()} 
-        
-        input_table = r6$table_switch_local(input$sample_annotations_preview_table)
-        
-        fig = plot_sample_groups_per_batch(
-          imp_meta = input_table,
-          group_column = input$sample_annotations_group_col,
-          batch_column = base::ifelse(input$sample_annotations_batch_col != "None", input$sample_annotations_batch_col, NULL))
-        output$batch_per_group_plot = plotly::renderPlotly({
-          fig
-        })
-        
-      })
+      
+    })
   
   # Download the samples table
   output$sample_annotations_download = shiny::downloadHandler(
@@ -2614,7 +2495,7 @@ events_over_representation_tab = function(input, output, session, id, r6, module
 #--------------------------------------------------- Download tab functions ----
 render_save_results_tab = function(ns, r6) {
   shiny::tagList(
-    rclipboardSetup(),
+    rclipboard::rclipboardSetup(),
     shiny::fluidRow(
       shiny::column(
         width = 6,
@@ -2681,11 +2562,12 @@ render_save_results_tab = function(ns, r6) {
           )
         ),
         shiny::fluidRow(
-          shiny::textInput(
+          shiny::textAreaInput(
             inputId = ns('isode_file_comment'),
             label = "Comment",
             placeholder = "Comments helping identify the experiment",
-            width = "100%"
+            width = "100%",
+            height = "250px"
           )
         )
       )

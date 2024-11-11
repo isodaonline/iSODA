@@ -1109,6 +1109,8 @@ get_lipid_class_table = function(table){
 
   # Get a column vector to find easily which columns belong to each lipid group
   col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE)
+  
+  # table[, col_vector == "TG"] = table[, col_vector == 'TG'] / 3
 
   # Fill the table
   out_table = sapply(X = classes,
@@ -7322,7 +7324,7 @@ fa_analysis_calc = function(data_table = NULL,
 
   ## Data
   # select the correct data
-  sel_data_table = data_table[, sel_feat_idx]
+  sel_data_table = data_table[, sel_feat_idx, drop = F]
 
   # get the unique chain lengths and unsaturation
   uniq_carbon = sort(union(unique(sel_feature_table[["Carbon count (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
