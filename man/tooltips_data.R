@@ -1,17 +1,28 @@
 tooltip_data = list(
   data_upload = list( # Sublists based on R modules / namespaces
+    # Upload method
+    upload_method = "Input type: \n\t-File upload: for new experiments by uploading the user data \n\t-iSODA file: upload an iSODA single-omics file downloaded through the app \n\t-iSODA UUID: load a single-omics experiment from the server using a UUID key produced by iSODA",
+    load_single_omics = "Load the experiment using the selected method. Once loaded, the input files cannot be altered",
+    
+    # Omics file
+    omics_file = ".isoda file produced by iSODA",
+    
+    # Omics uuid key
+    omics_uuid = "UUID key to connect to a single omics experiment stored on the server. These are provided through the dedicated iSODA tab",
+    
     # Metadata
     file_meta = "Browse for the sample annotations file (recommended: tsv, csv, csv2 or excel first sheet)",
-    meta_file_format = "File format: Wide = samples as rows, descriptors as columns, Long: descriptors as rows, samples as columns. Default is Wide",
+    meta_file_format = "File format: \n\tWide = samples as rows, annotations as columns \n\tLong: annotations as rows, samples as columns \nDefault is Wide",
     select_meta_table = "Selected table to display",
     download_metatable = "Download the displayed table",
+    head_sample_annoations = "Only display the first rows and columns from the table. \nTypically this will be turned on for measurement data as supplying a table with more than 10K columns will significantly slow down the table rendering",
     select_id_meta = "Select ID column for samples (IDs must be unique)",
-    select_group_col = "Main sample groups to compare (at least two groups and two samples per group)",
-    select_type_col = "Column containing text pattern that allow to match blank, QC and pool samples",
-    select_batch_col = "Batch column, if no batch column is found, samples are assumed from the same batch. Blanks, QCs and pools must also have a batch value for filtering",
-    blank_pattern = "Substring to be searched in the type column to identify blanks",
-    qc_pattern = "Substring to be searched in the type column to identify QCs",
-    pool_pattern = "Substring to be searched in the type column to identify Pools",
+    sample_annotations_group_col = "Main sample groups to compare (at least two groups and two samples per group)",
+    sample_annotations_type_col = "Column containing text pattern that allow to match blank, QC and pool samples",
+    sample_annotations_batch_col = "Batch column, if no batch column is found, samples are assumed from the same batch. Blanks, QCs and pools must also have a batch value for filtering",
+    sample_annotations_blank_pattern = "Substring to be searched in the type column to identify blanks",
+    sample_annotations_qc_pattern = "Substring to be searched in the type column to identify QCs",
+    sample_annotations_pool_pattern = "Substring to be searched in the type column to identify Pools",
     non_samples_selection = "Sample filtering - select non-samples (all three selected by default)",
     selection_manual = "Manual selection of samples",
     exclusion_meta_col = "Sample annotation column from which to select samples",
@@ -24,10 +35,11 @@ tooltip_data = list(
     
     # Data
     file_data = "Browse for the measurements file (only numeric, recommended: tsv, csv, csv2 or excel first sheet)",
-    data_file_format = "File format: Wide = samples as rows, features as columns, Long: features as rows, samples as columns. Default is Wide",
+    data_file_format = "File format: \n\tWide = samples as rows, features as columns \n\tLong: features as rows, samples as columns \nDefault is Wide",
     select_data_table = "Selected table to display",
     download_datatable = "Download the displayed table",
-    select_id_data = "Select ID column for samples (IDs must be unique)",
+    head_measurement_data = "Only display the first rows and columns from the table. \nTypically this will be turned on for measurement data as supplying a table with more than 10K columns will significantly slow down the table rendering",
+    # select_id_data = "Select ID column for samples (IDs must be unique)",
     select_feature_type = "Select the feature ID type (relevant for proteomics, transcriptomics and genomics data",
     operation_order = "Order in which Imputation, Batch correction and Filtering should be run. Removing = not running",
     batch_effect_correction = "Performs batch effect correction using ComBat, either without reference (No control), with reference samples (Pool or QC), or skipped (None).",
@@ -45,13 +57,12 @@ tooltip_data = list(
     reset_data_table = "Feature filtering - reset sample table",
     
     # Features
-    feat_add = "Browse for feature metadata files (recommended: tsv, csv, csv2 or excel first sheet)",
-    feat_name_add = "Name to store the table (several tables can be uploaded. Defaults to feat_$n",
-    feat_file_format = "File format: Wide = descriptors as rows, features as columns, Long: features as rows, descriptors as columns. Default is Long",
+    file_feat = "Browse for the feature annotations file (recommended: tsv, csv, csv2 or excel first sheet)",
+    feat_file_format = "File format: \n\tLong: features as rows, annotations as columns \n\tWide = annotations as rows, features as columns \nDefault is Long",
+    select_id_feat = "Select ID column for features (IDs must be unique)",
     feat_table_select = "Selected table to display",
     download_feature_table = "Download the displayed table",
-    feat_name_del = "Select the feature table to remove",
-    feat_del = "Remove selected feature table",
+    head_feature_annotations = "Only display the first rows and columns from the table. \nTypically this will be turned on for measurement data as supplying a table with more than 10K columns will significantly slow down the table rendering",
 
     # Functional analysis
     gseaprep_table_select = "Data used as input",

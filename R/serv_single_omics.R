@@ -102,22 +102,28 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
         width = 1,
         shiny::br(),
         shiny::fluidRow(
-          shinyWidgets::awesomeRadio(
-            inputId = ns("upload_method"),
-            label = NULL, 
-            choices = c("File upload", "Omics file", "Omics key"),
-            selected = "File upload",
-            status = "warning"
-          )
+          bsplus::bs_embed_tooltip(
+            shinyWidgets::awesomeRadio(
+              inputId = ns("upload_method"),
+              label = NULL, 
+              choices = c("File upload", "iSODA file", "iSODA UUID"),
+              selected = "File upload",
+              status = "warning"
+            ),
+            title = tooltip_data$data_upload$upload_method,
+            placement = "top")
         ),
         shiny::fluidRow(
-          shiny::actionButton(
-            inputId = ns('load_single_omics'),
-            label = "Load",
-            icon = icon("play"),
-            style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::actionButton(
+              inputId = ns('load_single_omics'),
+              label = "Load",
+              icon = icon("play"),
+              style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$load_single_omics,
+            placement = "top")
         )
       ),
       
@@ -201,7 +207,7 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
           session = session
         )
       }
-    } else if (input$upload_method == "Omics file") {
+    } else if (input$upload_method == "iSODA file") {
       if (!input$box_file_upload$collapsed) {
         bs4Dash::updateBox(
           id = 'box_file_upload',
@@ -223,7 +229,7 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
           session = session
         )
       }
-    } else if (input$upload_method == "Omics key") {
+    } else if (input$upload_method == "iSODA UUID") {
       if (!input$box_file_upload$collapsed) {
         bs4Dash::updateBox(
           id = 'box_file_upload',
@@ -306,11 +312,11 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
           id_col_data = 1,
           id_col_feat = input$feature_annotations_id_col
         )
-      } else if (input$upload_method == "Omics file") {
+      } else if (input$upload_method == "iSODA file") {
         r6 = base::readRDS(
           file = input$omics_file_upload$datapath
         )
-      } else if (input$upload_method == "Omics key") {
+      } else if (input$upload_method == "iSODA UUID") {
         isoda_file = paste0("./isoda_files/", input$omics_uuid_code, '.isoda')
         if (base::file.exists(isoda_file)) {
           r6 = base::readRDS(file = isoda_file)

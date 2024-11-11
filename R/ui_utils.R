@@ -13,35 +13,44 @@ render_upload_user_files = function(ns) {
           shiny::fluidRow(
             shiny::column(
               width = 9,
-              shiny::fileInput(
-                inputId = ns('sample_annotations_upload'),
-                label = NULL,
-                accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-                placeholder = 'Sample annotations file',
-                width = '100%'
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::fileInput(
+                  inputId = ns('sample_annotations_upload'),
+                  label = NULL,
+                  accept = c(".csv", ".tsv", ".txt", ".xlsx"),
+                  placeholder = 'Sample annotations file',
+                  width = '100%'
+                ),
+                title = tooltip_data$data_upload$file_meta,
+                placement = "top")
             ),
             shiny::column(
               width = 3,
-              shinyWidgets::awesomeRadio(
-                inputId = ns("sample_annotations_format"),
-                label = NULL, 
-                choices = c("Wide", "Long"),
-                selected = "Wide",
-                status = "warning"
-              )
+              bsplus::bs_embed_tooltip(
+                shinyWidgets::awesomeRadio(
+                  inputId = ns("sample_annotations_format"),
+                  label = NULL, 
+                  choices = c("Wide", "Long"),
+                  selected = "Wide",
+                  status = "warning"
+                ),
+                title = tooltip_data$data_upload$meta_file_format,
+                placement = "top")
             )
           ),
           shiny::fluidRow(
             shiny::column(
               width = 12,
-              shiny::selectizeInput(
-                inputId = ns("sample_annotations_id_col"),
-                label = "Sample IDs",
-                choices = NULL,
-                multiple = FALSE,
-                width = '100%'
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::selectizeInput(
+                  inputId = ns("sample_annotations_id_col"),
+                  label = "Sample IDs",
+                  choices = NULL,
+                  multiple = FALSE,
+                  width = '100%'
+                ),
+                title = tooltip_data$data_upload$select_id_meta,
+                placement = "top")
             )
           )
         )
@@ -59,23 +68,30 @@ render_upload_user_files = function(ns) {
           shiny::fluidRow(
             shiny::column(
               width = 9,
-              shiny::fileInput(
-                inputId = ns('measurement_upload'),
-                label = NULL,
-                accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-                placeholder = 'Measurements file',
-                width = '100%'
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::fileInput(
+                  inputId = ns('measurement_upload'),
+                  label = NULL,
+                  accept = c(".csv", ".tsv", ".txt", ".xlsx"),
+                  placeholder = 'Measurements file',
+                  width = '100%'
+                ),
+                title = tooltip_data$data_upload$file_data,
+                placement = "top")
+              
             ),
             shiny::column(
               width = 3,
-              shinyWidgets::awesomeRadio(
-                inputId = ns("measurement_format"),
-                label = NULL, 
-                choices = c("Wide", "Long"),
-                selected = "Wide",
-                status = "warning"
-              )
+              bsplus::bs_embed_tooltip(
+                shinyWidgets::awesomeRadio(
+                  inputId = ns("measurement_format"),
+                  label = NULL, 
+                  choices = c("Wide", "Long"),
+                  selected = "Wide",
+                  status = "warning"
+                ),
+                title = tooltip_data$data_upload$data_file_format,
+                placement = "top")
             )
           ),
           shiny::fluidRow(
@@ -96,35 +112,44 @@ render_upload_user_files = function(ns) {
           shiny::fluidRow(
             shiny::column(
               width = 9,
-              shiny::fileInput(
-                inputId = ns('feature_annotations_upload'),
-                label = NULL,
-                accept = c(".csv", ".tsv", ".txt", ".xlsx"),
-                placeholder = 'Feature annotations file',
-                width = '100%'
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::fileInput(
+                  inputId = ns('feature_annotations_upload'),
+                  label = NULL,
+                  accept = c(".csv", ".tsv", ".txt", ".xlsx"),
+                  placeholder = 'Feature annotations file',
+                  width = '100%'
+                ),
+                title = tooltip_data$data_upload$file_feat,
+                placement = "top")
             ),
             shiny::column(
               width = 3,
-              shinyWidgets::awesomeRadio(
-                inputId = ns("feature_annotations_format"),
-                label = NULL, 
-                choices = c("Wide", "Long"),
-                selected = "Long",
-                status = "warning"
-              )
+              bsplus::bs_embed_tooltip(
+                shinyWidgets::awesomeRadio(
+                  inputId = ns("feature_annotations_format"),
+                  label = NULL, 
+                  choices = c("Wide", "Long"),
+                  selected = "Long",
+                  status = "warning"
+                ),
+                title = tooltip_data$data_upload$feat_file_format,
+                placement = "top")
             )
           ),
           shiny::fluidRow(
             shiny::column(
               width = 12,
-              shiny::selectizeInput(
-                inputId = ns("feature_annotations_id_col"),
-                label = "Feature ID column",
-                choices = NULL,
-                multiple = FALSE,
-                width = '100%'
-              )
+              bsplus::bs_embed_tooltip(
+                shiny::selectizeInput(
+                  inputId = ns("feature_annotations_id_col"),
+                  label = "Feature ID column",
+                  choices = NULL,
+                  multiple = FALSE,
+                  width = '100%'
+                ),
+                title = tooltip_data$data_upload$select_id_feat,
+                placement = "top")
             )
           )
         )
@@ -141,16 +166,19 @@ render_upload_omics_file = function(ns) {
       placeholder = 'Exported iSODA .isoda file',
       width = '100%'
     ),
-    title = "Tooltip missing",
+    title = tooltip_data$data_upload$omics_file,
     placement = "top")
 }
 render_omics_uuid = function(ns) {
-  shiny::textInput(
-    inputId = ns('omics_uuid_code'),
-    label = NULL,
-    placeholder = "single-omics experiment uuid",
-    width = "100%"
-  )
+  bsplus::bs_embed_tooltip(
+    shiny::textInput(
+      inputId = ns('omics_uuid_code'),
+      label = NULL,
+      placeholder = "single-omics experiment uuid",
+      width = "100%"
+    ),
+    title = tooltip_data$data_upload$omics_uuid,
+    placement = "top")
 }
 #---------------------------------------------------- Samples tab functions ----
 render_sample_filtering = function(ns, r6) {
@@ -255,30 +283,39 @@ render_sample_filtering = function(ns, r6) {
       shiny::fluidRow(
         shiny::column(
           width = 10,
-          shiny::selectInput(
-            inputId = ns('sample_annotations_preview_table'),
-            label = NULL,
-            choices = c('Indexed metadata table', 'Raw metadata table'),
-            selected = 'Raw metadata table',
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectInput(
+              inputId = ns('sample_annotations_preview_table'),
+              label = NULL,
+              choices = c('Indexed metadata table', 'Raw metadata table'),
+              selected = 'Raw metadata table',
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$select_meta_table,
+            placement = "top")
         ),
         shiny::column(
           width = 2,
-          shiny::downloadButton(
-            outputId = ns("sample_annotations_download"),
-            label = NULL,
-            style = "width:100%;"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::downloadButton(
+              outputId = ns("sample_annotations_download"),
+              label = NULL,
+              style = "width:100%;"
+            ),
+            title = tooltip_data$data_upload$download_metatable,
+            placement = "top")
         )
       ),
       shiny::fluidRow(
-        shinyWidgets::materialSwitch(
-          inputId = ns('head_sample_annoations'),
-          value = F,
-          label = "Partial display",
-          status = "danger"
-        )
+        bsplus::bs_embed_tooltip(
+          shinyWidgets::materialSwitch(
+            inputId = ns('head_sample_annoations'),
+            value = F,
+            label = "Partial display",
+            status = "danger"
+          ),
+          title = tooltip_data$data_upload$head_sample_annoations,
+          placement = "top")
       ),
       #### Column selection start ----
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
@@ -286,36 +323,45 @@ render_sample_filtering = function(ns, r6) {
       shiny::fluidRow(
         shiny::column(
           width = 4,
-          shiny::selectizeInput(
-            inputId = ns("sample_annotations_type_col"),
-            label = "Type column",
-            choices = colnames(r6$tables$indexed_meta),
-            selected = type_col,
-            multiple = FALSE,
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectizeInput(
+              inputId = ns("sample_annotations_type_col"),
+              label = "Type column",
+              choices = colnames(r6$tables$indexed_meta),
+              selected = type_col,
+              multiple = FALSE,
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$sample_annotations_type_col,
+            placement = "top")
         ),
         shiny::column(
           width = 4,
-          shiny::selectizeInput(
-            inputId = ns("sample_annotations_group_col"),
-            label = "Group column",
-            choices = colnames(r6$tables$indexed_meta),
-            selected = group_col,
-            multiple = FALSE,
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectizeInput(
+              inputId = ns("sample_annotations_group_col"),
+              label = "Group column",
+              choices = colnames(r6$tables$indexed_meta),
+              selected = group_col,
+              multiple = FALSE,
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$sample_annotations_group_col,
+            placement = "top")
         ),
         shiny::column(
           width = 4,
-          shiny::selectizeInput(
-            inputId = ns("sample_annotations_batch_col"),
-            label = "Batch column",
-            choices = c("None", colnames(r6$tables$indexed_meta)),
-            selected = batch_col,
-            multiple = FALSE,
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectizeInput(
+              inputId = ns("sample_annotations_batch_col"),
+              label = "Batch column",
+              choices = c("None", colnames(r6$tables$indexed_meta)),
+              selected = batch_col,
+              multiple = FALSE,
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$sample_annotations_batch_col,
+            placement = "top")
         )
       ),
       #### Text patterns start ----
@@ -324,30 +370,39 @@ render_sample_filtering = function(ns, r6) {
       shiny::fluidRow(
         shiny::column(
           width = 4,
-          shiny::textInput(
-            inputId = ns("sample_annotations_blank_pattern"),
-            label = "Blanks substring",
-            value = "blank",
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::textInput(
+              inputId = ns("sample_annotations_blank_pattern"),
+              label = "Blanks substring",
+              value = "blank",
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$sample_annotations_blank_pattern,
+            placement = "top")
         ),
         shiny::column(
           width = 4,
-          shiny::textInput(
-            inputId = ns("sample_annotations_qc_pattern"),
-            label = "QCs substring",
-            value = "quality",
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::textInput(
+              inputId = ns("sample_annotations_qc_pattern"),
+              label = "QCs substring",
+              value = "quality",
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$sample_annotations_qc_pattern,
+            placement = "top")
         ),
         shiny::column(
           width = 4,
-          shiny::textInput(
-            inputId = ns("sample_annotations_pool_pattern"),
-            label = "Pools substring",
-            value = "pool",
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::textInput(
+              inputId = ns("sample_annotations_pool_pattern"),
+              label = "Pools substring",
+              value = "pool",
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$sample_annotations_pool_pattern,
+            placement = "top")
         )
       ),
       #### Sample filtering start ----
@@ -852,30 +907,39 @@ render_measurement_filtering = function(ns, r6) {
       shiny::fluidRow(
         shiny::column(
           width = 10,
-          shiny::selectInput(
-            inputId = ns('measurement_data_preview_table'),
-            label = NULL,
-            choices = table_previews,
-            selected = 'Raw data table',
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectInput(
+              inputId = ns('measurement_data_preview_table'),
+              label = NULL,
+              choices = table_previews,
+              selected = 'Raw data table',
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$select_data_table,
+            placement = "top")
         ),
         shiny::column(
           width = 2,
-          shiny::downloadButton(
-            outputId = ns("measurement_download"),
-            label = NULL,
-            style = "width:100%;"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::downloadButton(
+              outputId = ns("measurement_download"),
+              label = NULL,
+              style = "width:100%;"
+            ),
+            title = tooltip_data$data_upload$download_datatable,
+            placement = "top")
         )
       ),
       shiny::fluidRow(
-        shinyWidgets::materialSwitch(
-          inputId = ns('head_measurement_data'),
-          value = T,
-          label = "Partial display",
-          status = "danger"
-        )
+        bsplus::bs_embed_tooltip(
+          shinyWidgets::materialSwitch(
+            inputId = ns('head_measurement_data'),
+            value = T,
+            label = "Partial display",
+            status = "danger"
+          ),
+          title = tooltip_data$data_upload$head_measurement_data,
+          placement = "top")
       ),
       #### Pre-analysis start ----
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
@@ -922,6 +986,7 @@ render_measurement_filtering = function(ns, r6) {
             placement = "top")
         )
       ),
+      shiny::br(),
       shiny::strong("Filtering"),
       shiny::fluidRow(
         shiny::column( # Blank multiplier
@@ -1145,30 +1210,39 @@ render_feature_filtering = function(ns, r6) {
       shiny::fluidRow(
         shiny::column(
           width = 10,
-          shiny::selectInput(
-            inputId = ns('feature_annotations_preview_table'),
-            label = NULL,
-            choices = c('Indexed feature table', 'Raw feature table'),
-            selected = 'Raw feature table',
-            width = '100%'
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectInput(
+              inputId = ns('feature_annotations_preview_table'),
+              label = NULL,
+              choices = c('Indexed feature table', 'Raw feature table'),
+              selected = 'Raw feature table',
+              width = '100%'
+            ),
+            title = tooltip_data$data_upload$feat_table_select,
+            placement = "top")
         ),
         shiny::column(
           width = 2,
-          shiny::downloadButton(
-            outputId = ns("feat_download"),
-            label = NULL,
-            style = "width:100%;"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::downloadButton(
+              outputId = ns("feat_download"),
+              label = NULL,
+              style = "width:100%;"
+            ),
+            title = tooltip_data$data_upload$download_feature_table,
+            placement = "top")
         )
       ),
       shiny::fluidRow(
-        shinyWidgets::materialSwitch(
-          inputId = ns('head_feature_annotations'),
-          value = F,
-          label = "Partial display",
-          status = "danger"
-        )
+        bsplus::bs_embed_tooltip(
+          shinyWidgets::materialSwitch(
+            inputId = ns('head_feature_annotations'),
+            value = F,
+            label = "Partial display",
+            status = "danger"
+          ),
+          title = tooltip_data$data_upload$head_feature_annotations,
+          placement = "top")
       ),
       #### Feature ID type if relevant
       feature_id_type_tags,
