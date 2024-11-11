@@ -887,7 +887,16 @@ render_measurement_filtering = function(ns, r6) {
       #### Preview plots ----
       shiny::fluidRow(
         shiny::column(
-          width = 12,
+          width = 6,
+          shinyWidgets::progressBar(
+            id = ns('progbar_sample_counts'),
+            value = nrow(r6$tables$raw_meta),
+            total = nrow(r6$tables$indexed_meta),
+            title = 'Sample count'
+          )
+        ),
+        shiny::column(
+          width = 6,
           shinyWidgets::progressBar(
             id = ns('progbar_measurement_counts'),
             value = ncol(r6$tables$indexed_data),
