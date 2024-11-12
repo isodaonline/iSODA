@@ -30,14 +30,6 @@ start_ui = function(id){
               choices = c('Lipidomics', 'Metabolomics', 'Proteomics', 'Transcriptomics', 'Genomics'),
               width = '100%'
             )
-            # shiny::selectInput(
-            #   inputId = ns('del_exp'),
-            #   label = 'Delete exp.',
-            #   choices = NULL,
-            #   selected = NULL,
-            #   multiple = TRUE,
-            #   width = '100%'
-            # )
           ),
           shiny::column(
             width = 6,
@@ -61,59 +53,21 @@ start_ui = function(id){
               icon = icon("check")
             )
           )
-          # shiny::column(
-          #   width = 6,
-          #   shinyWidgets::actionBttn(
-          #     inputId = ns('remove_exp'),
-          #     label = 'Remove exp.',
-          #     style = "material-flat",
-          #     color = 'danger',
-          #     block = T,
-          #     icon = icon("x")
-          #   )
-          # )
         )
+        # shiny::fluidRow(
+        #   shiny::fileInput(
+        #     inputId = ns('input_mofa_file'),
+        #     label = "MOFA file",
+        #     width = "100%"
+        #   )
+        # ),
         # shiny::fluidRow(
         #   shiny::column(
         #     width = 12,
-        #     shiny::br(),
-        #     shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-        #     shiny::h3('... or try out iSODA with example datasets!'),
-        #     shiny::br(),
-        #     shiny::fluidRow(
-        #       shiny::column(
-        #         width = 4,
-        #         shinyWidgets::actionBttn(
-        #           inputId = ns('add_lipidomics_ex'),
-        #           label = "Lipidomics",
-        #           style = "pill",
-        #           color = 'primary',
-        #           block = T,
-        #           icon = icon("upload")
-        #         )
-        #       ),
-        #       shiny::column(
-        #         width = 4,
-        #         shinyWidgets::actionBttn(
-        #           inputId = ns('add_proteomics_ex'),
-        #           label = "Proteomics",
-        #           style = "pill",
-        #           color = 'primary',
-        #           block = T,
-        #           icon = icon("upload")
-        #         )
-        #       ),
-        #       shiny::column(
-        #         width = 4,
-        #         shinyWidgets::actionBttn(
-        #           inputId = ns('add_transcriptomics_ex'),
-        #           label = "Transcriptomics",
-        #           style = "pill",
-        #           color = 'primary',
-        #           block = T,
-        #           icon = icon("upload")
-        #         )
-        #       )
+        #     shiny::downloadButton(
+        #       outputId = ns("misoda_file_download"),
+        #       label = "Download misoda file",
+        #       style ="color: #fff; background-color: #00A86B; border-color: #00A86B; width:100%;"
         #     )
         #   )
         # )
@@ -152,7 +106,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
   shiny::moduleServer(
     id,
     function(input, output, session) {
-
+      ns = session$ns
       # Create experiments
       shiny::observeEvent(input$add_exp,{
         exp_name = input$exp_name
@@ -187,16 +141,6 @@ start_server = function(id, main_input, main_output, main_session, module_contro
           )
         })
 
-
-        # main_output[[slot]] = bs4Dash::renderMenu({
-        #   bs4Dash::bs4SidebarMenu(
-        #     bs4Dash::bs4SidebarMenuItem(
-        #       text = exp_name,
-        #       tabName = slot
-        #     )
-        #   )
-        # })
-
         module_controler$slot_taken[[slot]] = TRUE
         module_controler$exp_names[[slot]] = exp_name
         module_controler$exp_types[[slot]] = exp_type
@@ -222,36 +166,7 @@ start_server = function(id, main_input, main_output, main_session, module_contro
 
       })
 
-      shiny::observeEvent(input$remove_exp, {
-        shiny::req(input$del_exp)
-
-        for (mod in input$del_exp) {
-          print_t(paste0('Removing ', mod))
-          exp_id = names(which(module_controler$exp_names == mod))[1]
-          purge_module_inputs(id = exp_id, input_object = main_input)
-          events = names(session$userData[[paste0('mod_', exp_id)]])
-          for (e in events) {
-            session$userData[[paste0('mod_', exp_id)]][[e]]$destroy()
-          }
-          main_output[[exp_id]] = NULL
-          module_controler$slot_taken[[exp_id]] = FALSE
-          module_controler$module_loaded[[exp_id]] = FALSE
-          module_controler$exp_types[exp_id] = list(NULL)
-          module_controler$exp_names[exp_id] = list(NULL)
-          module_controler$exp_r6[exp_id] = list(NULL)
-        }
-
-        shiny::updateSelectInput(
-          inputId = 'del_exp',
-          selected = character(0),
-          choices = unname(unlist(module_controler$exp_names))
-        )
-
-        shinyjs::enable('add_exp')
-      })
-
-      # Switch experiment
-
+      # Change default name when switching experiment
       shiny::observeEvent(input$exp_type,{
         if (input$exp_type == 'Proteomics') {
           shiny::updateTextInput(
@@ -286,6 +201,67 @@ start_server = function(id, main_input, main_output, main_session, module_contro
         }
 
       })
+      
+      # MOFA file input
+      session$userData[[id]]$input_mofa_file = shiny::observeEvent(input$input_mofa_file, {
+        file = input$input_mofa_file$datapath
+        # module_controler$mofa_exp = base::readRDS(file)
+        truffles = base::readRDS(file)
+        print('Experiment types:')
+        for (exp in names(truffles$exp_types)) {
+          if (!is.null(truffles$exp_types[[exp]])) {
+            print(truffles$exp_types[[exp]])
+          }
+        }
+        
+        print('Experiment names:')
+        for (nm in names(truffles$exp_names)) {
+          if (!is.null(truffles$exp_names[[nm]])) {
+            print(truffles$exp_names[[nm]])
+          }
+        }
+        
+        print('Experiment slots:')
+        for (slot in names(truffles$slot_taken)) {
+          print(truffles$slot_taken[[slot]])
+        }
+        
+        print('Experiment loaded:')
+        for (loaded in names(truffles$module_loaded)) {
+          print(truffles$module_loaded[[loaded]])
+        }
+        
+        print('LOADED MOFA EXP')
+      })
+      
+      # Download miSODA file misoda_file_download
+      output$misoda_file_download = shiny::downloadHandler(
+        
+        filename = function() {
+          timestamped_name("multiomics.misoda")
+        },
+        
+        content = function(file) {
+          # User feedback start
+          print_tm(m = "Global", in_print = "Saving .misoda file locally")
+          shinyjs::disable("misoda_file_download")
+          waiter::waiter_show(
+            id = ns("misoda_file_download"),
+            html = spin_circle(),
+            color = "#00A86B"
+          )
+          
+          content = module_controler
+          base::saveRDS(object = content,
+                        file = file)
+          
+          # User feedback end
+          waiter::waiter_hide(
+            id = ns("misoda_file_download")
+          )
+          shinyjs::enable("misoda_file_download")
+        }
+      )
 
       # Download CellMiner data
       output$dl_cellminer_data = downloadHandler(

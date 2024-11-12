@@ -268,7 +268,6 @@ server = function(input, output, session) {
   
   # Source the tooltips file and utils
   base::source("./man/tooltips_data.R")
-  # tooltip_data <<- tooltip_data
   base::source('./R/utils.R')
 
   options(shiny.maxRequestSize=300*1024^2)
@@ -320,11 +319,11 @@ server = function(input, output, session) {
       'exp_6' = NULL
     ),
     
-    # mofa_exp = Mofa_class$new(
-    #   name = "mofa_1"
-    # ),
+    mofa_exp = Mofa_class$new(
+      name = "mofa_1"
+    ),
     
-    mofa_exp = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/MOFA_RDS.isoda"),
+    # mofa_exp = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/MOFA_RDS.isoda"),
     
     snf_exp = Snf_class$new(
       name = "snf_1"
@@ -374,104 +373,6 @@ server = function(input, output, session) {
 
   # SNF module
   snf_server("snf", r6 = module_controler$snf_exp, module_controler = module_controler, main_input = input)
-
-  # Example datasets
-  shiny::observeEvent(input[['mod_start-add_lipidomics_ex']],{
-    if (!file.exists('./examples/multiomics/lipidomics.csv') | !file.exists('./examples/multiomics/lipidomics_metadata.csv')) {
-      print('example file missing')
-      return()
-    }
-    print('Loading example lipidomics')
-    shinyjs::disable('mod_start-add_lipidomics_ex')
-    for (slot in names(module_controler$slot_taken)){
-      if (!module_controler$slot_taken[[slot]]) {
-        module_controler$module_loaded[[slot]] = T
-        module_controler$slot_taken[[slot]] = T
-        module_controler$exp_types[[slot]] = 'Lipidomics'
-        module_controler$exp_names[[slot]] = 'lips_example'
-        module_controler$exp_r6[[slot]] = example_lipidomics(name = 'lips_example',
-                                                             id = paste0(c('mod', slot), collapse = '_'),
-                                                             slot = slot)
-        output[[slot]] = bs4Dash::renderMenu({
-          bs4Dash::sidebarMenu(
-            bs4Dash::menuItem(text = 'lips_example',
-                              tabName = slot,
-                              icon = icon('l'))
-          )
-        })
-        experiment_server(id = paste0(c('mod', slot), collapse = '_'),
-                          type = 'Lipidomics',
-                          module_controler = module_controler)
-        break
-      }
-    }
-  })
-
-  shiny::observeEvent(input[['mod_start-add_proteomics_ex']],{
-    if (!file.exists('./examples/multiomics/proteomics_2.tsv') | !file.exists('./examples/multiomics/metadata.csv')) {
-      print('example file missing')
-      return()
-    }
-    print('Loading example proteomics')
-
-    shinyjs::disable('mod_start-add_proteomics_ex')
-
-    for (slot in names(module_controler$slot_taken)){
-      if (!module_controler$slot_taken[[slot]]) {
-        module_controler$module_loaded[[slot]] = T
-        module_controler$slot_taken[[slot]] = T
-        module_controler$exp_types[[slot]] = 'Proteomics'
-        module_controler$exp_names[[slot]] = 'prot_example'
-        module_controler$exp_r6[[slot]] = example_proteomics(name = 'prot_example',
-                                                             id = paste0(c('mod', slot), collapse = '_'),
-                                                             slot = slot)
-        output[[slot]] = bs4Dash::renderMenu({
-          bs4Dash::sidebarMenu(
-            bs4Dash::menuItem(text = 'prot_example',
-                              tabName = slot,
-                              icon = icon('p'))
-          )
-        })
-        experiment_server(id = paste0(c('mod', slot), collapse = '_'),
-                          type = 'Proteomics',
-                          module_controler = module_controler)
-        break
-      }
-    }
-  })
-
-  shiny::observeEvent(input[['mod_start-add_transcriptomics_ex']],{
-    if (!file.exists('./examples/multiomics/transcriptomics_2_genename_test.tsv') | !file.exists('./examples/multiomics/metadata.csv')) {
-      print('example file missing')
-      return()
-    }
-    print('Loading example transcriptomics')
-
-    shinyjs::disable('mod_start-add_transcriptomics_ex')
-
-    for (slot in names(module_controler$slot_taken)){
-      if (!module_controler$slot_taken[[slot]]) {
-        module_controler$module_loaded[[slot]] = T
-        module_controler$slot_taken[[slot]] = T
-        module_controler$exp_types[[slot]] = 'Transcriptomics'
-        module_controler$exp_names[[slot]] = 'trns_example'
-        module_controler$exp_r6[[slot]] = example_transcriptomics(name = 'trns_example',
-                                                                  id = paste0(c('mod', slot), collapse = '_'),
-                                                                  slot = slot)
-        output[[slot]] = bs4Dash::renderMenu({
-          bs4Dash::sidebarMenu(
-            bs4Dash::menuItem(text = 'trns_example',
-                              tabName = slot,
-                              icon = icon('t'))
-          )
-        })
-        experiment_server(id = paste0(c('mod', slot), collapse = '_'),
-                          type = 'Transcriptomics',
-                          module_controler = module_controler)
-        break
-      }
-    }
-  })
 
 }
 
