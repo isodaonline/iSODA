@@ -238,6 +238,39 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
+if (T) {
+  name = 'geno_1'
+  type = "Genomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/dna_data.csv'
+  feat_file = NULL
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  feat_file_format = "Long"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+} # GENO
 
 self = initialize_omics(
   verbose = verbose,
@@ -275,161 +308,208 @@ self = initialize_omics(
 )
 
 
-self$plot_sample_type_distribution()
-self$plots$sample_type_distribution
-
-self$plot_sample_group_distribution()
-self$plots$sample_group_distribution
-
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  if (is.null(batch_column)) {
-    batch_column = 'tmp_batch'
-    input_table[,batch_column] = 1
-  }
-  
-  input_table[,group_column] = factor(input_table[,group_column], levels = unique(input_table[,group_column]))
-  
-  batches = unique(input_table[,batch_column])
-  data = list(
-    "Batch" = batches
-  )
-  
-  for (batch in batches) {
-    batch_idx = rownames(input_table)[input_table[,batch_column] == batch]
-    freq = base::table(input_table[batch_idx, group_column])
-    for (grp in names(freq)) {
-      data[[grp]] = c(data[[grp]], as.numeric(freq[grp]))
-    }
-  }
-  
-  data = data.frame(data, check.names = F)
-  
-  fig = plotly::plot_ly(x = data$Batch)
-  for (col in levels(input_table[,group_column])) {
-    fig = plotly::add_trace(
-      p = fig,
-      y = data[[col]],
-      type = 'bar',
-      name = col)
-  }
-  fig = plotly::layout(
-    p = fig,
-    yaxis = list(title = 'Count'),
-    barmode = 'stack')
-  fig = plotly::layout(
-    p = fig,
-    dragmode = FALSE,
-    bargap = 0.2
-  )
-  fig = plotly::config(
-    p = fig,
-    displayModeBar = FALSE,
-    scrollZoom = FALSE
-  )
-  
-  return(fig)
-  
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 #------------------------------------------------------ MOFA TEST CELLMINER ----
-
-prot_1 = initialize_omics(name = 'prot_1',
-              type = "Proteomics",
-              meta_file = './tests/datasets/CellMiner/sample_annotations.tsv',
-              data_file = './tests/datasets/CellMiner/prot_data.csv',
-              param_file = './R/params/params_gene_based_omics.R',
-              id_col_meta = 'ID',
-              type_column = 'Sample_type',
-              group_column = 'Cancer type',
-              batch_column = 'Batch',
-              blank_pattern = "blank",
-              qc_pattern = "quality",
-              pool_pattern = "pool",
-              excluded_samples = c('CNS:SF-539', 'PR:PC-3', 'PR:DU-145'),
-              id_col_data = 'ID',
-              blank_multiplier = 2,
-              sample_threshold = 0.8,
-              group_threshold = 0.8,
-              excluded_features = NULL,
-              imputation_method = "None",
-              batch_effect_correction = "None",
-              operation_order = c("Imputation", "Batch correction"),
-              norm_col = "None")
-
-trns_1 = initialize_omics(name = 'trns_1',
-                       type = "Transcriptomics",
-                       meta_file = './tests/datasets/CellMiner/sample_annotations.tsv',
-                       data_file = './tests/datasets/CellMiner/trns_data.csv',
-                       param_file = './R/params/params_gene_based_omics.R',
-                       id_col_meta = 'ID',
-                       type_column = 'Sample_type',
-                       group_column = 'Cancer type',
-                       batch_column = 'Batch',
-                       blank_pattern = "blank",
-                       qc_pattern = "quality",
-                       pool_pattern = "pool",
-                       excluded_samples = c('CNS:SF-539', 'PR:PC-3', 'PR:DU-145'),
-                       id_col_data = 'ID',
-                       blank_multiplier = 2,
-                       sample_threshold = 0.8,
-                       group_threshold = 0.8,
-                       excluded_features = NULL,
-                       imputation_method = "None",
-                       batch_effect_correction = "None",
-                       operation_order = c("Imputation", "Batch correction"),
-                       norm_col = "None")
-
-geno_1 = initialize_omics(name = 'geno_1',
-                       type = "Genomics",
-                       meta_file = './tests/datasets/CellMiner/sample_annotations.tsv',
-                       data_file = './tests/datasets/CellMiner/geno_data.csv',
-                       param_file = './R/params/params_gene_based_omics.R',
-                       id_col_meta = 'ID',
-                       type_column = 'Sample_type',
-                       group_column = 'Cancer type',
-                       batch_column = 'Batch',
-                       blank_pattern = "blank",
-                       qc_pattern = "quality",
-                       pool_pattern = "pool",
-                       excluded_samples = c('CNS:SF-539', 'PR:PC-3', 'PR:DU-145'),
-                       id_col_data = 'ID',
-                       blank_multiplier = 2,
-                       sample_threshold = 0.8,
-                       group_threshold = 0.8,
-                       excluded_features = NULL,
-                       imputation_method = "None",
-                       batch_effect_correction = "None",
-                       operation_order = c("Imputation", "Batch correction"),
-                       norm_col = "None")
-
+if (T) {
+  name = 'prot_1'
+  type = "Proteomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/prot_data.csv'
+  feat_file = NULL
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  feat_file_format = "Long"
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'From'
+  param_file = './R/params/params_gene_based_omics.R'
+  type_column = 'Sample_type'
+  group_column = 'Cancer type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = F
+  drop_qcs = F
+  drop_pools = F
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+  
+  prot_1 = initialize_omics(
+    verbose = verbose,
+    name = name,
+    type = type,
+    meta_file = meta_file,
+    data_file = data_file,
+    feat_file = feat_file,
+    meta_file_format = meta_file_format,
+    data_file_format = data_file_format,
+    feat_file_format = feat_file_format,
+    param_file = param_file,
+    id_col_meta = id_col_meta,
+    id_col_data = id_col_data,
+    id_col_feat = id_col_feat,
+    type_column = type_column,
+    group_column = group_column,
+    batch_column = batch_column,
+    blank_pattern = blank_pattern,
+    qc_pattern = qc_pattern,
+    pool_pattern = pool_pattern,
+    excluded_samples = excluded_samples,
+    drop_blanks = drop_blanks,
+    drop_qcs = drop_qcs,
+    drop_pools = drop_pools,
+    blank_multiplier = blank_multiplier,
+    sample_threshold = sample_threshold,
+    group_threshold = group_threshold,
+    excluded_features = excluded_features,
+    imputation_method = imputation_method,
+    batch_effect_correction = batch_effect_correction,
+    operation_order = operation_order,
+    norm_col = norm_col
+  )
+} # PROT
+if (T) {
+  name = 'trns_1'
+  type = "Transcriptomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/rna_data.csv'
+  feat_file = NULL
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  feat_file_format = "Long"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+  
+  trns_1 = initialize_omics(
+    verbose = verbose,
+    name = name,
+    type = type,
+    meta_file = meta_file,
+    data_file = data_file,
+    feat_file = feat_file,
+    meta_file_format = meta_file_format,
+    data_file_format = data_file_format,
+    feat_file_format = feat_file_format,
+    param_file = param_file,
+    id_col_meta = id_col_meta,
+    id_col_data = id_col_data,
+    id_col_feat = id_col_feat,
+    type_column = type_column,
+    group_column = group_column,
+    batch_column = batch_column,
+    blank_pattern = blank_pattern,
+    qc_pattern = qc_pattern,
+    pool_pattern = pool_pattern,
+    excluded_samples = excluded_samples,
+    drop_blanks = drop_blanks,
+    drop_qcs = drop_qcs,
+    drop_pools = drop_pools,
+    blank_multiplier = blank_multiplier,
+    sample_threshold = sample_threshold,
+    group_threshold = group_threshold,
+    excluded_features = excluded_features,
+    imputation_method = imputation_method,
+    batch_effect_correction = batch_effect_correction,
+    operation_order = operation_order,
+    norm_col = norm_col
+  )
+} # TRNS
+if (T) {
+  name = 'geno_1'
+  type = "Genomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/dna_data.csv'
+  feat_file = NULL
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  feat_file_format = "Long"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+  
+  geno_1 = initialize_omics(
+    verbose = verbose,
+    name = name,
+    type = type,
+    meta_file = meta_file,
+    data_file = data_file,
+    feat_file = feat_file,
+    meta_file_format = meta_file_format,
+    data_file_format = data_file_format,
+    feat_file_format = feat_file_format,
+    param_file = param_file,
+    id_col_meta = id_col_meta,
+    id_col_data = id_col_data,
+    id_col_feat = id_col_feat,
+    type_column = type_column,
+    group_column = group_column,
+    batch_column = batch_column,
+    blank_pattern = blank_pattern,
+    qc_pattern = qc_pattern,
+    pool_pattern = pool_pattern,
+    excluded_samples = excluded_samples,
+    drop_blanks = drop_blanks,
+    drop_qcs = drop_qcs,
+    drop_pools = drop_pools,
+    blank_multiplier = blank_multiplier,
+    sample_threshold = sample_threshold,
+    group_threshold = group_threshold,
+    excluded_features = excluded_features,
+    imputation_method = imputation_method,
+    batch_effect_correction = batch_effect_correction,
+    operation_order = operation_order,
+    norm_col = norm_col
+  )
+} # GENO
 
 self = Mofa_class$new(
   name = "mofa_1"
@@ -448,7 +528,7 @@ self$add_data(name = prot_1$name,
 self$add_sample_meta(name = prot_1$name,
                      prot_1$tables$raw_meta)
 self$add_feature_data(name = prot_1$name,
-                      feature_data = prot_1$tables$feature_table)
+                      feature_data = prot_1$tables$raw_feat)
 
 # Add transcriptomics
 self$add_data(name = trns_1$name,
@@ -456,7 +536,7 @@ self$add_data(name = trns_1$name,
 self$add_sample_meta(name = trns_1$name,
                      trns_1$tables$raw_meta)
 self$add_feature_data(name = trns_1$name,
-                      feature_data = trns_1$tables$feature_table)
+                      feature_data = trns_1$tables$raw_feat)
 
 # Add genomics
 self$add_data(name = geno_1$name,
@@ -464,7 +544,7 @@ self$add_data(name = geno_1$name,
 self$add_sample_meta(name = geno_1$name,
                      geno_1$tables$raw_meta)
 self$add_feature_data(name = geno_1$name,
-                      feature_data = geno_1$tables$feature_table)
+                      feature_data = geno_1$tables$raw_feat)
 
 # Clean up tables
 self$clean_datasets()
@@ -492,27 +572,7 @@ self$add_metadata_to_mofa()
 self$plot_explained_variance()
 self$plots$explained_variance
 
-
-model = self$mofa_objects$model
-sample_metadata = self$tables$sample_metadata
-factors = c(1:10)
-scale = self$params$factor_plot$scale
-groups = "Cancer type"
-show_missing = self$params$factor_plot$show_missing
-color_palette = "ggplot2"
-marker_size = self$params$factor_plot$marker_size
-opacity = self$params$factor_plot$opacity
-add_violin = self$params$factor_plot$add_violin
-show_legend = F
-violin_alpha = self$params$factor_plot$violin_alpha
-title_font_size = self$params$factor_plot$title_font_size
-y_label_font_size = self$params$factor_plot$y_label_font_size
-y_tick_font_size = self$params$factor_plot$y_tick_font_size
-x_label_font_size = self$params$factor_plot$x_label_font_size
-x_tick_font_size = self$params$factor_plot$x_tick_font_size
-legend_font_size = self$params$factor_plot$legend_font_size
-width = NULL
-height = NULL
+base::saveRDS(self, "/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/MOFA_RDS.isoda")
 
 #------------------------------------------------------- SNF TEST CELLMINER ----
 

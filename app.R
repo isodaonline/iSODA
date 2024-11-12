@@ -319,6 +319,16 @@ server = function(input, output, session) {
       'exp_5' = NULL,
       'exp_6' = NULL
     ),
+    
+    # mofa_exp = Mofa_class$new(
+    #   name = "mofa_1"
+    # ),
+    
+    mofa_exp = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/MOFA_RDS.isoda"),
+    
+    snf_exp = Snf_class$new(
+      name = "snf_1"
+    ),
 
     dims = list(
       x_box = 0.9,
@@ -332,13 +342,6 @@ server = function(input, output, session) {
     )
   )
 
-  mofa_exp = Mofa_class$new(
-    name = "mofa_1"
-  )
-
-  snf_exp = Snf_class$new(
-    name = "snf_1"
-  )
 
 
 
@@ -367,10 +370,10 @@ server = function(input, output, session) {
   })
 
   # MOFA module
-  mofa_server("mofa", r6 = mofa_exp, module_controler = module_controler, main_input = input)
+  mofa_server("mofa", r6 = module_controler$mofa_exp, module_controler = module_controler, main_input = input)
 
   # SNF module
-  snf_server("snf", r6 = snf_exp, module_controler = module_controler, main_input = input)
+  snf_server("snf", r6 = module_controler$snf_exp, module_controler = module_controler, main_input = input)
 
   # Example datasets
   shiny::observeEvent(input[['mod_start-add_lipidomics_ex']],{
