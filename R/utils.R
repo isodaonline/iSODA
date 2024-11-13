@@ -2710,7 +2710,7 @@ match_go_terms = function(terms_list, sparse_table) {
 }
 
 get_term2gene = function(feature_table, column, sep = "\\|") {
-  term2gene=sapply(feature_table[,column], FUN = function(x) strsplit(x,sep)[[1]])
+  term2gene=sapply(as.character(feature_table[,column]), FUN = function(x) strsplit(x,sep)[[1]])
   names(term2gene)=rownames(feature_table)
   term2gene = utils::stack(term2gene)
   return(term2gene)
@@ -2727,6 +2727,12 @@ custom_ora = function(geneList, pvalueCutoff = 0.05, pAdjustMethod = "BH", qvalu
   return(enricher_result)
 }
 custom_gsea = function(geneList, minGSSize = 10, maxGSSize = 500, pvalueCutoff = 0.05, verbose = TRUE, pAdjustMethod = "BH", term2gene) {
+  
+  if (any(is.infinite(geneList))) {
+    base::warning(paste0("Removing ", sum(is.infinite(geneList)), " features with infinite fold changes"))
+    geneList = geneList[!is.infinite(geneList)]
+  }
+  
   gsea_result = clusterProfiler::GSEA(geneList = geneList,
                                       minGSSize = minGSSize,
                                       maxGSSize = maxGSSize,

@@ -1,3 +1,200 @@
+#------------------------------------------------------ Main menu functions ----
+render_create_single_omics = function(ns) {
+  shiny::fluidRow(
+    shiny::column(
+      width = 12,
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::selectInput(
+            inputId = ns('exp_type'),
+            label = 'Omics type',
+            choices = c('Lipidomics', 'Metabolomics', 'Proteomics', 'Transcriptomics', 'Genomics'),
+            width = '100%'
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::textInput(
+            inputId = ns('exp_name'),
+            label = 'Name',
+            placeholder = 'lips_1',
+            width = '100%'
+          )
+        )
+      ),
+      shinyWidgets::actionBttn(
+        inputId = ns('add_exp'),
+        label = "Add Omics",
+        style = "material-flat",
+        color = 'success',
+        block = T,
+        icon = icon("check")
+      )
+    ),
+  )
+}
+render_load_misoda_file = function(ns) {
+  shiny::fluidRow(
+    shiny::column( 
+      width = 12,
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::fileInput(
+            inputId = ns('input_misoda_file'),
+            label = "miSODA file",
+            accept = ".misoda",
+            width = "100%"
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::textInput(
+            inputId = ns('input_misoda_uuid'),
+            label = "miSODA UUID",
+            width = "100%",
+            placeholder = "miSODA UUID key produced via the app"
+          )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::span('Name'),
+          shiny::tags$pre(
+            shiny::textOutput(
+              outputId = ns('misoda_name')
+            ),
+            style = "background-color: #D3D3D3; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 45px; overflow-x: auto; white-space: nowrap;"
+          ),
+          shiny::span('Summary'),
+          shiny::tags$pre(
+            shiny::htmlOutput(
+              outputId = ns('misoda_summary')
+            ),
+            style = "background-color: #D3D3D3; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 150px; overflow-x: auto; white-space: nowrap;"
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::span('User'),
+          shiny::tags$pre(
+            shiny::textOutput(
+              outputId = ns('misoda_user')
+            ),
+            style = "background-color: #D3D3D3; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 45px; overflow-x: auto; white-space: nowrap;"
+          ),
+          shiny::span('Comments'),
+          shiny::tags$pre(
+            shiny::textOutput(
+              outputId = ns('misoda_comments')
+            ),
+            style = "background-color: #D3D3D3; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 150px; overflow-x: auto; white-space: nowrap;"
+          )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 12,
+          shiny::actionButton(
+            inputId = ns("load_misoda_file"),
+            label = "Load miSODA",
+            icon = icon("play"),
+            width = "100%",
+            style ="color: #fff; background-color: #00A86B; border-color: #00A86B"
+          )
+        )
+      )
+    )
+  )
+}
+render_save_misoda_file = function(ns) {
+  shiny::fluidRow(
+    rclipboard::rclipboardSetup(),
+    shiny::column(
+      width = 6,
+      shiny::h3('Download'),
+      shiny::span('Download your single- and multi-omics data as a .misoda file locally on your computer. This file can then be loaded back into iSODA and shared with collaborators to explore your data'),
+      shiny::downloadButton(
+        outputId = ns("misoda_file_download"),
+        label = "Download misoda file",
+        style ="color: #fff; background-color: #00A86B; border-color: #00A86B; width:100%;"
+      ),
+      shiny::fluidRow(
+        shiny::br()
+      ),
+      shiny::h3('Store'),
+      shiny::span('Store your multi-omics data on the server. You will be provided a key to access it again and to share it with collaborators'),
+      shiny::actionButton(
+        inputId = ns('misoda_file_store'),
+        label = "Generate UUID",
+        icon = NULL,
+        style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
+        width = "100%"
+      ),
+      shiny::br(),
+      shiny::span('Copy and store this key to resume work and share with collaborators:'),
+      shiny::fluidRow(
+        shiny::column(
+          width = 10,
+          shiny::tags$pre(
+            shiny::textOutput(
+              outputId = ns('misoda_uuid')
+            ),
+            style = "background-color: #D3D3D3; padding: 10px; border: 1px solid #ddd; border-radius: 5px; height: 45px; overflow-x: auto; white-space: nowrap;"
+          )
+        ),
+        shiny::column(
+          width = 2,
+          shiny::uiOutput(outputId = ns("misoda_uuid_clip")),
+        )
+      )
+    ),
+    shiny::column(
+      width = 1
+    ),
+    shiny::column(
+      width = 5,
+      shiny::h3('Identify your data'),
+      shiny::span("Optional descriptors for your .misoda file to make it more identifiable"),
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::textInput(
+            inputId = ns("misoda_file_name"),
+            label = "Name",
+            value = "",
+            width = "100%",
+            placeholder = "Experiment name"
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::textInput(
+            inputId = ns("misoda_file_owner"),
+            label = "User",
+            value = "",
+            width = "100%",
+            placeholder = "User producing the file"
+          )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 12,
+          shiny::textAreaInput(
+            inputId = ns('misoda_file_comment'),
+            label = "Comment",
+            placeholder = "Comments helping identify the experiment",
+            width = "100%",
+            height = "200px"
+          )
+        )
+      )
+    )
+  )
+}
 #---------------------------------------------------- Data upload functions ----
 render_upload_user_files = function(ns) {
   shiny::fluidRow(

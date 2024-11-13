@@ -273,6 +273,10 @@ server = function(input, output, session) {
   options(shiny.maxRequestSize=300*1024^2)
 
   module_controler = shiny::reactiveValues(
+    
+    name = NULL,
+    user = NULL,
+    comment = NULL,
 
     slot_taken = list(
       'exp_1' = FALSE,
@@ -319,12 +323,19 @@ server = function(input, output, session) {
       'exp_6' = NULL
     ),
     
+    exp_preloaded = list(
+      'exp_1' = FALSE,
+      'exp_2' = FALSE,
+      'exp_3' = FALSE,
+      'exp_4' = FALSE,
+      'exp_5' = FALSE,
+      'exp_6' = FALSE
+    ),
+    
     mofa_exp = Mofa_class$new(
       name = "mofa_1"
     ),
-    
-    # mofa_exp = base::readRDS("/home/dolivierj/Dropbox/1_Travail/221219_lumc/230828_dmc_soda/iSODA_online_project/test_data/230927_Cellminer_data/cellminer_data/MOFA_RDS.isoda"),
-    
+
     snf_exp = Snf_class$new(
       name = "snf_1"
     ),
@@ -340,9 +351,6 @@ server = function(input, output, session) {
       ypx_total = NULL
     )
   )
-
-
-
 
   start_server(id = 'mod_start', main_input = input, main_output = output, main_session = session, module_controler = module_controler)
   about_server(id = 'mod_about', main_output = output)
@@ -360,11 +368,14 @@ server = function(input, output, session) {
     if (length(slot) > 0) {
       slot = slot[1]
       exp_type = module_controler$exp_types[[slot]]
+      preloaded = module_controler$exp_preloaded[[slot]]
       module_controler$module_loaded[[slot]] = TRUE
       experiment_server(id = paste0(c('mod', slot), collapse = '_'),
                         type = exp_type,
                         module_controler = module_controler,
+                        preloaded = preloaded,
                         isoda_version = isoda_version)
+      module_controler$exp_preloaded[[slot]] = TRUE
     }
   })
 

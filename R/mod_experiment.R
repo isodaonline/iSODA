@@ -10,7 +10,7 @@ experiment_ui = function(id) {
 
 #-------------------------------------------------------- Experiment server ----
 
-experiment_server = function(id, type, module_controler, isoda_version) {
+experiment_server = function(id, type, module_controler, preloaded, isoda_version) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -23,6 +23,7 @@ experiment_server = function(id, type, module_controler, isoda_version) {
         session = session,
         module_controler = module_controler,
         omics_type = type,
+        preloaded = preloaded,
         isoda_version = isoda_version)
     }
   )

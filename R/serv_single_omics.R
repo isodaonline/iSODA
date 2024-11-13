@@ -1,6 +1,6 @@
 #------------------------------------------------------ Single omics server ----
 
-single_omics_server = function(id, ns, input, output, session, module_controler, omics_type, isoda_version) {
+single_omics_server = function(id, ns, input, output, session, module_controler, omics_type, preloaded, isoda_version) {
   # Extract some values and update the module controler
   r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
   m = r6$name
@@ -120,7 +120,8 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
               label = "Load",
               icon = icon("play"),
               style ="color: #fff; background-color: #00A86B; border-color: #00A86B",
-              width = '100%'
+              width = '100%',
+              disabled = base::ifelse(preloaded, T, F)
             ),
             title = tooltip_data$single_omics$load_single_omics,
             placement = "top")
@@ -422,6 +423,76 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
     
     
   })
+  
+  # Skip upload if preloaded
+  if (preloaded) {
+    shinyjs::disable('load_single_omics')
+    
+    # Render sample filtering UI
+    output$sample_filtering_ui = shiny::renderUI({
+      render_sample_filtering(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+    # Render measurement filtering UI
+    output$up_data_ui = shiny::renderUI({
+      render_measurement_filtering(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+    # Render feature filtering UI
+    output$up_feature_metadata_ui = shiny::renderUI({
+      render_feature_filtering(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+    # Render visualization UI
+    output$visualize_data_ui = shiny::renderUI({
+      render_visualization_tab(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+    # Render functional_comparison UI
+    output$functional_comparison_ui = shiny::renderUI({
+      render_functional_comparison_tab(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+    # Render enrichment UI
+    output$enrichment_ui = shiny::renderUI({
+      render_enrichment_tab(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+    # Render over_representation UI
+    output$over_representation_ui = shiny::renderUI({
+      render_over_representation_tab(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+    # Render download UI
+    output$save_results_ui = shiny::renderUI({
+      render_save_results_tab(
+        ns = ns,
+        r6 = module_controler$exp_r6[[stringr::str_replace(id, 'mod_', '')]]
+      )
+    })
+    
+  }
 
   #------------------------------------------------------------ SAMPLES TAB ----
   events_sample_filtering(

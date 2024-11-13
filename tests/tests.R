@@ -137,7 +137,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # LIPS
-if (T) {
+if (F) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/240605_Ratna/Metadata_50_ANCHOR.csv'
@@ -156,6 +156,39 @@ if (T) {
   batch_column = 'Batch'
   blank_pattern = "blank"
   qc_pattern = "qc"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+} # LIPS
+if (T) {
+  name = 'lips_1'
+  type = "Lipidomics"
+  meta_file = './test_data/240419_Birol_data/iso_data/sample_annotations.csv'
+  data_file = './test_data/240419_Birol_data/iso_data/measurement_data.csv'
+  feat_file = NULL
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  feat_file_format = "Long"
+  param_file = './R/params/params_lipidomics.R'
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'LTP_Family'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
   pool_pattern = "pool"
   excluded_samples = NULL
   drop_blanks = T
@@ -238,7 +271,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
-if (T) {
+if (F) {
   name = 'geno_1'
   type = "Genomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
@@ -307,6 +340,57 @@ self = initialize_omics(
   norm_col = norm_col
 )
 
+self$get_ea_feature_table(data_table = self$tables$total_norm_data,
+                             group_col = "LTP_Family",
+                             group_1 = "OSBP",
+                             group_2 = "Non_target",
+                             fc_function = "mean",
+                             statistical_test = "t-Test",
+                             adjustment_method = "BH")
+
+self$get_ea_object(custom_col = "Double bonds (sum)",
+                   selected_features = rownames(self$tables$raw_feat),
+                   ont = NULL,
+                   minGSSize = 3,
+                   maxGSSize = 800,
+                   terms_p_value_cutoff = 0.05,
+                   terms_pAdjustMethod = "BH",
+                   seed = 1)
+
+
+self$get_ora_feature_table(data_table = self$tables$total_norm_data,
+                         group_col = "LTP_Family",
+                         group_1 = "OSBP",
+                         group_2 = "Non_target",
+                         fc_function = "mean",
+                         statistical_test = "t-Test",
+                         adjustment_method = "BH")
+
+self$get_ora_object(custom_col = "Double bonds (sum)",
+                    selected_features = rownames(self$tables$raw_feat),
+                    pval_cutoff_features = 0.05,
+                    padjust_features = "BH",
+                    pval_cutoff = 0.05,
+                    pAdjustMethod = "BH",
+                    fc_threshold = 1.1,
+                    ont = NULL,
+                    qval_cutoff = 0.05,
+                    minGSSize = 10,
+                    maxGSSize  = 500,
+                    seed = 1)
+
+custom_col = "Double bonds (sum)"
+selected_features = rownames(self$tables$raw_feat)
+pval_cutoff_features = 0.05
+padjust_features = "BH"
+pval_cutoff = 0.05
+pAdjustMethod = "BH"
+fc_threshold = 1.1
+ont = NULL
+qval_cutoff = 0.05
+minGSSize = 10
+maxGSSize  = 500
+seed = 1
 
 #------------------------------------------------------ MOFA TEST CELLMINER ----
 if (T) {

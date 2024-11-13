@@ -2740,6 +2740,10 @@ Omics_exp = R6::R6Class(
                                   minGSSize = minGSSize,
                                   maxGSSize  = maxGSSize,
                                   seed = seed)
+      
+      if (is.null(ora_object)) {
+        base::stop('No over representation found')
+      }
 
       self$tables$ora_object = ora_object
       self$tables$ora_table = ora_object@result
