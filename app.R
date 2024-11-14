@@ -92,10 +92,17 @@ sidebar_ui = function() {
     bs4Dash::bs4SidebarMenu(
       id = "main_sidebar",
 
+      # Start menu
+      bs4Dash::bs4SidebarMenuItem(
+        text = "Start",
+        tabName = "start",
+        icon = shiny::icon("home")
+      ),
+      
       # Single-omics menu
       bs4Dash::bs4SidebarMenuItem(
         text = "Single-omics",
-        tabName = "start",
+        tabName = "single_omics",
         icon = shiny::icon("list")
         ),
 
@@ -167,7 +174,12 @@ body_ui = function() {
       # Start page
       bs4Dash::tabItem(
         tabName = "start",
-        start_ui(id = 'mod_start')
+        start_ui(id = 'start')
+      ),
+      
+      bs4Dash::tabItem(
+        tabName = "single_omics",
+        main_single_omics_ui(id = 'mod_single_omics')
       ),
 
       bs4Dash::tabItem(
@@ -351,8 +363,9 @@ server = function(input, output, session) {
       ypx_total = NULL
     )
   )
-
-  start_server(id = 'mod_start', main_input = input, main_output = output, main_session = session, module_controler = module_controler)
+  
+  start_server(id = "start", main_input = input, main_output = output, main_session = session, module_controler = module_controler)
+  main_single_omics_server(id = 'mod_single_omics', main_input = input, main_output = output, main_session = session, module_controler = module_controler)
   about_server(id = 'mod_about', main_output = output)
   logs_server(id = "logs", main_input = input, main_output = output)
   help_start_server(id = 'mod_help_start', main_output = output)
