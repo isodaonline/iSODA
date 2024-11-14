@@ -1189,53 +1189,59 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
   }
 }
 
-get_feature_metadata = function(feature_table, dtype) {
-
+get_feature_metadata = function(feature_table) {
+  
   feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
                                                      uniques = FALSE)
   # Collect carbon and unsaturation counts
-  c_count_1 = c() # Main carbon count / total carbon count (TGs)
-  s_count_1 = c() # Main saturation count
-  c_count_2 = c() # Secondary carbon count (asyl groups or TGs)
-  s_count_2 = c() # Secondary saturation (asyl groups or TGs)
+  new_feature_table = list()
+  
   for (c in unique(feature_table[, 'Lipid class'])) {
     idx = rownames(feature_table)[feature_table[, 'Lipid class'] == c]
-
+    
     if (c == "TG") {
       # For triglycerides
-      for (i in stringr::str_split(string = idx, pattern = " |:|-FA")) {
-        c_count_1 = c(c_count_1, i[2])
-        c_count_2 = c(c_count_2, i[4])
-        s_count_1 = c(s_count_1, i[3])
-        s_count_2 = c(s_count_2, i[5])
-      }
-    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) >0) {
+      truffles = stringr::str_split(string = idx, pattern = " |:|-FA")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
+    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) > 0) {
       # For species with asyl groups ("/" or "_")
-      for (i in stringr::str_split(string = idx, pattern = " |:|_|/")) {
-        c_count_1 = c(c_count_1, gsub("[^0-9]", "", i[2]))
-        c_count_2 = c(c_count_2, i[4])
-        s_count_1 = c(s_count_1, i[3])
-        s_count_2 = c(s_count_2, i[5])
-      }
+      truffles = stringr::str_split(string = idx, pattern = " |:|_|/")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
     } else {
       # For the rest
-      for (i in stringr::str_split(string = idx, pattern = " |:")) {
-        c_count_1 = c(c_count_1, i[2])
-        c_count_2 = c(c_count_2, 0)
-        s_count_1 = c(s_count_1, i[3])
-        s_count_2 = c(s_count_2, 0)
-      }
+      truffles = paste0(idx, ':0:0')
+      truffles = stringr::str_split(string = truffles, pattern = " |:")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
     }
   }
-
-  feature_table[,'Carbon count (chain 1)'] = as.numeric(c_count_1)
-  feature_table[,'Carbon count (chain 2)'] = as.numeric(c_count_2)
-  feature_table[,'Carbon count (sum)'] = as.numeric(c_count_1) + as.numeric(c_count_2)
-  feature_table[,'Double bonds (chain 1)'] = as.numeric(s_count_1)
-  feature_table[,'Double bonds (chain 2)'] = as.numeric(s_count_2)
-  feature_table[,'Double bonds (sum)'] = as.numeric(s_count_1) + as.numeric(s_count_2)
-
-  return(feature_table)
+  
+  new_feature_table = as.data.frame(t(data.frame(new_feature_table, check.names = F)), check.names = F)
+  new_feature_table[,2] = gsub("[^0-9]", "", new_feature_table[,2])
+  for (col in colnames(new_feature_table)[2:ncol(new_feature_table)]) {
+    new_feature_table[,col] = as.numeric(new_feature_table[,col])
+  }
+  new_feature_table[,6] = new_feature_table[,2] + new_feature_table[,4]
+  new_feature_table[,7] = new_feature_table[,3] + new_feature_table[,5]
+  
+  colnames(new_feature_table) = c(
+    'Lipid class',
+    'Carbon count (chain 1)',
+    'Double bonds (chain 1)',
+    'Carbon count (chain 2)',
+    'Double bonds (chain 2)',
+    'Carbon count (sum)',
+    'Double bonds (sum)'
+  )
+  
+  new_feature_table = new_feature_table[rownames(feature_table),]
+  
+  return(new_feature_table)
 }
 
 get_col_means = function(data_table) {
