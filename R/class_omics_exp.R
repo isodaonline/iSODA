@@ -706,20 +706,15 @@ Omics_exp = R6::R6Class(
       indexed_feat = NULL,
       raw_feat = NULL,
 
+      # Feature list for the sparse tables
+      feature_list = NULL,
+      external_feature_tables = list(),
+      external_enrichment_tables = list(),
+      
       # Non sample tables
       blank_table = NULL,
       qc_table = NULL,
       pool_table = NULL,
-
-      #Feature tables
-      feature_table = NULL,
-      feature_list = NULL,
-
-      # External feature tables
-      external_feature_tables = list(),
-
-      # External feature tables
-      external_enrichment_tables = list(),
 
       # Group summaries
       summary_species_table = NULL,
@@ -2148,13 +2143,13 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    update_feature_table = function(sep = "|") {
+    update_feature_table = function(feature_table = self$tables$raw_feat,
+                                    sep = "|") {
       if (sep == "|") {
         regex_sep = "\\|"
       } else {
         regex_sep = sep
       }
-      feature_table = self$tables$imp_feature_table[colnames(self$tables$raw_data),,drop = F]
       ext_names = names(self$tables$external_feature_tables)
       for (name in ext_names) {
         feature_table = augment_feature_table(feature_table = feature_table,
@@ -2582,8 +2577,8 @@ Omics_exp = R6::R6Class(
     },
 
     push_volcano_to_meta = function() {
-      self$tables$feature_table$volcano_plot_expression = "None"
-      self$tables$feature_table[rownames(self$tables$volcano_plot), "volcano_plot_expression"] = self$tables$volcano_plot[, "expression"]
+      self$tables$raw_feat$volcano_plot_expression = "None"
+      self$tables$raw_feat[rownames(self$tables$volcano_plot), "volcano_plot_expression"] = self$tables$volcano_plot[, "expression"]
     },
 
     # Double bond plot table

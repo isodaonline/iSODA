@@ -782,7 +782,6 @@ volcano_plot_generate = function(r6, dimensions_obj, input) {
 
 }
 
-
 volcano_plot_spawn = function(r6, format, output) {
   print_tm(r6$name, "Volcano plot: spawning plot.")
   output$volcano_plot_plot = plotly::renderPlotly({
@@ -803,7 +802,6 @@ volcano_plot_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 volcano_plot_server = function(r6, output, session) {
 
