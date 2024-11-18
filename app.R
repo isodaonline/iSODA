@@ -91,13 +91,6 @@ sidebar_ui = function() {
   bs4Dash::bs4DashSidebar(
     bs4Dash::bs4SidebarMenu(
       id = "main_sidebar",
-
-      # Start menu
-      bs4Dash::bs4SidebarMenuItem(
-        text = "Start",
-        tabName = "start",
-        icon = shiny::icon("home")
-      ),
       
       # Single-omics menu
       bs4Dash::bs4SidebarMenuItem(
@@ -127,6 +120,13 @@ sidebar_ui = function() {
           tabName = "snf_tab",
           icon = shiny::icon("circle")
         )
+      ),
+      
+      # Save_load menu
+      bs4Dash::bs4SidebarMenuItem(
+        text = "Save/Load",
+        tabName = "save_load",
+        icon = shiny::icon("download")
       ),
 
       bs4Dash::bs4SidebarMenuItem(
@@ -170,12 +170,6 @@ body_ui = function() {
     waiter::autoWaiter(html = spin_3k(), color = "rgba(255, 255, 255, 0)"),
     
     bs4Dash::tabItems(
-
-      # Start page
-      bs4Dash::tabItem(
-        tabName = "start",
-        start_ui(id = 'start')
-      ),
       
       bs4Dash::tabItem(
         tabName = "single_omics",
@@ -220,6 +214,12 @@ body_ui = function() {
       bs4Dash::tabItem(
         tabName = "snf_tab",
         snf_ui(id = "snf")
+      ),
+      
+      # Start page
+      bs4Dash::tabItem(
+        tabName = "save_load",
+        save_load_ui(id = 'save_load')
       ),
 
       bs4Dash::tabItem(
@@ -364,8 +364,8 @@ server = function(input, output, session) {
     )
   )
   
-  start_server(id = "start", main_input = input, main_output = output, main_session = session, module_controler = module_controler)
   main_single_omics_server(id = 'mod_single_omics', main_input = input, main_output = output, main_session = session, module_controler = module_controler)
+  save_load_server(id = "save_load", main_input = input, main_output = output, main_session = session, module_controler = module_controler)
   about_server(id = 'mod_about', main_output = output)
   logs_server(id = "logs", main_input = input, main_output = output)
   help_start_server(id = 'mod_help_start', main_output = output)

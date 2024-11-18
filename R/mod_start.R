@@ -1,6 +1,6 @@
 
-#----------------------------------------------------------------- Start UI ----
-start_ui = function(id){
+#------------------------------------------------------------- Save/Load UI ----
+save_load_ui = function(id){
   ns = shiny::NS(id)
   shiny::tagList(
     shiny::fluidRow(
@@ -88,7 +88,7 @@ start_ui = function(id){
 
 #------------------------------------------------------------- Start server ----
 
-start_server = function(id, main_input, main_output, main_session, module_controler) {
+save_load_server = function(id, main_input, main_output, main_session, module_controler) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
