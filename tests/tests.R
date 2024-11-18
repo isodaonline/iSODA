@@ -171,7 +171,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # LIPS
-if (T) {
+if (F) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/240419_Birol_data/iso_data/sample_annotations.csv'
@@ -237,13 +237,12 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
-if (F) {
+if (T) {
   name = 'prot_1'
   type = "Proteomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
   data_file = './test_data/230927_Cellminer_data/cellminer_data/prot_data.csv'
-  # feat_file = './test_data/231023_feature_tables/proteomics_feat_annotation_clean.tsv'
-  feat_file = NULL
+  feat_file = './test_data/231023_feature_tables/proteomics_feat_annotation_clean.tsv'
   meta_file_format = "Wide"
   data_file_format = "Wide"
   feat_file_format = "Long"
@@ -339,6 +338,10 @@ self = initialize_omics(
   operation_order = operation_order,
   norm_col = norm_col
 )
+
+ncol(self$tables$raw_data)
+nrow(self$tables$raw_feat)
+raw_feat = self$tables$raw_feat
 
 self$get_ea_feature_table(data_table = self$tables$total_norm_data,
                              group_col = "LTP_Family",

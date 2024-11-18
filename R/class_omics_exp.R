@@ -1829,29 +1829,24 @@ Omics_exp = R6::R6Class(
       shared_samples = base::intersect(rownames(indexed_meta), rownames(indexed_data))
       if (length(shared_samples) < 3) {
         base::stop("Less than three shared samples between sample annotations and measurement data tables")
-      } else {
-        diff_samples = base::setdiff(rownames(indexed_data), rownames(indexed_meta))
-        if (length(diff_samples) > 0) {
-          base::warning(paste0("Dropping ", length(diff_samples), " samples not shared between tables"))
-          indexed_data = indexed_data[shared_samples,]
-          indexed_meta = indexed_meta[shared_samples,]
-          self$tables$indexed_data = indexed_data
-          self$tables$indexed_meta = indexed_meta
-        }
+      } else if ((length(shared_samples) != nrow(indexed_data)) | (length(shared_samples) != nrow(indexed_meta))) {
+        missing_data_samples = base::setdiff(rownames(indexed_data), shared_samples)
+        missing_meta_samples = base::setdiff(rownames(indexed_meta), shared_samples)
+        base::warning(paste0("Dropping ", length(missing_data_samples) + length(missing_meta_samples), " samples not shared between tables"))
+        indexed_data = indexed_data[shared_samples,]
+        indexed_meta = indexed_meta[shared_samples,]
+        self$tables$indexed_data = indexed_data
+        self$tables$indexed_meta = indexed_meta
       }
       
       # Check data - feat
       shared_features = base::intersect(colnames(indexed_data), rownames(indexed_feat))
       if (length(shared_features) < 3) {
         base::stop("Less than three shared features between measurement data and feature annotations tables")
-      } else {
-        diff_features = base::setdiff(colnames(indexed_data), rownames(indexed_feat))
-        if (length(diff_features) > 0) {
-          indexed_data = indexed_data[,shared_features]
-          indexed_feat = indexed_feat[shared_features,]
-          self$tables$indexed_data = indexed_data
-          self$tables$indexed_feat = indexed_feat
-        }
+      } else if (nrow(indexed_feat) != length(shared_features)) {
+        indexed_feat = indexed_feat[colnames(indexed_data),]
+        rownames(indexed_feat) = colnames(indexed_data)
+        self$tables$indexed_feat = indexed_feat
       }
     },
 
