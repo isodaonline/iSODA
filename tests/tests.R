@@ -343,14 +343,15 @@ self$tables$raw_meta$Group_type
 
 
 self$get_ea_feature_table(data_table = self$tables$total_norm_data,
-                             group_col = "Group_type",
-                             group_1 = "ApoE3/3",
-                             group_2 = "null",
-                             fc_function = "mean",
-                             statistical_test = "t-Test",
-                             adjustment_method = "BH")
+                          group_col = "Group_type",
+                          group_1 = "ApoE3/3",
+                          group_2 = "null",
+                          fc_function = "mean",
+                          statistical_test = "t-Test",
+                          adjustment_method = "BH")
 
-self$get_ea_object(custom_col = "Double bonds (sum)",
+
+self$get_ea_object(custom_col = "Lipid class",
                    selected_features = rownames(self$tables$raw_feat),
                    ont = NULL,
                    minGSSize = 3,
@@ -358,41 +359,42 @@ self$get_ea_object(custom_col = "Double bonds (sum)",
                    terms_p_value_cutoff = 0.05,
                    terms_pAdjustMethod = "BH",
                    seed = 1)
-self$plot_ea_dot_plot()
-self$plots$ea_dot_plot
 
-self$plot_ea_cnet_plot()
+truffles = self$tables$ea_object@result
+self$tables$ea_object@result$core_enrichment
+
+
+self$plot_ea_cnet_plot(static_network = F)
 self$plots$ea_cnet_plot
 
 
-self$plot_ea_emap_plot()
-
 x = self$tables$ea_object
-show_category = self$params$ea_emap_plot$show_category
-color = self$params$ea_emap_plot$color
-size = self$params$ea_emap_plot$size
-displayed_labels = self$params$ea_emap_plot$displayed_labels
-mode = self$params$ea_emap_plot$mode
-score_threshold = self$params$ea_emap_plot$score_threshold
-similarity_score = self$params$ea_emap_plot$similarity_score
-node_color_palette = self$params$ea_emap_plot$node_color_palette
-reverse_node_palette = self$params$ea_emap_plot$reverse_node_palette
-edge_width = self$params$ea_emap_plot$edge_width
-edge_color = self$params$ea_emap_plot$edge_color
-edge_color_palette = self$params$ea_emap_plot$edge_color_palette
-reverse_edge_palette = self$params$ea_emap_plot$reverse_edge_palette
-edge_magnifier = self$params$ea_emap_plot$edge_magnifier
-node_magnifier = self$params$ea_emap_plot$node_magnifier
-label_font_size = self$params$ea_emap_plot$label_font_size
-static_network = self$params$ea_emap_plot$static_network
-solver = self$params$ea_emap_plot$solver
-gravitationalConstant = self$params$ea_emap_plot$gravitationalConstant
-nodeDistance = self$params$ea_emap_plot$nodeDistance
-centralGravity = self$params$ea_emap_plot$centralGravity
-springLength = self$params$ea_emap_plot$springLength
-springConstant = self$params$ea_emap_plot$springConstant
+ea_feature_table = self$tables$ea_feature_table
+show_category = self$params$ea_cnet_plot$show_category
+displayed_labels = self$params$ea_cnet_plot$displayed_labels
+set_node_annotations = self$params$ea_cnet_plot$set_node_annotations
+feature_node_annotations = self$params$ea_cnet_plot$feature_node_annotations
+set_node_color_palette = self$params$ea_cnet_plot$set_node_color_palette
+reverse_set_palette = self$params$ea_cnet_plot$reverse_set_palette
+feature_node_color_palette = self$params$ea_cnet_plot$feature_node_color_palette
+reverse_feature_palette = self$params$ea_cnet_plot$reverse_feature_palette
+label_font_size = self$params$ea_cnet_plot$label_font_size
+static_network = self$params$ea_cnet_plot$static_network
+solver = self$params$ea_cnet_plot$solver
+gravitationalConstant = self$params$ea_cnet_plot$gravitationalConstant
+nodeDistance = self$params$ea_cnet_plot$nodeDistance
+centralGravity = self$params$ea_cnet_plot$centralGravity
+springLength = self$params$ea_cnet_plot$springLength
+springConstant = self$params$ea_cnet_plot$springConstant
 width = NULL
 height = NULL
+
+
+
+
+
+
+
 
 
 

@@ -3485,7 +3485,7 @@ plot_fa_cnet_plot = function(x,
     stop("displayed_labels must be in ['Description', 'ID', 'ID and Description']")
   }
   set_nodes = data_table$set_nodes
-  feature_nodes = unique(stringr::str_split(paste0(data_table[,feature_col], collapse = '/'), '/')[[1]])
+  feature_nodes = unique(stringr::str_split(paste0(data_table[,feature_col], collapse = '/'), '/(?=[a-zA-Z])')[[1]])
 
   all_nodes = c(set_nodes, feature_nodes)
   set_nodes_idx = 1:length(set_nodes)
@@ -3535,7 +3535,7 @@ plot_fa_cnet_plot = function(x,
   source_nodes = c()
   target_nodes = c()
   for (i in rownames(data_table)) {
-    set_features = stringr::str_split(data_table[i, feature_col], '/')[[1]]
+    set_features = stringr::str_split(data_table[i, feature_col], '/(?=[a-zA-Z])')[[1]]
     target_nodes = c(target_nodes, set_features)
     source_nodes = c(source_nodes, rep(data_table[i, 'set_nodes'], length(set_features)))
   }
