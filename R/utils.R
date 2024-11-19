@@ -3674,7 +3674,10 @@ plot_fa_emap_plot = function(x,
   base::diag(edge_table) = 0
   edge_table = reshape2::melt(edge_table, na.rm = TRUE)
   colnames(edge_table) = c("from", "to", "score")
-  edge_table = edge_table[edge_table$score > score_threshold, ]
+  edge_table = edge_table[edge_table$score >= score_threshold, ]
+  if (nrow(edge_table) == 0) {
+    base::stop(paste0("No edges found above current threshold (", score_threshold, ")"))
+  }
   edge_table$from = unname(desc_id_dict[as.character(edge_table$from)])
   edge_table$to = unname(desc_id_dict[as.character(edge_table$to)])
   edge_table$title = paste0(similarity_score, ' score: ', format_values(edge_table$score))

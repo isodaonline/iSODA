@@ -5,106 +5,7 @@ base::source('./iSODA/R/class_snf_exp.R')
 
 #--------------------------------------------- DEBUG TRANSCRIPTOMICS 241010 ----
 
-if (F) {
-  name = 'trns_1'
-  type = "Transcriptomics"
-  meta_file = './test_data/241010_Yassene/trns_meta.csv'
-  data_file = './test_data/241010_Yassene/trns_data.csv'
-  feat_file = NULL
-  meta_file_format = "Wide"
-  data_file_format = "Wide"
-  feat_file_format = "Long"
-  param_file = './R/params/params_gene_based_omics.R'
-  id_col_meta = 'ID'
-  id_col_data = 'ID'
-  id_col_feat = 'ID'
-  type_column = 'genotype'
-  group_column = 'genotype'
-  batch_column = 'Batch'
-  blank_pattern = "blank"
-  qc_pattern = "quality"
-  pool_pattern = "pool"
-  excluded_samples = NULL
-  drop_blanks = T
-  drop_qcs = T
-  drop_pools = T
-  blank_multiplier = 2
-  sample_threshold = 0.8
-  group_threshold = 0.8
-  excluded_features = NULL
-  imputation_method = "None"
-  batch_effect_correction = "None"
-  operation_order = c("Imputation", "Batch correction", "Filtering")
-  norm_col = "None"
-  verbose = T
-} # TRNS
-if (F) {
-  name = 'trns_1'
-  type = "Transcriptomics"
-  meta_file = './test_data/230927_Cellminer_data/cellminer_data/t_sample_annotations.tsv'
-  data_file = './test_data/230927_Cellminer_data/cellminer_data/t_rna_data.tsv'
-  feat_file = NULL
-  meta_file_format = "Long"
-  data_file_format = "Long"
-  feat_file_format = "Wide"
-  param_file = './R/params/params_gene_based_omics.R'
-  id_col_meta = 'ID'
-  id_col_data = 'ID'
-  id_col_feat = 'ID'
-  type_column = 'Sample_type'
-  group_column = 'Group_type'
-  batch_column = 'Batch'
-  blank_pattern = "blank"
-  qc_pattern = "quality"
-  pool_pattern = "pool"
-  excluded_samples = NULL
-  drop_blanks = T
-  drop_qcs = T
-  drop_pools = T
-  blank_multiplier = 2
-  sample_threshold = 0.8
-  group_threshold = 0.8
-  excluded_features = NULL
-  imputation_method = "None"
-  batch_effect_correction = "None"
-  operation_order = c("Imputation", "Batch correction", "Filtering")
-  norm_col = "None"
-  verbose = T
-} # TRNS
-if (F) {
-  name = 'trns_1'
-  type = "Transcriptomics"
-  meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
-  data_file = './test_data/230927_Cellminer_data/cellminer_data/rna_data.csv'
-  feat_file = NULL
-  meta_file_format = "Wide"
-  data_file_format = "Wide"
-  feat_file_format = "Long"
-  param_file = './R/params/params_gene_based_omics.R'
-  id_col_meta = 'ID'
-  id_col_data = 'ID'
-  id_col_feat = 'ID'
-  type_column = 'Sample_type'
-  group_column = 'Group_type'
-  batch_column = 'Batch'
-  blank_pattern = "blank"
-  qc_pattern = "quality"
-  pool_pattern = "pool"
-  excluded_samples = NULL
-  drop_blanks = T
-  drop_qcs = T
-  drop_pools = T
-  blank_multiplier = 2
-  sample_threshold = 0.8
-  group_threshold = 0.8
-  excluded_features = NULL
-  imputation_method = "None"
-  batch_effect_correction = "None"
-  operation_order = c("Imputation", "Batch correction", "Filtering")
-  norm_col = "None"
-  verbose = T
-} # TRNS
-if (F) {
+if (T) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/230828_multiomics_1/t_lipidomics_metadata.csv'
@@ -237,7 +138,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
-if (T) {
+if (F) {
   name = 'prot_1'
   type = "Proteomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
@@ -270,6 +171,105 @@ if (T) {
   norm_col = "None"
   verbose = T
 } # PROT
+if (F) {
+  name = 'trns_1'
+  type = "Transcriptomics"
+  meta_file = './test_data/241010_Yassene/trns_meta.csv'
+  data_file = './test_data/241010_Yassene/trns_data.csv'
+  feat_file = NULL
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  feat_file_format = "Long"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'ID'
+  type_column = 'genotype'
+  group_column = 'genotype'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+} # TRNS
+if (F) {
+  name = 'trns_1'
+  type = "Transcriptomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/t_sample_annotations.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/t_rna_data.tsv'
+  feat_file = NULL
+  meta_file_format = "Long"
+  data_file_format = "Long"
+  feat_file_format = "Wide"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+} # TRNS
+if (F) {
+  name = 'trns_1'
+  type = "Transcriptomics"
+  meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations.tsv'
+  data_file = './test_data/230927_Cellminer_data/cellminer_data/rna_data.csv'
+  feat_file = NULL
+  meta_file_format = "Wide"
+  data_file_format = "Wide"
+  feat_file_format = "Long"
+  param_file = './R/params/params_gene_based_omics.R'
+  id_col_meta = 'ID'
+  id_col_data = 'ID'
+  id_col_feat = 'ID'
+  type_column = 'Sample_type'
+  group_column = 'Group_type'
+  batch_column = 'Batch'
+  blank_pattern = "blank"
+  qc_pattern = "quality"
+  pool_pattern = "pool"
+  excluded_samples = NULL
+  drop_blanks = T
+  drop_qcs = T
+  drop_pools = T
+  blank_multiplier = 2
+  sample_threshold = 0.8
+  group_threshold = 0.8
+  excluded_features = NULL
+  imputation_method = "None"
+  batch_effect_correction = "None"
+  operation_order = c("Imputation", "Batch correction", "Filtering")
+  norm_col = "None"
+  verbose = T
+} # TRNS
 if (F) {
   name = 'geno_1'
   type = "Genomics"
@@ -339,14 +339,13 @@ self = initialize_omics(
   norm_col = norm_col
 )
 
-ncol(self$tables$raw_data)
-nrow(self$tables$raw_feat)
-raw_feat = self$tables$raw_feat
+self$tables$raw_meta$Group_type
+
 
 self$get_ea_feature_table(data_table = self$tables$total_norm_data,
-                             group_col = "LTP_Family",
-                             group_1 = "OSBP",
-                             group_2 = "Non_target",
+                             group_col = "Group_type",
+                             group_1 = "ApoE3/3",
+                             group_2 = "null",
                              fc_function = "mean",
                              statistical_test = "t-Test",
                              adjustment_method = "BH")
@@ -359,6 +358,42 @@ self$get_ea_object(custom_col = "Double bonds (sum)",
                    terms_p_value_cutoff = 0.05,
                    terms_pAdjustMethod = "BH",
                    seed = 1)
+self$plot_ea_dot_plot()
+self$plots$ea_dot_plot
+
+self$plot_ea_cnet_plot()
+self$plots$ea_cnet_plot
+
+
+self$plot_ea_emap_plot()
+
+x = self$tables$ea_object
+show_category = self$params$ea_emap_plot$show_category
+color = self$params$ea_emap_plot$color
+size = self$params$ea_emap_plot$size
+displayed_labels = self$params$ea_emap_plot$displayed_labels
+mode = self$params$ea_emap_plot$mode
+score_threshold = self$params$ea_emap_plot$score_threshold
+similarity_score = self$params$ea_emap_plot$similarity_score
+node_color_palette = self$params$ea_emap_plot$node_color_palette
+reverse_node_palette = self$params$ea_emap_plot$reverse_node_palette
+edge_width = self$params$ea_emap_plot$edge_width
+edge_color = self$params$ea_emap_plot$edge_color
+edge_color_palette = self$params$ea_emap_plot$edge_color_palette
+reverse_edge_palette = self$params$ea_emap_plot$reverse_edge_palette
+edge_magnifier = self$params$ea_emap_plot$edge_magnifier
+node_magnifier = self$params$ea_emap_plot$node_magnifier
+label_font_size = self$params$ea_emap_plot$label_font_size
+static_network = self$params$ea_emap_plot$static_network
+solver = self$params$ea_emap_plot$solver
+gravitationalConstant = self$params$ea_emap_plot$gravitationalConstant
+nodeDistance = self$params$ea_emap_plot$nodeDistance
+centralGravity = self$params$ea_emap_plot$centralGravity
+springLength = self$params$ea_emap_plot$springLength
+springConstant = self$params$ea_emap_plot$springConstant
+width = NULL
+height = NULL
+
 
 
 self$get_ora_feature_table(data_table = self$tables$total_norm_data,
