@@ -360,32 +360,25 @@ self$get_ea_object(custom_col = "Lipid class",
                    terms_pAdjustMethod = "BH",
                    seed = 1)
 
-truffles = self$tables$ea_object@result
-self$tables$ea_object@result$core_enrichment
 
 
-self$plot_ea_cnet_plot(static_network = F)
-self$plots$ea_cnet_plot
 
-
-x = self$tables$ea_object
-ea_feature_table = self$tables$ea_feature_table
-show_category = self$params$ea_cnet_plot$show_category
-displayed_labels = self$params$ea_cnet_plot$displayed_labels
-set_node_annotations = self$params$ea_cnet_plot$set_node_annotations
-feature_node_annotations = self$params$ea_cnet_plot$feature_node_annotations
-set_node_color_palette = self$params$ea_cnet_plot$set_node_color_palette
-reverse_set_palette = self$params$ea_cnet_plot$reverse_set_palette
-feature_node_color_palette = self$params$ea_cnet_plot$feature_node_color_palette
-reverse_feature_palette = self$params$ea_cnet_plot$reverse_feature_palette
-label_font_size = self$params$ea_cnet_plot$label_font_size
-static_network = self$params$ea_cnet_plot$static_network
-solver = self$params$ea_cnet_plot$solver
-gravitationalConstant = self$params$ea_cnet_plot$gravitationalConstant
-nodeDistance = self$params$ea_cnet_plot$nodeDistance
-centralGravity = self$params$ea_cnet_plot$centralGravity
-springLength = self$params$ea_cnet_plot$springLength
-springConstant = self$params$ea_cnet_plot$springConstant
+object = self$tables$ea_object
+show_category = self$params$ea_ridge_plot$show_category
+fill = self$params$ea_ridge_plot$fill
+core_enrichment = self$params$ea_ridge_plot$core_enrichment
+color_palette = self$params$ea_ridge_plot$color_palette
+reverse_palette = self$params$ea_ridge_plot$reverse_palette
+displayed_label = self$params$ea_ridge_plot$displayed_label
+orderBy = self$params$ea_ridge_plot$orderBy
+decreasing = self$params$ea_ridge_plot$decreasing
+title_font_size = self$params$ea_ridge_plot$title_font_size
+yaxis_word_split = self$params$ea_ridge_plot$yaxis_word_split
+y_label_font_size = self$params$ea_ridge_plot$y_label_font_size
+y_tick_font_size = self$params$ea_ridge_plot$y_tick_font_size
+x_label_font_size = self$params$ea_ridge_plot$x_label_font_size
+x_tick_font_size = self$params$ea_ridge_plot$x_tick_font_size
+legend_font_size = self$params$ea_ridge_plot$legend_font_size
 width = NULL
 height = NULL
 

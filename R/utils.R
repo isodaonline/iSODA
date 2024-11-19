@@ -3150,7 +3150,7 @@ plot_fa_ridge_plot = function(object,
   # Get feature values
   gs2val = list()
   for (gs in rownames(data_table)) {
-    feature_list = stringr::str_split(data_table[gs, queried_data], "/")[[1]]
+    feature_list = stringr::str_split(data_table[gs, queried_data], "/(?=[a-zA-Z])")[[1]]
     out_list = NULL
     for (feature in feature_list) {
       val = object@geneList[feature]
