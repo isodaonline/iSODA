@@ -1419,6 +1419,64 @@ render_feature_filtering = function(ns, r6) {
             placement = "top")
           
         )
+      ),
+      #### Sparse features start ----
+      shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+      shiny::fluidRow(
+        shiny::h4('Sparse features')
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::selectizeInput(
+            inputId = ns('sparse_col_selection'),
+            label = "Feature column",
+            choices = colnames(r6$tables$raw_feat),
+            selected = colnames(r6$tables$raw_feat)[1],
+            width = "100%"
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::selectInput(
+            inputId = ns('sparse_delimiter'),
+            label = "Feature column",
+            choices = c('|'),
+            selected = '|',
+            width = "100%"
+          )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 12,
+          shiny::actionButton(
+            inputId = ns('add_sparse_single'),
+            label = "Add sparse table",
+            width = "100%"
+          )
+        )
+      ),
+      shiny::fluidRow(
+        shiny::br()
+      ),
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::actionButton(
+            inputId = ns('add_sparse_all'),
+            label = "Parse all columns",
+            width = "100%"
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::actionButton(
+            inputId = ns('reset_sparse_tables'),
+            label = "Reset tables",
+            width = "100%"
+          )
+        )
       )
       #### end ----
     )
@@ -1534,6 +1592,45 @@ events_feature_filtering = function(input, output, session, id, r6) {
     table_preview_trigger_feat(sample(1:100, 1))
     
   })
+  
+  # Add single sparse table
+  session$userData[[id]]$add_sparse_single = shiny::observeEvent(input$add_sparse_single, {
+    shinyjs::disable("add_sparse_single")
+    base::withCallingHandlers({
+      print_tm(m = r6$name, in_print = paste0("Generating sparse table from ", input$sparse_col_selection))
+      r6$add_sparse_feat(sep = input$sparse_delimiter,
+                         column_name = input$sparse_col_selection)
+      print_tm(m = r6$name, in_print = "Sparse table successfully generated ")
+    },warning = function(w){
+      print_tmw("Test", paste0("Warning: " , w))
+    },error=function(e){
+      print_tme("Test", paste0("Error:" , e))
+    })
+    shinyjs::enable("add_sparse_single")
+  })
+  
+  
+  # Add all sparse tables 
+  session$userData[[id]]$add_sparse_all = shiny::observeEvent(input$add_sparse_all, {
+    shinyjs::disable("add_sparse_all")
+    base::withCallingHandlers({
+      r6$add_all_sparse_feat(sep = input$sparse_delimiter)
+      print(names(r6$tables$sparse_feat))
+      print_tm(m = r6$name, in_print = paste0("Sparse tables generated for columns", paste(names(r6$tables$sparse_feat), collapse = ", ")))
+    },warning = function(w){
+      print_tmw("Test", paste0("Warning: " , w))
+    },error=function(e){
+      print_tme("Test", paste0("Error:" , e))
+    })
+    shinyjs::enable("add_sparse_all")
+  })
+  
+  # Reset all sparse tables 
+  session$userData[[id]]$reset_sparse_tables = shiny::observeEvent(input$reset_sparse_tables, {
+    print_tm(m = r6$name, in_print = "Clearing sparse tables")
+    r6$reset_sparse_feat()
+  })
+  
   
   # Download the features table
   output$feat_download = shiny::downloadHandler(

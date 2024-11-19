@@ -705,6 +705,7 @@ Omics_exp = R6::R6Class(
       imp_feat = NULL,
       indexed_feat = NULL,
       raw_feat = NULL,
+      sparse_feat = NULL,
 
       # Feature list for the sparse tables
       feature_list = NULL,
@@ -2138,48 +2139,58 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    update_feature_table = function(feature_table = self$tables$raw_feat,
-                                    sep = "|") {
-      if (sep == "|") {
-        regex_sep = "\\|"
-      } else {
-        regex_sep = sep
+    add_sparse_feat = function(feature_table = self$tables$raw_feat,
+                               sep = "|",
+                               column_name) {
+      
+      if (is.null(feature_table)) {
+        base::stop('Set raw_feat before adding a sparse table')
       }
-      ext_names = names(self$tables$external_feature_tables)
-      for (name in ext_names) {
-        feature_table = augment_feature_table(feature_table = feature_table,
-                                              external_table_name = name,
-                                              external_feature_table = self$tables$external_feature_tables[[name]])
+      
+      column_values = feature_table[,column_name]
+      column_values[is.na(column_values)] = ""
+      
+      if (!any(stringr::str_detect(column_values, sep))) {
+        base::stop(paste0("Separator ", sep, " not found in column ", column_name))
       }
-
-      multi_value_annotations = sapply(feature_table, function(column) sum(stringr::str_count(column, regex_sep), na.rm = T))
-      multi_value_annotations[is.na(multi_value_annotations)] = 0
-      feature_table[feature_table == ""] = NA
-      non_missing_counts = sapply(feature_table, function(column) sum(!is.na(column)))
-      multi_value_annotations = names(multi_value_annotations)[multi_value_annotations > non_missing_counts]
-
-      out_list = vector('list', length(multi_value_annotations))
-      names(out_list) = multi_value_annotations
-
-      for (col in multi_value_annotations) {
-        feature_list = vector("list", nrow(feature_table))
-        for (i in 1:nrow(feature_table)) {
-          if (is.na(feature_table[i,col])) {
-            next
-          } else {
-            feature_list[[i]] = strsplit(as.character(feature_table[i,col]), sep, fixed = TRUE)[[1]]
-          }
+      
+      column_values[column_values == ""] = NA
+      names(column_values) = rownames(feature_table)
+      
+      column_terms = vector("list", length(column_values))
+      for (i in 1:length(column_values)) {
+        if (is.na(column_values[i])) {
+          next
+        } else {
+          column_terms[[i]] = strsplit(as.character(column_values[i]), sep, fixed = TRUE)[[1]]
         }
-        feature_list = sort(unique(unlist(feature_list)))
-        sparse_matrix = get_sparse_matrix(features_go_table = feature_table[col],
-                                          all_go_terms = feature_list,
-                                          sep = sep)
-        out_list[[col]]$feature_list = feature_list
-        out_list[[col]]$sparse_matrix = sparse_matrix
       }
-
-      self$tables$feature_table = feature_table
-      self$tables$feature_list = out_list
+      terms_list = sort(unique(unlist(column_terms)))
+      sparse_matrix = get_sparse_matrix(column_values = column_values,
+                                        column_terms = column_terms,
+                                        terms_list = terms_list)
+      
+      self$tables$sparse_feat[[column_name]]$terms_list = terms_list
+      self$tables$sparse_feat[[column_name]]$sparse_matrix = sparse_matrix
+    },
+    
+    add_all_sparse_feat = function(feature_table = self$tables$raw_feat,
+                                   sep = "|") {
+      
+      for (column_name in colnames(feature_table)){
+        if (any(stringr::str_detect(stats::na.exclude(feature_table[,column_name]), sep))) {
+          self$add_sparse_feat(
+            feature_table = feature_table,
+            sep = sep,
+            column_name = column_name
+          )
+        }
+      }
+      
+    },
+    
+    reset_sparse_feat = function() {
+      self$tables$sparse_feat = NULL
     },
 
     # Class normalisation
@@ -2241,7 +2252,6 @@ Omics_exp = R6::R6Class(
 
     derive_data_tables = function(params_list = NULL) {
       # Derive tables
-      # self$update_feature_table()
       self$normalise_total()
       self$normalise_z_score()
       self$normalise_total_z_score()

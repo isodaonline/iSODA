@@ -2671,25 +2671,14 @@ get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
 
 
 
-get_sparse_matrix = function(features_go_table, all_go_terms, sep = '|') {
-  go_list = vector("list", nrow(features_go_table))
-  # Loop through each row and split the 'go_terms' column by '|'
-  for (i in 1:nrow(features_go_table)) {
-    if (is.na(features_go_table[i,1])) {
-      go_list[[i]] = NA
-    } else {
-      go_list[[i]] = strsplit(as.character(features_go_table[i,1]), sep, fixed = TRUE)[[1]]
-    }
-  }
-
-
+get_sparse_matrix = function(column_values, column_terms, terms_list) {
   # Initialize a list to store the one-hot encoded vectors
-  one_hot_list = vector("list", nrow(features_go_table))
+  one_hot_list = vector("list", length(column_values))
 
   # Loop through each gene and create a one-hot encoded vector
-  for (i in seq_along(rownames(features_go_table))) {
+  for (i in seq_along(names(column_values))) {
     # Create a boolean vector for the presence of each GO term
-    one_hot_vector = all_go_terms %in% go_list[[i]]
+    one_hot_vector = terms_list %in% column_terms[[i]]
     # Add the vector to the list
     one_hot_list[[i]] = one_hot_vector
   }
@@ -2701,8 +2690,8 @@ get_sparse_matrix = function(features_go_table, all_go_terms, sep = '|') {
   sparse_matrix = Matrix::Matrix(sparse_matrix, sparse = TRUE)
 
   # Add row and column names to the sparse matrix
-  rownames(sparse_matrix) = rownames(features_go_table)
-  colnames(sparse_matrix) = all_go_terms
+  rownames(sparse_matrix) = names(column_values)
+  colnames(sparse_matrix) = terms_list
   return(sparse_matrix)
 }
 

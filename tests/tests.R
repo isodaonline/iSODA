@@ -5,7 +5,7 @@ base::source('./iSODA/R/class_snf_exp.R')
 
 #--------------------------------------------- DEBUG TRANSCRIPTOMICS 241010 ----
 
-if (T) {
+if (F) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/230828_multiomics_1/t_lipidomics_metadata.csv'
@@ -138,7 +138,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
-if (F) {
+if (T) {
   name = 'prot_1'
   type = "Proteomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
@@ -339,7 +339,19 @@ self = initialize_omics(
   norm_col = norm_col
 )
 
-self$tables$raw_meta$Group_type
+# Sparse table stuff
+
+
+self$add_sparse_feat(feature_table = self$tables$raw_feat,
+                     sep = "\\|",
+                     column_name = "Gene Ontology (GO)")
+
+self$add_all_sparse_feat(sep = "|")
+
+
+
+
+
 
 
 self$get_ea_feature_table(data_table = self$tables$total_norm_data,
