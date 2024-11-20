@@ -32,7 +32,7 @@ if (T) {
   sample_threshold = 0.8
   group_threshold = 0.8
   excluded_features = NULL
-  imputation_method = "None"
+  imputation_method = "median"
   batch_effect_correction = "None"
   operation_order = c("Imputation", "Batch correction", "Filtering")
   norm_col = "None"
@@ -387,25 +387,15 @@ seed = 1
 
 
 
-object = self$tables$ea_object
-show_category = self$params$ea_ridge_plot$show_category
-fill = self$params$ea_ridge_plot$fill
-core_enrichment = self$params$ea_ridge_plot$core_enrichment
-color_palette = self$params$ea_ridge_plot$color_palette
-reverse_palette = self$params$ea_ridge_plot$reverse_palette
-displayed_label = self$params$ea_ridge_plot$displayed_label
-orderBy = self$params$ea_ridge_plot$orderBy
-decreasing = self$params$ea_ridge_plot$decreasing
-title_font_size = self$params$ea_ridge_plot$title_font_size
-yaxis_word_split = self$params$ea_ridge_plot$yaxis_word_split
-y_label_font_size = self$params$ea_ridge_plot$y_label_font_size
-y_tick_font_size = self$params$ea_ridge_plot$y_tick_font_size
-x_label_font_size = self$params$ea_ridge_plot$x_label_font_size
-x_tick_font_size = self$params$ea_ridge_plot$x_tick_font_size
-legend_font_size = self$params$ea_ridge_plot$legend_font_size
-width = NULL
-height = NULL
-
+indexed_data = self$tables$indexed_data
+indexed_meta = self$tables$indexed_meta
+excluded_samples = self$indices$excluded_samples
+excluded_features = self$indices$excluded_features
+index_blanks = self$indices$index_blanks
+index_qcs = self$indices$index_qcs
+index_pools = self$indices$index_pools
+batch_column = self$indices$batch_column
+group_column = self$indices$group_column
 
 
 

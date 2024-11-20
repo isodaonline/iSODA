@@ -1157,7 +1157,7 @@ events_measurement_filtering = function(input, output, session, id, r6) {
       # Feature annotation widgets
       input$drop_cols,
       input$keep_cols,
-      input$reset_data_table),
+      input$reset_feat_table),
     {
       shiny::req(input$measurement_data_preview_table)
       
@@ -1412,10 +1412,10 @@ render_feature_filtering = function(ns, r6) {
           width = 3,
           bsplus::bs_embed_tooltip(
             shiny::actionButton(
-              inputId = ns("reset_data_table"),
+              inputId = ns("reset_feat_table"),
               label =  "Reset",
               width = "100%"),
-            title = tooltip_data$single_omics$reset_data_table,
+            title = tooltip_data$single_omics$reset_feat_table,
             placement = "top")
           
         )
@@ -1558,8 +1558,7 @@ events_feature_filtering = function(input, output, session, id, r6) {
   
   # Create the raw feat
   session$userData[[id]]$create_raw_feat = shiny::observeEvent(c(
-    input$drop_cols,
-    input$keep_cols
+    features_exclude()
   ),{
     if (is.null(features_exclude())) {return()}
     
@@ -1571,8 +1570,6 @@ events_feature_filtering = function(input, output, session, id, r6) {
     r6$set_raw_feat()
     r6$set_raw_data()
     r6$derive_data_tables()
-    
-    
     
     # Set manual sample selection to null
     shiny::updateSelectizeInput(
@@ -1591,6 +1588,19 @@ events_feature_filtering = function(input, output, session, id, r6) {
     # Trigger the preview table update
     table_preview_trigger_feat(sample(1:100, 1))
     
+    # Reset the reactive
+    features_exclude(NULL)
+    
+  })
+  
+  # Reset feature table
+  session$userData[[id]]$reset_feat_table = shiny::observeEvent(input$reset_feat_table, {
+    print_tm(m = r6$name, in_print = "Resetting feature table")
+    r6$reset_raw_feat()
+    r6$reset_raw_data()
+    
+    # Trigger the preview table update
+    table_preview_trigger_feat(sample(1:100, 1))
   })
   
   # Add single sparse table

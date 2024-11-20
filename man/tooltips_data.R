@@ -57,7 +57,7 @@ tooltip_data = list(
     drop_cols = "Feature filtering - drop selection",
     keep_cols = "Feature filtering - keep selection",
     clear_data_filters = "Feature filtering - clear selection",
-    reset_data_table = "Feature filtering - reset sample table",
+    reset_feat_table = "Feature filtering - reset feature table",
     
     # Features
     file_feat = "Browse for the feature annotations file (recommended: tsv, csv, csv2 or excel first sheet)",
