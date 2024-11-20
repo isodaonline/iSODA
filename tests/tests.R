@@ -5,7 +5,7 @@ base::source('./iSODA/R/class_snf_exp.R')
 
 #--------------------------------------------- DEBUG TRANSCRIPTOMICS 241010 ----
 
-if (F) {
+if (T) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/230828_multiomics_1/t_lipidomics_metadata.csv'
@@ -138,7 +138,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
-if (T) {
+if (F) {
   name = 'prot_1'
   type = "Proteomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'

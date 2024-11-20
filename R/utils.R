@@ -1229,6 +1229,12 @@ get_feature_metadata = function(feature_table) {
   new_feature_table[,6] = new_feature_table[,2] + new_feature_table[,4]
   new_feature_table[,7] = new_feature_table[,3] + new_feature_table[,5]
   
+  idx_tgs = which(new_feature_table[,1] == "TG")
+  if (length(idx_tgs) > 0) {
+    new_feature_table[idx_tgs,6] = new_feature_table[idx_tgs,2]
+    new_feature_table[idx_tgs,7] = new_feature_table[idx_tgs,3]
+  }
+  
   colnames(new_feature_table) = c(
     'Lipid class',
     'Carbon count (chain 1)',
