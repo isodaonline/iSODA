@@ -846,13 +846,19 @@ volcano_plot_server = function(r6, output, session) {
         selected = r6$params$volcano_plot$feature_metadata,
         multiple = FALSE
       ),
-      shiny::selectizeInput(
-        inputId = ns('volcano_plot_annotation_terms'),
-        label = "Feature pipe-separated values",
-        choices = NULL,
-        selected = NULL,
-        multiple = TRUE
+      
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns('volcano_plot_annotation_terms'),
+          label = "Feature pipe-separated values",
+          choices = NULL,
+          selected = NULL,
+          multiple = TRUE
+        ),
+        title = tooltip_data$single_omics$volcano_plot_sparse_feat,
+        placement = "top"
       ),
+      
       shinyWidgets::prettySwitch(
         inputId = ns('volcano_plot_keep_significant'),
         label = 'Keep only significant data',
@@ -1275,13 +1281,16 @@ heatmap_server = function(r6, output, session) {
         choices = c('None', names(r6$tables$sparse_feat)),
         selected = r6$params$heatmap$multival_cols
       ),
-
-      shiny::selectizeInput(
-        inputId = ns("heatmap_multival_terms"),
-        label = "Feature terms",
-        multiple = T,
-        choices = NULL,
-        selected = r6$params$heatmap$map_feature_terms
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns("heatmap_multival_terms"),
+          label = "Feature terms",
+          multiple = T,
+          choices = NULL,
+          selected = r6$params$heatmap$map_feature_terms
+        ),
+        title = tooltip_data$single_omics$heatmap_sparse_feat,
+        placement = "top"
       ),
       ## Output settings
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
@@ -2125,15 +2134,17 @@ feature_correlation_server = function(r6, output, session) {
         choices = c('None', names(r6$tables$sparse_feat)),
         selected = r6$params$feature_correlation$multival_cols
       ),
-
-      shiny::selectizeInput(
-        inputId = ns("feature_correlation_multival_terms"),
-        label = "Feature terms",
-        multiple = T,
-        choices = NULL,
-        selected = r6$params$feature_correlation$map_feature_terms
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns("feature_correlation_multival_terms"),
+          label = "Feature terms",
+          multiple = T,
+          choices = NULL,
+          selected = r6$params$feature_correlation$map_feature_terms
+        ),
+        title = tooltip_data$single_omics$feature_correlation_sparse_feat,
+        placement = "top"
       ),
-
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::h3("Filter features"),
       shiny::sliderInput(inputId = ns("feature_correlation_roh_threshold"),
@@ -2465,12 +2476,16 @@ pca_server = function(r6, output, session) {
         choices = c('None', colnames(r6$tables$raw_feat)),
         selected = r6$params$pca$feature_groups_col
       ),
-      shiny::selectizeInput(
-        inputId = ns('pca_plot_annotation_terms'),
-        label = "Feature annotations",
-        choices = NULL,
-        selected = NULL,
-        multiple = TRUE
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns('pca_plot_annotation_terms'),
+          label = "Feature annotations",
+          choices = NULL,
+          selected = NULL,
+          multiple = TRUE
+        ),
+        title = tooltip_data$single_omics$pca_sparse_feat,
+        placement = "top"
       ),
       shiny::selectInput(
         inputId = ns('pca_displayed_plots'),

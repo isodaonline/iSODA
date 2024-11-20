@@ -95,7 +95,13 @@ tooltip_data = list(
     or_qval_cutoff = "q-value threshold for the feature sets via the over-representation analysis test",
     ora_seed = "Seed to ensure reproductibility during over-representation analysis",
     download_ora_feature_table = "Download the features used as input for the over-representation analysis along with the associated statistical values",
-    download_ora_table = "Download the over-representation analysis results, i.e. the feature sets and the associated values"
+    download_ora_table = "Download the over-representation analysis results, i.e. the feature sets and the associated values",
+    
+    # Visualization
+    volcano_plot_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
+    heatmap_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
+    feature_correlation_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
+    pca_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them."
   ),
   mofa = list(
     data_scale_views = "If views have different ranges/variances, it is good practice to scale each view to unit variance.",

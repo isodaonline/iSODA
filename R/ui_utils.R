@@ -1796,7 +1796,7 @@ events_visualization_tab = function(input, output, session, id, r6, module_contr
   })
   
   session$userData[[id]]$clear_plots = shiny::observeEvent(input$clear_plots, {
-    print_tm(r6$id, "Clearing plots")
+    print_tm(r6$name, "Clearing plots")
     shinyWidgets::updateCheckboxGroupButtons(
       session = session,
       inputId = "showPlots",
