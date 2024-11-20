@@ -2139,12 +2139,12 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    add_sparse_feat = function(feature_table = self$tables$raw_feat,
+    add_sparse_feat = function(feature_table = self$tables$indexed_feat,
                                sep = "|",
                                column_name) {
       
       if (is.null(feature_table)) {
-        base::stop('Set raw_feat before adding a sparse table')
+        base::stop('Set indexed_feat before adding a sparse table')
       }
       
       column_values = feature_table[,column_name]
@@ -2174,7 +2174,7 @@ Omics_exp = R6::R6Class(
       self$tables$sparse_feat[[column_name]]$sparse_matrix = sparse_matrix
     },
     
-    add_all_sparse_feat = function(feature_table = self$tables$raw_feat,
+    add_all_sparse_feat = function(feature_table = self$tables$indexed_feat,
                                    sep = "|") {
       
       for (column_name in colnames(feature_table)){
