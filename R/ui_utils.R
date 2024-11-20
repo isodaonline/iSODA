@@ -1220,9 +1220,9 @@ events_measurement_filtering = function(input, output, session, id, r6) {
           table_preview_trigger_data(sample(1:100, 1))
           
         },warning = function(w){
-          print_tmw("Test", paste0("Warning: " , w))
+          print_tmw(r6$name, paste0("Warning: " , w))
         },error=function(e){
-          print_tme("Test", paste0("Error:" , e))
+          print_tme(r6$name, paste0("Error:" , e))
         })
       })
   
@@ -1602,9 +1602,10 @@ events_feature_filtering = function(input, output, session, id, r6) {
                          column_name = input$sparse_col_selection)
       print_tm(m = r6$name, in_print = "Sparse table successfully generated ")
     },warning = function(w){
-      print_tmw("Test", paste0("Warning: " , w))
+      print_tmw(r6$name, paste0("Warning: " , w))
     },error=function(e){
-      print_tme("Test", paste0("Error:" , e))
+      shinyjs::enable("add_sparse_single")
+      print_tme(r6$name, paste0("Error:" , e))
     })
     shinyjs::enable("add_sparse_single")
   })
@@ -1615,12 +1616,12 @@ events_feature_filtering = function(input, output, session, id, r6) {
     shinyjs::disable("add_sparse_all")
     base::withCallingHandlers({
       r6$add_all_sparse_feat(sep = input$sparse_delimiter)
-      print(names(r6$tables$sparse_feat))
       print_tm(m = r6$name, in_print = paste0("Sparse tables generated for columns", paste(names(r6$tables$sparse_feat), collapse = ", ")))
     },warning = function(w){
-      print_tmw("Test", paste0("Warning: " , w))
+      print_tmw(r6$name, paste0("Warning: " , w))
     },error=function(e){
-      print_tme("Test", paste0("Error:" , e))
+      shinyjs::enable("add_sparse_all")
+      print_tme(r6$name, paste0("Error:" , e))
     })
     shinyjs::enable("add_sparse_all")
   })
@@ -2775,7 +2776,7 @@ events_over_representation_tab = function(input, output, session, id, r6, module
   
   
   session$userData[[id]]$clear_plots_or = shiny::observeEvent(input$clear_plots_or, {
-    print_tm(r6$type, "Clearing plots")
+    print_tm(r6$name, "Clearing plots")
     shinyWidgets::updateCheckboxGroupButtons(
       session = session,
       inputId = "show_plots_or",

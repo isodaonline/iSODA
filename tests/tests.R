@@ -343,7 +343,7 @@ self = initialize_omics(
 
 
 self$add_sparse_feat(feature_table = self$tables$raw_feat,
-                     sep = "\\|",
+                     sep = "|",
                      column_name = "Gene Ontology (GO)")
 
 self$add_all_sparse_feat(sep = "|")
@@ -353,17 +353,16 @@ self$add_all_sparse_feat(sep = "|")
 
 
 
-
+# Test EA
 self$get_ea_feature_table(data_table = self$tables$total_norm_data,
-                          group_col = "Group_type",
-                          group_1 = "ApoE3/3",
-                          group_2 = "null",
+                          group_col = self$indices$group_column,
+                          group_1 = unique(self$tables$raw_meta[,self$indices$group_column])[1],
+                          group_2 = unique(self$tables$raw_meta[,self$indices$group_column])[2],
                           fc_function = "mean",
                           statistical_test = "t-Test",
                           adjustment_method = "BH")
-
-
-self$get_ea_object(custom_col = "Lipid class",
+colnames(self$tables$raw_feat)
+self$get_ea_object(custom_col = "Gene Ontology (GO)",
                    selected_features = rownames(self$tables$raw_feat),
                    ont = NULL,
                    minGSSize = 3,
@@ -372,6 +371,19 @@ self$get_ea_object(custom_col = "Lipid class",
                    terms_pAdjustMethod = "BH",
                    seed = 1)
 
+ea_feature_table = self$tables$ea_feature_table
+feature_table = self$tables$raw_feat
+keyType = self$indices$feature_id_type
+custom_col = "Gene Ontology (GO)"
+selected_features = self$params$ea_process$selected_features
+ont = NULL
+minGSSize = 3
+maxGSSize = 800
+terms_p_value_cutoff = 0.05
+terms_pAdjustMethod = "BH"
+verbose = self$params$ea_process$verbose
+OrgDb = self$params$ea_process$OrgDb
+seed = 1
 
 
 

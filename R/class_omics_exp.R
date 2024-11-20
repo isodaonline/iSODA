@@ -2150,7 +2150,7 @@ Omics_exp = R6::R6Class(
       column_values = feature_table[,column_name]
       column_values[is.na(column_values)] = ""
       
-      if (!any(stringr::str_detect(column_values, sep))) {
+      if (!any(stringr::str_detect(column_values, fixed(sep)))) {
         base::stop(paste0("Separator ", sep, " not found in column ", column_name))
       }
       
@@ -2162,15 +2162,18 @@ Omics_exp = R6::R6Class(
         if (is.na(column_values[i])) {
           next
         } else {
-          column_terms[[i]] = strsplit(as.character(column_values[i]), sep, fixed = TRUE)[[1]]
+          column_terms[[i]] = base::strsplit(as.character(column_values[i]), sep, fixed = TRUE)[[1]]
         }
       }
       terms_list = sort(unique(unlist(column_terms)))
       sparse_matrix = get_sparse_matrix(column_values = column_values,
                                         column_terms = column_terms,
                                         terms_list = terms_list)
+      terms_table = get_terms_table(column_values = column_values,
+                                    sep = sep)
       
       self$tables$sparse_feat[[column_name]]$terms_list = terms_list
+      self$tables$sparse_feat[[column_name]]$terms_table = terms_table
       self$tables$sparse_feat[[column_name]]$sparse_matrix = sparse_matrix
     },
     
@@ -2178,7 +2181,7 @@ Omics_exp = R6::R6Class(
                                    sep = "|") {
       
       for (column_name in colnames(feature_table)){
-        if (any(stringr::str_detect(stats::na.exclude(feature_table[,column_name]), sep))) {
+        if (any(stringr::str_detect(stats::na.exclude(feature_table[,column_name]), fixed(sep)))) {
           self$add_sparse_feat(
             feature_table = feature_table,
             sep = sep,
@@ -2678,6 +2681,7 @@ Omics_exp = R6::R6Class(
     # Get EA object
     get_ea_object = function(ea_feature_table = self$tables$ea_feature_table,
                              feature_table = self$tables$raw_feat,
+                             sparse_feat = self$tables$sparse_feat,
                              keyType = self$indices$feature_id_type,
                              custom_col = self$params$ea_process$custom_col,
                              selected_features = self$params$ea_process$selected_features,
@@ -2689,9 +2693,23 @@ Omics_exp = R6::R6Class(
                              verbose = self$params$ea_process$verbose,
                              OrgDb = self$params$ea_process$OrgDb,
                              seed = self$params$ea_process$seed) {
+      
+      # Get the terms table
+      if (!is.null(custom_col)) {
+        if (custom_col %in% names(sparse_feat)) {
+          terms_table = sparse_feat[[custom_col]]$terms_table
+        } else {
+          terms_table = data.frame(list(
+            values = feature_table[,custom_col],
+            ind = rownames(feature_table)
+            ))
+        }
+      } else {
+        terms_table = NULL
+      }
 
       ea_object = get_ea_object(ea_feature_table = ea_feature_table,
-                                custom_col = custom_col,
+                                terms_table = terms_table,
                                 selected_features = selected_features,
                                 feature_table = feature_table,
                                 keyType = keyType,
@@ -2724,9 +2742,24 @@ Omics_exp = R6::R6Class(
                               minGSSize = self$params$ora_process$minGSSize,
                               maxGSSize  = self$params$ora_process$maxGSSize,
                               seed = self$params$ora_process$seed) {
+      
+      # Get the terms table
+      if (!is.null(custom_col)) {
+        if (custom_col %in% names(sparse_feat)) {
+          terms_table = sparse_feat[[custom_col]]$terms_table
+        } else {
+          terms_table = data.frame(list(
+            values = feature_table[,custom_col],
+            ind = rownames(feature_table)
+          ))
+        }
+      } else {
+        terms_table = NULL
+      }
+      
 
       ora_object = get_ora_object(ora_feature_table = ora_feature_table,
-                                  custom_col = custom_col,
+                                  terms_table = terms_table,
                                   selected_features = selected_features,
                                   feature_table = feature_table,
                                   pval_cutoff_features = pval_cutoff_features,

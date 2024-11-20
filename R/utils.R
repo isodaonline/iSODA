@@ -2537,7 +2537,7 @@ initialize_omics = function(name,
 
 #---------------------------------------------- Enrichment & GSEA utilities ----
 get_ea_object = function(ea_feature_table,
-                         custom_col = NULL,
+                         terms_table = NULL,
                          selected_features = NULL,
                          feature_table,
                          keyType = "SYMBOL",
@@ -2566,17 +2566,14 @@ get_ea_object = function(ea_feature_table,
     feature_table = feature_table[selected_features, ]
   }
 
-  if (!is.null(custom_col)) {
-    term2gene = get_term2gene(feature_table = feature_table,
-                              column = custom_col,
-                              sep = "\\|")
+  if (!is.null(terms_table)) {
     ea_object = custom_gsea(geneList = feature_list,
                             minGSSize = minGSSize,
                             maxGSSize = maxGSSize,
                             pvalueCutoff = p_value_cutoff,
                             verbose = verbose,
                             pAdjustMethod = pAdjustMethod,
-                            term2gene = term2gene)
+                            term2gene = terms_table)
   } else {
     ea_object = clusterProfiler::gseGO(geneList=feature_list,
                                        ont = ont,
@@ -2594,7 +2591,7 @@ get_ea_object = function(ea_feature_table,
 
 
 get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
-                          custom_col = NULL,
+                          terms_table = NULL,
                           selected_features = NULL,
                           feature_table = self$tables$feature_table,
                           pval_cutoff_features = self$params$overrepresentation$pval_cutoff_features,
@@ -2640,17 +2637,14 @@ get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
   }
 
 
-  if (!is.null(custom_col)) {
-    term2gene = get_term2gene(feature_table = feature_table,
-                              column = custom_col,
-                              sep = "\\|")
+  if (!is.null(terms_table)) {
     ora_object = custom_ora(geneList = feature_list,
                             pvalueCutoff = pval_cutoff,
                             pAdjustMethod = pAdjustMethod,
                             qvalueCutoff = qval_cutoff,
                             minGSSize = minGSSize,
                             maxGSSize = maxGSSize,
-                            term2gene = term2gene)
+                            term2gene = terms_table)
   } else {
     ora_object = clusterProfiler::enrichGO(gene = feature_list,
                                            universe = universe,
@@ -2704,11 +2698,11 @@ match_go_terms = function(terms_list, sparse_table) {
   return(matches)
 }
 
-get_term2gene = function(feature_table, column, sep = "\\|") {
-  term2gene=sapply(as.character(feature_table[,column]), FUN = function(x) strsplit(x,sep)[[1]])
-  names(term2gene)=rownames(feature_table)
-  term2gene = utils::stack(term2gene)
-  return(term2gene)
+get_terms_table = function(column_values, sep = "|") {
+  terms_table=sapply(as.character(column_values), FUN = function(x) base::strsplit(x, split = sep, fixed = TRUE)[[1]])
+  names(terms_table)=names(column_values)
+  terms_table = utils::stack(terms_table)
+  return(terms_table)
 }
 
 custom_ora = function(geneList, pvalueCutoff = 0.05, pAdjustMethod = "BH", qvalueCutoff = 0.2, minGSSize = 10, maxGSSize = 500, term2gene) {
