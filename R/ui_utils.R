@@ -1617,6 +1617,25 @@ events_feature_filtering = function(input, output, session, id, r6) {
     
   })
   
+  # Clear filters
+  session$userData[[id]]$clear_data_filters = shiny::observeEvent(input$clear_data_filters, {
+
+    # Manual sample selection
+    shiny::updateSelectizeInput(
+      session = session,
+      inputId = "feature_selection",
+      selected = character(0)
+    )
+    
+    # Samples
+    shiny::updateSelectizeInput(
+      session = session,
+      inputId = "feature_value",
+      selected = character(0)
+    )
+    
+  })
+  
   # Reset feature table
   session$userData[[id]]$reset_feat_table = shiny::observeEvent(input$reset_feat_table, {
     print_tm(m = r6$name, in_print = "Resetting feature table")
