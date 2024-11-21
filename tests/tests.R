@@ -340,104 +340,126 @@ self = initialize_omics(
 )
 
 # Sparse table stuff
+set_raw_data = function(indexed_data = self$tables$indexed_data,
+                        excluded_samples = self$indices$excluded_samples,
+                        excluded_features = self$indices$excluded_features,
+                        indexed_meta = self$tables$indexed_meta,
+                        index_blanks = self$indices$index_blanks,
+                        index_qcs = self$indices$index_qcs,
+                        index_pools = self$indices$index_pools,
+                        batch_column = self$indices$batch_column,
+                        group_column = self$indices$group_column,
+                        operation_order = self$params$measurement_filter$operation_order,
+                        blank_multiplier = self$params$measurement_filter$blank_multiplier,
+                        sample_threshold = self$params$measurement_filter$sample_threshold,
+                        group_threshold = self$params$measurement_filter$group_threshold,
+                        imputation_method = self$params$measurement_filter$imputation_method,
+                        batch_effect_correction = self$params$measurement_filter$batch_effect_correction,
+                        norm_col = self$params$measurement_filter$norm_col
+) {
+  
+  # Check on indexed data
+  if (is.null(indexed_data)) {
+    base::stop('Error while setting Raw data: missing indexed data')
+  } else {
+    raw_data = indexed_data
+  }
+  
+  # Exclude features
+  if (!is.null(excluded_features)) {
+    if (length(excluded_features) > 0) {
+      raw_data = raw_data[, -which(colnames(raw_data) %in% excluded_features)]
+    }
+  }
+  
+  # Exclude samples
+  if (!is.null(excluded_samples)) {
+    if (length(excluded_samples) > 0) {
+      raw_data = raw_data[-which(rownames(raw_data) %in% excluded_samples),]
+    }
+  }
+  
+  # Remove any columns with either only 0s or NAs that can have survived
+  empty_cols = colSums(raw_data, na.rm = T)
+  empty_cols = which(empty_cols == 0)
+  if (length(empty_cols) > 0) {
+    empty_cols = names(empty_cols)
+    raw_data = raw_data[,-which(colnames(raw_data) %in% empty_cols)]
+  }
+  
+  # Get non-sample tables
+  blank_table = indexed_data[index_blanks, colnames(raw_data)]
+  qc_table = indexed_data[index_qcs, colnames(raw_data)]
+  pool_table = indexed_data[index_pools, colnames(raw_data)]
+  
+  # Process raw_data indexed_meta
+  for (func_name in operation_order) {
+    if (func_name == "Imputation") {
+      if (imputation_method != "None") {
+        raw_data = impute_na(data_table = raw_data,
+                               method = imputation_method)
+        blank_table = impute_na(data_table = blank_table,
+                                method = imputation_method)
+        qc_table = impute_na(data_table = qc_table,
+                             method = imputation_method)
+        pool_table = impute_na(data_table = pool_table,
+                               method = imputation_method)
+      }
+    } else if (func_name == "Batch correction") {
+      if (batch_effect_correction != "None") {
+        corrected_data = batch_effect_correction_combat(
+          raw_data = raw_data,
+          batch_effect_correction = batch_effect_correction,
+          batch_column = batch_column,
+          indexed_meta = indexed_meta,
+          blank_table = blank_table,
+          qc_table = qc_table,
+          pool_table = pool_table)
+        raw_data = corrected_data$raw_data
+        blank_table = corrected_data$blank_table
+      }
+      
+    } else if (func_name == "Filtering") {
+      if (nrow(blank_table) > 0) {
+        raw_data = measurement_filtering(
+          raw_data = raw_data,
+          blank_table = blank_table,
+          indexed_meta = indexed_meta,
+          batch_column = batch_column,
+          group_column = group_column,
+          blank_multiplier = blank_multiplier,
+          sample_threshold = sample_threshold,
+          group_threshold = group_threshold)
+        filtered_out_features = base::setdiff(colnames(indexed_data), colnames(raw_data))
+        if (length(filtered_out_features) > 0) {
+          if (!is.null(excluded_features)) {
+            if (length(excluded_features) > 0) {
+              filtered_out_features = base::setdiff(filtered_out_features, excluded_features)
+            }
+          }
+        }
+        self$indices$filtered_out_features = dropped_features
+        
+      }
+    } else {
+      base::stop(paste0('Requested process does not exist: ', func_name))
+    }
+  }
+
+  # Normalization
+  if (norm_col != "None") {
+    indexed_meta = indexed_meta[rownames(raw_data),]
+    if (is_num_coercible(indexed_meta[,norm_col]) & !base::any(is.na(indexed_meta[,norm_col]))) {
+      raw_data = raw_data/as.numeric(indexed_meta[,norm_col])
+    } else {
+      base::warning("Normalization skipped, selected column contains either non numeric or missing data.")
+    }
+  }
+  
+  self$tables$raw_data = raw_data
+}
 
 
-self$add_sparse_feat(feature_table = self$tables$raw_feat,
-                     sep = "|",
-                     column_name = "Gene Ontology (GO)")
-
-self$add_all_sparse_feat(sep = "|")
-
-
-
-
-
-
-# Test EA
-self$get_ea_feature_table(data_table = self$tables$total_norm_data,
-                          group_col = self$indices$group_column,
-                          group_1 = unique(self$tables$raw_meta[,self$indices$group_column])[1],
-                          group_2 = unique(self$tables$raw_meta[,self$indices$group_column])[2],
-                          fc_function = "mean",
-                          statistical_test = "t-Test",
-                          adjustment_method = "BH")
-colnames(self$tables$raw_feat)
-self$get_ea_object(custom_col = "Gene Ontology (GO)",
-                   selected_features = rownames(self$tables$raw_feat),
-                   ont = NULL,
-                   minGSSize = 3,
-                   maxGSSize = 800,
-                   terms_p_value_cutoff = 0.05,
-                   terms_pAdjustMethod = "BH",
-                   seed = 1)
-
-ea_feature_table = self$tables$ea_feature_table
-feature_table = self$tables$raw_feat
-keyType = self$indices$feature_id_type
-custom_col = "Gene Ontology (GO)"
-selected_features = self$params$ea_process$selected_features
-ont = NULL
-minGSSize = 3
-maxGSSize = 800
-terms_p_value_cutoff = 0.05
-terms_pAdjustMethod = "BH"
-verbose = self$params$ea_process$verbose
-OrgDb = self$params$ea_process$OrgDb
-seed = 1
-
-
-
-indexed_data = self$tables$indexed_data
-indexed_meta = self$tables$indexed_meta
-excluded_samples = self$indices$excluded_samples
-excluded_features = self$indices$excluded_features
-index_blanks = self$indices$index_blanks
-index_qcs = self$indices$index_qcs
-index_pools = self$indices$index_pools
-batch_column = self$indices$batch_column
-group_column = self$indices$group_column
-
-
-
-
-
-
-
-
-
-self$get_ora_feature_table(data_table = self$tables$total_norm_data,
-                         group_col = "LTP_Family",
-                         group_1 = "OSBP",
-                         group_2 = "Non_target",
-                         fc_function = "mean",
-                         statistical_test = "t-Test",
-                         adjustment_method = "BH")
-
-self$get_ora_object(custom_col = "Double bonds (sum)",
-                    selected_features = rownames(self$tables$raw_feat),
-                    pval_cutoff_features = 0.05,
-                    padjust_features = "BH",
-                    pval_cutoff = 0.05,
-                    pAdjustMethod = "BH",
-                    fc_threshold = 1.1,
-                    ont = NULL,
-                    qval_cutoff = 0.05,
-                    minGSSize = 10,
-                    maxGSSize  = 500,
-                    seed = 1)
-
-custom_col = "Double bonds (sum)"
-selected_features = rownames(self$tables$raw_feat)
-pval_cutoff_features = 0.05
-padjust_features = "BH"
-pval_cutoff = 0.05
-pAdjustMethod = "BH"
-fc_threshold = 1.1
-ont = NULL
-qval_cutoff = 0.05
-minGSSize = 10
-maxGSSize  = 500
-seed = 1
 
 #------------------------------------------------------ MOFA TEST CELLMINER ----
 if (T) {

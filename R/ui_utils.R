@@ -1211,7 +1211,6 @@ events_measurement_filtering = function(input, output, session, id, r6) {
             sample_threshold = input$sample_threshold,
             group_threshold = input$group_threshold,
             norm_col = input$normalise_to_col)
-          r6$measurement_filter()
           r6$set_raw_data()
           r6$set_raw_feat()
           r6$derive_data_tables()

@@ -2517,8 +2517,6 @@ initialize_omics = function(name,
                                     sample_threshold = sample_threshold,
                                     group_threshold = group_threshold,
                                     norm_col = norm_col)
-      
-      self$measurement_filter()
     }
     
     # Set all raw tables

@@ -1872,8 +1872,18 @@ Omics_exp = R6::R6Class(
     set_raw_data = function(indexed_data = self$tables$indexed_data,
                             excluded_samples = self$indices$excluded_samples,
                             excluded_features = self$indices$excluded_features,
-                            filtered_out_features = self$indices$filtered_out_features,
                             indexed_meta = self$tables$indexed_meta,
+                            index_blanks = self$indices$index_blanks,
+                            index_qcs = self$indices$index_qcs,
+                            index_pools = self$indices$index_pools,
+                            batch_column = self$indices$batch_column,
+                            group_column = self$indices$group_column,
+                            operation_order = self$params$measurement_filter$operation_order,
+                            blank_multiplier = self$params$measurement_filter$blank_multiplier,
+                            sample_threshold = self$params$measurement_filter$sample_threshold,
+                            group_threshold = self$params$measurement_filter$group_threshold,
+                            imputation_method = self$params$measurement_filter$imputation_method,
+                            batch_effect_correction = self$params$measurement_filter$batch_effect_correction,
                             norm_col = self$params$measurement_filter$norm_col
     ) {
       
@@ -1883,9 +1893,6 @@ Omics_exp = R6::R6Class(
       } else {
         raw_data = indexed_data
       }
-      
-      # Merge excluded_features and filtered_out_features
-      excluded_features = c(excluded_features, filtered_out_features)
       
       # Exclude features
       if (!is.null(excluded_features)) {
@@ -1898,6 +1905,73 @@ Omics_exp = R6::R6Class(
       if (!is.null(excluded_samples)) {
         if (length(excluded_samples) > 0) {
           raw_data = raw_data[-which(rownames(raw_data) %in% excluded_samples),]
+        }
+      }
+      
+      # Remove any columns with either only 0s or NAs that can have survived
+      empty_cols = colSums(raw_data, na.rm = T)
+      empty_cols = which(empty_cols == 0)
+      if (length(empty_cols) > 0) {
+        empty_cols = names(empty_cols)
+        raw_data = raw_data[,-which(colnames(raw_data) %in% empty_cols)]
+      }
+      
+      # Get non-sample tables
+      blank_table = indexed_data[index_blanks, colnames(raw_data)]
+      qc_table = indexed_data[index_qcs, colnames(raw_data)]
+      pool_table = indexed_data[index_pools, colnames(raw_data)]
+      
+      # Process raw_data indexed_meta
+      for (func_name in operation_order) {
+        if (func_name == "Imputation") {
+          if (imputation_method != "None") {
+            raw_data = impute_na(data_table = raw_data,
+                                 method = imputation_method)
+            blank_table = impute_na(data_table = blank_table,
+                                    method = imputation_method)
+            qc_table = impute_na(data_table = qc_table,
+                                 method = imputation_method)
+            pool_table = impute_na(data_table = pool_table,
+                                   method = imputation_method)
+          }
+        } else if (func_name == "Batch correction") {
+          if (batch_effect_correction != "None") {
+            corrected_data = batch_effect_correction_combat(
+              raw_data = raw_data,
+              batch_effect_correction = batch_effect_correction,
+              batch_column = batch_column,
+              indexed_meta = indexed_meta,
+              blank_table = blank_table,
+              qc_table = qc_table,
+              pool_table = pool_table)
+            raw_data = corrected_data$raw_data
+            blank_table = corrected_data$blank_table
+          }
+          
+        } else if (func_name == "Filtering") {
+          if (nrow(blank_table) > 0) {
+            raw_data = measurement_filtering(
+              raw_data = raw_data,
+              blank_table = blank_table,
+              indexed_meta = indexed_meta,
+              batch_column = batch_column,
+              group_column = group_column,
+              blank_multiplier = blank_multiplier,
+              sample_threshold = sample_threshold,
+              group_threshold = group_threshold)
+            filtered_out_features = base::setdiff(colnames(indexed_data), colnames(raw_data))
+            if (length(filtered_out_features) > 0) {
+              if (!is.null(excluded_features)) {
+                if (length(excluded_features) > 0) {
+                  filtered_out_features = base::setdiff(filtered_out_features, excluded_features)
+                }
+              }
+            }
+            self$indices$filtered_out_features = filtered_out_features
+            
+          }
+        } else {
+          base::stop(paste0('Requested process does not exist: ', func_name))
         }
       }
       
@@ -1966,177 +2040,6 @@ Omics_exp = R6::R6Class(
     reset_raw_feat = function() {
       self$reset_feature_exclusion()
       self$set_raw_feat()
-    },
-    
-    
-    measurement_filter = function(indexed_data = self$tables$indexed_data,
-                                  indexed_meta = self$tables$indexed_meta,
-                                  excluded_samples = self$indices$excluded_samples,
-                                  excluded_features = self$indices$excluded_features,
-                                  index_blanks = self$indices$index_blanks,
-                                  index_qcs = self$indices$index_qcs,
-                                  index_pools = self$indices$index_pools,
-                                  batch_column = self$indices$batch_column,
-                                  group_column = self$indices$group_column,
-                                  operation_order = self$params$measurement_filter$operation_order,
-                                  blank_multiplier = self$params$measurement_filter$blank_multiplier,
-                                  sample_threshold = self$params$measurement_filter$sample_threshold,
-                                  group_threshold = self$params$measurement_filter$group_threshold,
-                                  imputation_method = self$params$measurement_filter$imputation_method,
-                                  batch_effect_correction = self$params$measurement_filter$batch_effect_correction) {
-      
-      if (is.null(indexed_data)) {
-        base::stop('Error while filtering measurement data: missing indexed data')
-      } else {
-        data_table = indexed_data
-      }
-      
-      # Exclude features
-      if (!is.null(excluded_features)) {
-        if (length(excluded_features) > 0) {
-          data_table = data_table[, -which(colnames(data_table) %in% excluded_features)]
-        }
-      }
-      # Exclude rows  
-      if (!is.null(excluded_samples)) {
-        if (length(excluded_samples) > 0) {
-          data_table = data_table[-which(rownames(data_table) %in% excluded_samples),]
-        }
-      }
-      
-      # Remove any columns with either only 0s or NAs that can have survived
-      empty_cols = colSums(data_table, na.rm = T)
-      empty_cols = which(empty_cols == 0)
-      if (length(empty_cols) > 0) {
-        empty_cols = names(empty_cols)
-        data_table = data_table[,-which(colnames(data_table) %in% empty_cols)]
-      }
-      
-      # Get non-sample tables
-      blank_table = indexed_data[index_blanks, colnames(data_table)]
-      qc_table = indexed_data[index_qcs, colnames(data_table)]
-      pool_table = indexed_data[index_pools, colnames(data_table)]
-      
-      # Process data_table indexed_meta
-      for (func_name in operation_order) {
-        if (func_name == "Imputation") {
-          if (imputation_method != "None") {
-            data_table = impute_na(data_table = data_table,
-                                   method = imputation_method)
-            blank_table = impute_na(data_table = blank_table,
-                                    method = imputation_method)
-            qc_table = impute_na(data_table = qc_table,
-                                 method = imputation_method)
-            pool_table = impute_na(data_table = pool_table,
-                                   method = imputation_method)
-          }
-        } else if (func_name == "Batch correction") {
-          if (batch_effect_correction != "None") {
-            corrected_data = batch_effect_correction_combat(
-              raw_data = data_table,
-              batch_effect_correction = batch_effect_correction,
-              batch_column = batch_column,
-              indexed_meta = indexed_meta,
-              blank_table = blank_table,
-              qc_table = qc_table,
-              pool_table = pool_table)
-            data_table = corrected_data$raw_data
-            blank_table = corrected_data$blank_table
-          }
-          
-        } else if (func_name == "Filtering") {
-          if (nrow(blank_table) > 0) {
-            data_table = measurement_filtering(
-              raw_data = data_table,
-              blank_table = blank_table,
-              indexed_meta = indexed_meta,
-              batch_column = batch_column,
-              group_column = group_column,
-              blank_multiplier = blank_multiplier,
-              sample_threshold = sample_threshold,
-              group_threshold = group_threshold)
-          }
-        } else {
-          base::stop(paste0('Requested process does not exist: ', func_name))
-        }
-      }
-
-      dropped_features = base::setdiff(colnames(indexed_data), colnames(data_table))
-      
-      if (length(dropped_features) > 0) {
-        if (!is.null(excluded_features)) {
-          if (length(excluded_features) > 0) {
-            dropped_features = base::setdiff(dropped_features, excluded_features)
-          }
-        }
-      }
-      
-      self$indices$filtered_out_features = dropped_features
-    },
-    
-    add_go_data = function(name,
-                           feature_names,
-                           keyType,
-                           ont,
-                           pvalueCutoff) {
-      go_data = annotate_go(feature_names = feature_names,
-                            keyType = keyType,
-                            ont = ont,
-                            pvalueCutoff = pvalueCutoff)
-
-      if (is.null(go_data)) {
-        print_tm(self$name, 'No GO enrichment with used parameters.')
-        return()
-      }
-
-      sparse_table = get_sparse_matrix(features_go_table = go_data$feature_table,
-                                       all_go_terms = rownames(go_data$go_table),
-                                       sep = '|')
-
-      self$tables$external_enrichment_tables[[name]]$terms_table = go_data$go_table
-      self$tables$external_enrichment_tables[[name]]$association_table = go_data$feature_table
-      self$tables$external_enrichment_tables[[name]]$sparse_table = sparse_table
-    },
-
-    upload_enrichment_data = function(name,
-                                      association_table,
-                                      terms_table = NULL,
-                                      sep = '|') {
-
-      # Create terms table if null
-      if (is.null(terms_table)) {
-        go_list = vector("list", nrow(association_table))
-        # Loop through each row and split the 'go_terms' column by '|'
-        for (i in 1:nrow(association_table)) {
-          if (is.na(association_table[i,1])) {
-            next
-          } else {
-            go_list[[i]] = strsplit(as.character(association_table[i,1]), sep, fixed = TRUE)[[1]]
-          }
-        }
-        go_list = sort(unique(unlist(go_list)))
-        terms_table = data.frame(
-          ID = go_list,
-          Description = go_list
-        )
-        rownames(terms_table) = terms_table$ID
-        terms_table$ID = NULL
-      }
-      sparse_matrix = get_sparse_matrix(features_go_table = association_table[1],
-                                        all_go_terms = rownames(terms_table),
-                                        sep = sep)
-
-      self$tables$external_enrichment_tables[[name]]$terms_table = terms_table
-      self$tables$external_enrichment_tables[[name]]$association_table = association_table
-      self$tables$external_enrichment_tables[[name]]$sparse_table = sparse_matrix
-
-    },
-
-    del_go_data = function(name) {
-      self$tables$external_enrichment_tables[[name]] = NULL
-      if (length(names(self$tables$external_enrichment_tables)) == 0) {
-        names(self$tables$external_enrichment_tables) = NULL
-      }
     },
 
     add_sparse_feat = function(feature_table = self$tables$indexed_feat,
