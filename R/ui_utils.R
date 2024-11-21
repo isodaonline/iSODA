@@ -840,6 +840,31 @@ events_sample_filtering = function(input, output, session, id, r6) {
     
   })
   
+  # Clear filters 
+  session$userData[[id]]$clear_filters = shiny::observeEvent(input$clear_filters, {
+    # Non-sample selection
+    shinyWidgets::updateCheckboxGroupButtons(
+      session = session,
+      inputId = "non_samples_selection",
+      selected = c("Blanks", "QCs", "Pools")
+    )
+    
+    # Manual sample selection
+    shiny::updateSelectizeInput(
+      session = session,
+      inputId = "selection_manual",
+      selected = character(0)
+    )
+    
+    # Samples
+    shiny::updateSelectizeInput(
+      session = session,
+      inputId = "exclusion_meta_row",
+      selected = character(0)
+    )
+    
+  })
+  
   # Observe reset meta
   session$userData[[id]]$reset_meta = shiny::observeEvent(input$reset_meta, {
     r6$reset_raw_meta()
