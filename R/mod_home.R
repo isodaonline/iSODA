@@ -1,6 +1,6 @@
 
 #------------------------------------------------------------- Save/Load UI ----
-save_load_ui = function(id){
+home_ui = function(id){
   ns = shiny::NS(id)
   shiny::tagList(
     shiny::fluidRow(
@@ -14,7 +14,7 @@ save_load_ui = function(id){
       ),
       shiny::column(
         width = 3,
-        shiny::h3('Example datasets'),
+        shiny::h3('Welcome!'),
         shiny::hr(style = "border-top: 1px solid #7d7d7d;")
       )
 
@@ -27,14 +27,25 @@ save_load_ui = function(id){
           shinyWidgets::awesomeRadio(
             inputId = ns("start_method"),
             label = NULL, 
-            choices = c("Load", "Save"),
-            selected = "Load",
+            choices = c("Start", "Load", "Save"),
+            selected = "Start",
             status = "warning"
           )
         )
       ),
       shiny::column(
         width = 7,
+        
+        # Load iSODA file
+        bs4Dash::box(
+          id = ns('box_start_single_omics'),
+          title = 'Start single-omics instance',
+          width = 12,
+          collapsible = F,
+          solidHeader = T,
+          status = "gray",
+          render_create_single_omics(ns)
+        ),
         
         # Load miSODA file
         bs4Dash::box(
@@ -64,6 +75,19 @@ save_load_ui = function(id){
       ),
       shiny::column(
         width = 3,
+        shiny::fluidRow(
+          shiny::span("From here you can start a single-omics instance to upload your 
+                      own files or resume work on a previous session using an .iSODA file 
+                      or UUID key."),
+          shiny::span("Loading .miSODA files containing multiple single-omics instances 
+                      with the multi-omics data is possible by switching to the 'Save' 
+                      radiobutton on the left"),
+          shiny::span("Finally, multi-omics data can be saved via the menu accessed by 
+                      switching to the 'Save' radiobutton option"),
+          shiny::br()
+        ),
+        shiny::h3('Example datasets'),
+        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
         shiny::h5('CellMiner multi-omics dataset'),
         shiny::fluidRow(
           shiny::downloadButton(
@@ -88,7 +112,7 @@ save_load_ui = function(id){
 
 #------------------------------------------------------------- Start server ----
 
-save_load_server = function(id, main_input, main_output, main_session, module_controler) {
+home_server = function(id, main_input, main_output, main_session, module_controler) {
   shiny::moduleServer(
     id,
     function(input, output, session) {
@@ -100,9 +124,39 @@ save_load_server = function(id, main_input, main_output, main_session, module_co
         data = NULL
       )
       
-      # Observe radiobutton method   
+      #### Radiobutton selection ----   
       shiny::observeEvent(input$start_method, {
-        if (input$start_method == "Load") {
+        
+        if (input$start_method == "Start") {
+          if (input$box_start_single_omics$collapsed) {
+            bs4Dash::updateBox(
+              id = 'box_start_single_omics',
+              action = "toggle",
+              session = session
+            )
+          }
+          if (!input$box_load_misoda_file$collapsed) {
+            bs4Dash::updateBox(
+              id = 'box_load_misoda_file',
+              action = "toggle",
+              session = session
+            )
+          }
+          if (!input$box_save_misoda_file$collapsed) {
+            bs4Dash::updateBox(
+              id = 'box_save_misoda_file',
+              action = "toggle",
+              session = session
+            )
+          }
+        } else if (input$start_method == "Load") {
+          if (!input$box_start_single_omics$collapsed) {
+            bs4Dash::updateBox(
+              id = 'box_start_single_omics',
+              action = "toggle",
+              session = session
+            )
+          }
           if (input$box_load_misoda_file$collapsed) {
             bs4Dash::updateBox(
               id = 'box_load_misoda_file',
@@ -118,6 +172,13 @@ save_load_server = function(id, main_input, main_output, main_session, module_co
             )
           }
         } else if (input$start_method == "Save") {
+          if (!input$box_start_single_omics$collapsed) {
+            bs4Dash::updateBox(
+              id = 'box_start_single_omics',
+              action = "toggle",
+              session = session
+            )
+          }
           if (!input$box_load_misoda_file$collapsed) {
             bs4Dash::updateBox(
               id = 'box_load_misoda_file',
@@ -135,7 +196,97 @@ save_load_server = function(id, main_input, main_output, main_session, module_co
         }
       })
       
-      # .miSODA file input
+      #### Start single omics ----
+      
+      # Create experiments
+      shiny::observeEvent(input$add_exp,{
+        exp_name = input$exp_name
+        
+        if (exp_name %in% unname(unlist(module_controler$exp_names))) {
+          print_t('ERROR: experiment already exists.')
+          return()
+        }
+        
+        if (exp_name == '') {
+          exp_name = experiment_switch(input$exp_type)
+          counter = 1
+          while (paste0(exp_name, '_', counter) %in% unname(unlist(module_controler$exp_names))) {
+            counter = counter + 1
+          }
+          exp_name = paste0(exp_name, '_', counter)
+        }
+        
+        if (!grepl("^[a-zA-Z0-9_]+$", exp_name)) {
+          print_t('ERROR: only alphanumeric and underscores accepted')
+          return()
+        }
+        
+        slot  = names(module_controler$slot_taken)[!sapply(module_controler$slot_taken, base::isTRUE)][1]
+        exp_type = input$exp_type
+        main_output[[slot]] = shiny::renderUI({
+          bs4Dash::bs4SidebarMenuItem(
+            text = exp_name,
+            tabName = slot,
+            icon = shiny::icon("circle")
+          )
+        })
+        
+        module_controler$slot_taken[[slot]] = TRUE
+        module_controler$exp_names[[slot]] = exp_name
+        module_controler$exp_types[[slot]] = exp_type
+        module_controler$exp_r6[[slot]] = r6_switch(exp_type = exp_type, name = exp_name, id = paste0('mod_', slot) ,slot = slot)
+        
+        if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
+          shinyjs::disable("add_exp")
+        }
+        
+        print_t(paste0('Added ', input$exp_name, ' (', exp_type, ')'))
+        
+        
+        shiny::updateTextInput(
+          inputId = 'exp_name',
+          value = character(0)
+        )
+        
+      })
+      
+      # Change default name when switching experiment
+      shiny::observeEvent(input$exp_type,{
+        if (input$exp_type == 'Proteomics') {
+          shiny::updateTextInput(
+            inputId = 'exp_name',
+            value = character(0),
+            placeholder = 'prot_1'
+          )
+        } else if (input$exp_type == 'Transcriptomics') {
+          shiny::updateTextInput(
+            inputId = 'exp_name',
+            value = character(0),
+            placeholder = 'trns_1'
+          )
+        } else if (input$exp_type == 'Lipidomics') {
+          shiny::updateTextInput(
+            inputId = 'exp_name',
+            value = character(0),
+            placeholder = 'lips_1'
+          )
+        } else if (input$exp_type == 'Genomics') {
+          shiny::updateTextInput(
+            inputId = 'exp_name',
+            value = character(0),
+            placeholder = 'geno_1'
+          )
+        } else if (input$exp_type == 'Metabolomics') {
+          shiny::updateTextInput(
+            inputId = 'exp_name',
+            value = character(0),
+            placeholder = 'meta_1'
+          )
+        }
+        
+      })
+      
+      #### .miSODA file input ----
       shiny::observeEvent(input$input_misoda_file, {
         
         print_tm(m = "Global", in_print = "Previewing data")
@@ -160,7 +311,7 @@ save_load_server = function(id, main_input, main_output, main_session, module_co
         print_tm(m = "Global", in_print = "Preview ready")
       })
       
-      # .miSODA UUID input
+      #### .miSODA UUID input ----
       shiny::observeEvent(input$input_misoda_uuid, {
         
         if (input$input_misoda_uuid == "") {return()}
