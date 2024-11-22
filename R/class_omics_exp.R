@@ -158,8 +158,8 @@ Omics_exp = R6::R6Class(
         k_clusters_features = 1,
         map_sample_data = NULL,
         map_feature_data = NULL,
-        map_feature_terms = NULL,
-        multival_cols = 'None',
+        sparse_features = NULL,
+        sparse_table = 'None',
         group_column_da = NULL,
         apply_da = T,
         alpha_da = 0.8,
@@ -203,8 +203,8 @@ Omics_exp = R6::R6Class(
       feature_correlation = list(
         auto_refresh = F,
         dataset = 'Z-scored total normalized table',
-        multival_cols = 'None',
-        map_feature_terms = NULL,
+        sparse_table = 'None',
+        sparse_features = NULL,
         correlation_method = "pearson",
         use = 'pairwise.complete.obs',
         distance_method = "euclidian",
@@ -952,7 +952,7 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_min, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, map_feature_terms, multival_cols, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
+    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_min, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
       self$params$heatmap$auto_refresh = auto_refresh
       self$params$heatmap$dataset = dataset
       self$params$heatmap$distance_method = distance_method
@@ -964,8 +964,8 @@ Omics_exp = R6::R6Class(
       self$params$heatmap$k_clusters_features = k_clusters_features
       self$params$heatmap$map_sample_data = map_sample_data
       self$params$heatmap$map_feature_data = map_feature_data
-      self$params$heatmap$map_feature_terms = map_feature_terms
-      self$params$heatmap$multival_cols = multival_cols
+      self$params$heatmap$sparse_table = sparse_table
+      self$params$heatmap$sparse_features = sparse_features
       self$params$heatmap$group_column_da = group_column_da
       self$params$heatmap$apply_da = apply_da
       self$params$heatmap$alpha_da = alpha_da
@@ -1020,12 +1020,12 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_feature_correlation = function(auto_refresh, dataset, multival_cols, map_feature_terms, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, roh_threshold, top_features, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
+    param_feature_correlation = function(auto_refresh, dataset, sparse_table, sparse_features, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, roh_threshold, top_features, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
 
       self$params$feature_correlation$auto_refresh = auto_refresh
       self$params$feature_correlation$dataset = dataset
-      self$params$feature_correlation$multival_cols = multival_cols
-      self$params$feature_correlation$map_feature_terms = map_feature_terms
+      self$params$feature_correlation$sparse_table = sparse_table
+      self$params$feature_correlation$sparse_features = sparse_features
       self$params$feature_correlation$correlation_method = correlation_method
       self$params$feature_correlation$use = use
       self$params$feature_correlation$distance_method = distance_method
@@ -2314,8 +2314,8 @@ Omics_exp = R6::R6Class(
                          k_clusters_features = 1,
                          map_sample_data = NULL,
                          map_feature_data = NULL,
-                         map_feature_terms = NULL,
-                         multival_cols = "None",
+                         sparse_features = NULL,
+                         sparse_table = "None",
                          group_column_da = self$indices$group_column,
                          apply_da = T,
                          alpha_da = 0.8,
@@ -2354,8 +2354,8 @@ Omics_exp = R6::R6Class(
       self$param_feature_correlation(
         auto_refresh = F,
         dataset = 'Z-scored total normalized table',
-        multival_cols = 'None',
-        map_feature_terms = NULL,
+        sparse_table = 'None',
+        sparse_features = NULL,
         correlation_method = "pearson",
         use = 'pairwise.complete.obs',
         distance_method = "euclidian",
@@ -3233,7 +3233,7 @@ Omics_exp = R6::R6Class(
                             k_clusters_features = self$params$heatmap$k_clusters_features,
                             row_annotations = self$params$heatmap$map_sample_data,
                             col_annotations = self$params$heatmap$map_feature_data,
-                            map_feature_terms = self$params$heatmap$map_feature_terms,
+                            sparse_features = self$params$heatmap$sparse_features,
                             apply_da = self$params$heatmap$apply_da,
                             group_column_da = self$params$heatmap$group_column_da,
                             alpha_da = self$params$heatmap$alpha_da,
@@ -3332,12 +3332,12 @@ Omics_exp = R6::R6Class(
       }
 
       # Add multivalue annotations
-      if (!is.null(map_feature_terms)) {
+      if (!is.null(sparse_features)) {
         if (is.null(col_annotations)) {
           col_annotations = as.data.frame(meta_table_features[, NULL])
         }
-        for (name in names(map_feature_terms))
-          col_annotations[[name]] = map_feature_terms[[name]][rownames(col_annotations)]
+        for (name in names(sparse_features))
+          col_annotations[[name]] = sparse_features[[name]][rownames(col_annotations)]
       }
 
       # Get the color palette
@@ -3559,7 +3559,7 @@ Omics_exp = R6::R6Class(
     ## Feature correlation plot
     plot_feature_correlation = function(dataset = self$params$feature_correlation$dataset,
                                         meta_table = self$tables$raw_feat,
-                                        map_feature_terms = self$params$feature_correlation$map_feature_terms,
+                                        sparse_features = self$params$feature_correlation$sparse_features,
                                         correlation_method = self$params$feature_correlation$correlation_method,
                                         use = self$params$feature_correlation$use,
                                         distance_method = self$params$feature_correlation$distance_method,
@@ -3693,12 +3693,12 @@ Omics_exp = R6::R6Class(
       }
 
       # Add multivalue annotations
-      if (!is.null(map_feature_terms)) {
+      if (!is.null(sparse_features)) {
         if (is.null(col_annotations)) {
           col_annotations = as.data.frame(meta_table[, NULL])
         }
-        for (name in names(map_feature_terms))
-          col_annotations[[name]] = map_feature_terms[[name]][rownames(col_annotations)]
+        for (name in names(sparse_features))
+          col_annotations[[name]] = sparse_features[[name]][rownames(col_annotations)]
       }
 
       # Save table as heatmap table

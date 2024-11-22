@@ -1444,14 +1444,14 @@ render_feature_filtering = function(ns, r6) {
           
         )
       ),
-      #### Sparse features start ----
+      #### Sparse annotations start ----
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::fluidRow(
-        shiny::h4('Sparse features'),
+        shiny::h4('Sparse annotations'),
         shiny::tags$i(
           class = "fa fa-question-circle",
           style = "color: lightblue;",
-          title = tooltip_data$single_omics$help_sparse_features
+          title = tooltip_data$single_omics$help_sparse_annotations
         )
       ),
       shiny::fluidRow(
