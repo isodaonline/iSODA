@@ -1447,38 +1447,52 @@ render_feature_filtering = function(ns, r6) {
       #### Sparse features start ----
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::fluidRow(
-        shiny::h4('Sparse features')
+        shiny::h4('Sparse features'),
+        shiny::tags$i(
+          class = "fa fa-question-circle",
+          style = "color: lightblue;",
+          title = tooltip_data$single_omics$help_sparse_features
+        )
       ),
       shiny::fluidRow(
         shiny::column(
           width = 6,
-          shiny::selectizeInput(
-            inputId = ns('sparse_col_selection'),
-            label = "Feature column",
-            choices = colnames(r6$tables$raw_feat),
-            selected = colnames(r6$tables$raw_feat)[1],
-            width = "100%"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectizeInput(
+              inputId = ns('sparse_col_selection'),
+              label = "Feature column",
+              choices = colnames(r6$tables$raw_feat),
+              selected = colnames(r6$tables$raw_feat)[1],
+              width = "100%"
+            ),
+            title = tooltip_data$single_omics$sparse_feature_column,
+            placement = "top")
         ),
         shiny::column(
           width = 6,
-          shiny::selectInput(
-            inputId = ns('sparse_delimiter'),
-            label = "Feature column",
-            choices = c('|'),
-            selected = '|',
-            width = "100%"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::selectInput(
+              inputId = ns('sparse_delimiter'),
+              label = "Sparse delimiter",
+              choices = c('|'),
+              selected = '|',
+              width = "100%"
+            ),
+            title = tooltip_data$single_omics$sparse_delimiter,
+            placement = "top")
         )
       ),
       shiny::fluidRow(
         shiny::column(
           width = 12,
-          shiny::actionButton(
-            inputId = ns('add_sparse_single'),
-            label = "Add sparse table",
-            width = "100%"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::actionButton(
+              inputId = ns('add_sparse_single'),
+              label = "Add sparse table",
+              width = "100%"
+            ),
+            title = tooltip_data$single_omics$add_sparse_single,
+            placement = "top")
         )
       ),
       shiny::fluidRow(
@@ -1487,19 +1501,25 @@ render_feature_filtering = function(ns, r6) {
       shiny::fluidRow(
         shiny::column(
           width = 6,
-          shiny::actionButton(
-            inputId = ns('add_sparse_all'),
-            label = "Parse all columns",
-            width = "100%"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::actionButton(
+              inputId = ns('add_sparse_all'),
+              label = "Parse all columns",
+              width = "100%"
+            ),
+            title = tooltip_data$single_omics$add_sparse_all,
+            placement = "top")
         ),
         shiny::column(
           width = 6,
-          shiny::actionButton(
-            inputId = ns('reset_sparse_tables'),
-            label = "Reset tables",
-            width = "100%"
-          )
+          bsplus::bs_embed_tooltip(
+            shiny::actionButton(
+              inputId = ns('reset_sparse_tables'),
+              label = "Reset tables",
+              width = "100%"
+            ),
+            title = tooltip_data$single_omics$reset_sparse_tables,
+            placement = "top")
         )
       )
       #### end ----

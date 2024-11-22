@@ -66,7 +66,20 @@ tooltip_data = list(
     feat_table_select = "Selected table to display",
     download_feature_table = "Download the displayed table",
     head_feature_annotations = "Only display the first rows and columns from the table. \nTypically this will be turned on for measurement data as supplying a table with more than 10K columns will significantly slow down the table rendering",
-
+    help_sparse_features = "Character delimited features within a column in the features table.
+    \t-Sparse features are in essence a new table stored within a column, but with most of the data being missing and only the non-missing values are reported as a character separated text.
+    \t-This type of data (like Gene Ontologies) can be understood by iSODA here by specifying the delimiter below and running either Add sparse table for one specific column, or Parse all column to run this on all columns with the specified delimiter. 
+    \t-Make sure the delimiter used is not a common character in your data. 
+    \t-These sparse features can then be used in multiple plots to color features, like in the volcano plot, PCA, heatmap and feature correlation.
+    \t-These can also be used in functional analysis as ontology terms would be used.",
+    sparse_feature_column = "Select a column to produce sparse features from",
+    sparse_delimiter = "Subdelimiter used within the feature column to produce sparse features. 
+    \t-Delimiter must not be the same as the table delimiter (csv: do not use comma)
+    \t-Delimiter must not be a common character in the sparse features to avoid malforming sparse features",
+    add_sparse_single = "Generate sparse features from the selected feature column using the sparse delimiter",
+    add_sparse_all = "Generate sparse features from all columns containing the sparse delimiter",
+    reset_sparse_tables = "Remove all sparse tables",
+    
     # Functional analysis
     gseaprep_table_select = "Data used as input",
     gseaprep_group_col = "Sample metadata column from which to pick groups",
@@ -98,10 +111,10 @@ tooltip_data = list(
     download_ora_table = "Download the over-representation analysis results, i.e. the feature sets and the associated values",
     
     # Visualization
-    volcano_plot_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
-    heatmap_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
-    feature_correlation_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
-    pca_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them."
+    volcano_plot_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature column can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
+    heatmap_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature column can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
+    feature_correlation_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature column can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them.",
+    pca_sparse_feat = "Sparse features generated from the Features tab. \n\t-Once generated, the sparse feature column can be selected above with Feature annotations, and the available values will be displayed in this widged. \n\t-Select one or more values and features will be colored according to the number of values associated to them."
   ),
   mofa = list(
     data_scale_views = "If views have different ranges/variances, it is good practice to scale each view to unit variance.",
