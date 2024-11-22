@@ -76,14 +76,24 @@ home_ui = function(id){
       shiny::column(
         width = 3,
         shiny::fluidRow(
-          shiny::span("From here you can start a single-omics instance to upload your 
+          shiny::p("From here you can start a single-omics instance to upload your 
                       own files or resume work on a previous session using an .iSODA file 
                       or UUID key."),
-          shiny::span("Loading .miSODA files containing multiple single-omics instances 
+          shiny::p("Loading .miSODA files containing multiple single-omics instances 
                       with the multi-omics data is possible by switching to the 'Save' 
                       radiobutton on the left"),
-          shiny::span("Finally, multi-omics data can be saved via the menu accessed by 
+          shiny::p("Finally, multi-omics data can be saved via the menu accessed by 
                       switching to the 'Save' radiobutton option"),
+          shiny::p(
+            "For more information, please visit our ",
+            shiny::a(
+              href = "https://github.com/isodaonline/iSODA",
+              target = "_blank",
+              "Github page"
+            ),
+            "."
+          ),
+          
           shiny::br()
         ),
         shiny::h3('Example datasets'),
