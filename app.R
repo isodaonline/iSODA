@@ -256,7 +256,11 @@ header = header_ui()
 sidebar = sidebar_ui()
 body = body_ui()
 
-ui = bs4Dash::dashboardPage(header, sidebar, body)
+ui = bs4Dash::dashboardPage(
+  header = header,
+  sidebar = sidebar,
+  body = body,
+  help = NULL)
 
 #------------------------------------------------------------------- Server ----
 

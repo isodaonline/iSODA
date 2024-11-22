@@ -913,7 +913,7 @@ events_sample_filtering = function(input, output, session, id, r6) {
     trigger_preview_plots(), {
       
       if (is.null(input$sample_annotations_type_col)) {return()}
-
+      
       # r6$plot_sample_type_distribution(input_table = r6$table_switch_local(input$sample_annotations_preview_table))      
       try_method(
         r6 = r6,
@@ -923,8 +923,8 @@ events_sample_filtering = function(input, output, session, id, r6) {
       output$sample_type_plot = plotly::renderPlotly({
         r6$plots$sample_type_distribution
       })
-
-
+      
+      
       # r6$plot_sample_group_distribution(input_table = r6$table_switch_local(input$sample_annotations_preview_table))
       try_method(
         r6 = r6,
@@ -1152,10 +1152,10 @@ render_measurement_filtering = function(ns, r6) {
         width = 12,
         bsplus::bs_embed_tooltip(
           shiny::selectizeInput(inputId = ns("normalise_to_col"),
-                             label = "Normalise to column",
-                             choices = c("None", colnames(r6$tables$indexed_feat)),
-                             selected = r6$params$measurement_filter$norm_col,
-                             width = "100%"),
+                                label = "Normalise to column",
+                                choices = c("None", colnames(r6$tables$indexed_feat)),
+                                selected = r6$params$measurement_filter$norm_col,
+                                width = "100%"),
           title = tooltip_data$single_omics$normalise_to_col,
           placement = "top")
       )
@@ -1188,7 +1188,7 @@ events_measurement_filtering = function(input, output, session, id, r6) {
       
       # Head preview table
       preview_table = r6$table_switch_local(input$measurement_data_preview_table)
-
+      
       if (input$head_measurement_data) {
         preview_table = preview_table[1:min(c(nrow(preview_table), 50)),
                                       1:min(c(ncol(preview_table), 100))]
@@ -1536,7 +1536,7 @@ events_feature_filtering = function(input, output, session, id, r6) {
     c(input$feature_annotations_preview_table,
       input$head_feature_annotations,
       table_preview_trigger_feat()
-      ),
+    ),
     {
       shiny::req(input$feature_annotations_preview_table)
       
@@ -1639,7 +1639,7 @@ events_feature_filtering = function(input, output, session, id, r6) {
   
   # Clear filters
   session$userData[[id]]$clear_data_filters = shiny::observeEvent(input$clear_data_filters, {
-
+    
     # Manual sample selection
     shiny::updateSelectizeInput(
       session = session,
@@ -1883,7 +1883,7 @@ events_visualization_tab = function(input, output, session, id, r6, module_contr
 }
 #-------------------------------------- Functional comparison tab functions ----
 render_functional_comparison_tab = function(ns, r6) {
-
+  
   # Detect omics type and the appropriate feature sets
   if (r6$type %in% c('Proteomics', 'Transcriptomics', 'Genomics')) {
     feature_sets = unique(c(
@@ -2347,7 +2347,7 @@ render_functional_comparison_tab = function(ns, r6) {
       )
     )
   )
-
+  
 }
 events_functional_comparison_tab = function(input, output, session, id, r6, ns) {
   
