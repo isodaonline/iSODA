@@ -1279,6 +1279,7 @@ events_measurement_filtering = function(input, output, session, id, r6, reactive
           reactive_triggers$data_table_preview = reactive_triggers$data_table_preview + 1
           reactive_triggers$feat_table_preview = reactive_triggers$feat_table_preview + 1
           reactive_triggers$data_plots = reactive_triggers$data_plots + 1
+          reactive_triggers$feat_plots = reactive_triggers$feat_plots + 1
 
         },warning = function(w){
           print_tmw(r6$name, paste0("Warning: " , w))
@@ -1383,7 +1384,31 @@ render_feature_filtering = function(ns, r6) {
           )
         )
       ),
-      shiny::h4('plot placeholder')
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          plotly::plotlyOutput(
+            outputId = ns('feature_annotation_distribution'),
+            width = '100%',
+            height = '370px'
+          ),
+          shiny::selectizeInput(
+            inputId = ns('feature_annotation_distribution_column'),
+            label = NULL,
+            choices = c("None", colnames(r6$tables$indexed_feat)),
+            selected = "None",
+            width = "100%"
+          )
+        ),
+        shiny::column(
+          width = 6,
+          plotly::plotlyOutput(
+            outputId = ns('sparse_table_feedback'),
+            width = '100%',
+            height = '400px'
+          )
+        )
+      )
     ),
     shiny::column(
       width = 4,
@@ -1632,6 +1657,10 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
         total = nrow(r6$tables$indexed_feat),
         title = 'Feature count'
       )
+      
+      # Update triggers
+      reactive_triggers$feat_plots = reactive_triggers$feat_plots + 1
+      
     })
 
   # Reactive detection if dropping or keeping features
@@ -1646,7 +1675,7 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
     r6$indices$feature_id_type = input$feature_id_type
   })
 
-  # Manual filtering for features
+  # Update selector for manual feature filtering
   session$userData[[id]]$feature_col_selection = shiny::observeEvent(input$feature_col_selection, {
     shiny::req(input$feature_col_selection)
     shiny::updateSelectizeInput(
@@ -1655,12 +1684,9 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
       choices = r6$tables$raw_feat[,input$feature_col_selection],
       selected = NULL
     )
-    shiny::updateSelectizeInput(
-      session = session,
-      inputId = "feature_selection",
-      selected = character(0)
-    )
   })
+  
+  # Update selected features for manual feature filtering
   session$userData[[id]]$feature_value = shiny::observeEvent(input$feature_value, {
     shiny::updateSelectizeInput(
       session = session,
@@ -1702,6 +1728,7 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
     # Trigger the preview table update
     reactive_triggers$feat_table_preview = reactive_triggers$feat_table_preview + 1
     reactive_triggers$data_table_preview = reactive_triggers$data_table_preview + 1
+    reactive_triggers$feat_plots = reactive_triggers$feat_plots + 1
 
     # Reset the reactive
     features_exclude(NULL)
@@ -1738,6 +1765,8 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
     # Trigger the preview table update
     reactive_triggers$feat_table_preview = reactive_triggers$feat_table_preview + 1
     reactive_triggers$data_table_preview = reactive_triggers$data_table_preview + 1
+    reactive_triggers$feat_plots = reactive_triggers$feat_plots + 1
+    
   })
 
   # Add single sparse table
@@ -1778,6 +1807,27 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
     print_tm(m = r6$name, in_print = "Clearing sparse tables")
     r6$reset_sparse_feat()
   })
+  
+  # Observe preview plots
+  session$userData[[id]]$render_data_preview_plots = shiny::observeEvent(
+    c(reactive_triggers$feat_plots,
+      input$feature_annotation_distribution_column), {
+      
+      shiny::req(input$feature_annotations_preview_table)
+      
+      # Feature annotation distribution
+      try_method(
+        r6 = r6,
+        method_name = "plot_feature_annotation_distribution",
+        input_table = r6$table_switch_local(input$feature_annotations_preview_table),
+        column = input$feature_annotation_distribution_column)
+      
+      output$feature_annotation_distribution = plotly::renderPlotly({
+        r6$plots$feature_annotation_distribution
+      })
+      
+      
+    })
 
 
   # Download the features table

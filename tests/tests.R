@@ -341,39 +341,14 @@ self = initialize_omics(
 
 
 
+indexed_feat = self$tables$indexed_feat
+input_table = self$tables$raw_feat
+column = "Lipid class"
+input_table = input_table[input_table[,column] != "CE", ]
 
-
-
-
-plot_bar_missingness(
-  input_table = self$tables$raw_data,
-  type = "Samples"
-)
-
-plot_bar_missingness(
-  input_table = self$tables$raw_data,
-  type = "Features"
-)
-
-
-truffles = base::which(is.na(self$tables$raw_data), arr.ind = T)
-truffles = sort(table(truffles[,1]), decreasing = T)
-names(truffles) = rownames(self$tables$raw_data)[as.integer(names(truffles))]
-truffles[1:10]
-
-
-
-df <- mtcars
-df$manuf = rownames(df)
-df <- df %>% group_by(manuf)
-df <- df %>% summarize(count = n())
-fig <- df %>% plot_ly(labels = ~manuf, values = ~count)
-fig <- fig %>% add_pie(hole = 0.6)
-fig <- fig %>% layout(title = "Donut charts using Plotly",  showlegend = F,
-                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-
-fig
+plot_feature_annotation_distribution(indexed_feat = self$tables$indexed_feat,
+                                     input_table = self$tables$raw_feat,
+                                     column = "Lipid class")
 
 
 #------------------------------------------------------ MOFA TEST CELLMINER ----

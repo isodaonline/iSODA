@@ -1354,6 +1354,61 @@ lips_get_del_cols = function(data_table,
 
 #------------------------------------------------------- Plotting functions ----
 
+plot_feature_annotation_distribution = function(indexed_feat = self$tables$indexed_feat,
+                                                input_table = self$tables$raw_feat,
+                                                column) {
+  
+  if (!(column %in% colnames(indexed_feat))) {
+    return(create_blank_plot())
+  }
+  
+  if (length(unique(table(indexed_feat[,column]))) > 50) {
+    return(create_blank_plot())
+  }
+  
+  full_data = table(indexed_feat[,column])
+  filtered_data = table(factor(input_table[, column], levels = names(full_data)))
+  filtered_data =  full_data - filtered_data
+  
+  plot_data = data.frame(list(
+    remaining = as.vector(unname(full_data - filtered_data)),
+    filtered = as.vector(unname(filtered_data)),
+    name = factor(paste(names(filtered_data), " "), levels = paste(names(filtered_data), " "))
+  ),
+  check.names = F)
+  
+  fig = plotly::plot_ly(
+    x = plot_data$remaining,
+    y = plot_data$name,
+    type = 'bar',
+    orientation = "h",
+    marker = list(color = 'deepskyblue'),
+    name = 'Remaining')
+  fig = plotly::add_trace(
+    p = fig,
+    x = plot_data$filtered,
+    marker = list(color = 'lightblue'),
+    name = 'Filtered')
+  fig = plotly::layout(
+    p = fig,
+    barmode = 'stack',
+    title = paste0(column, " distribution"),
+    dragmode = FALSE,
+    legend = list(
+      orientation = 'h',
+      x = 0.5, 
+      y = -0.05, 
+      xanchor = 'center',
+      yanchor = 'top' 
+    ))
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE,
+    scrollZoom = FALSE
+  )
+  return(fig)
+}
+
 plot_bar_missingness = function(input_table,
                                 type) {
   if (!(type %in% c('Samples', 'Features'))){

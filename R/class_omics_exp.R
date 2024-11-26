@@ -792,6 +792,9 @@ Omics_exp = R6::R6Class(
       sample_type_distribution = NULL,
       sample_group_distribution = NULL,
       missing_donut = NULL,
+      sample_missingness = NULL,
+      feature_missingness = NULL,
+      feature_annotation_distribution = NULL,
 
       # Interactive visualization
       dendrogram = NULL,
@@ -2718,17 +2721,13 @@ Omics_exp = R6::R6Class(
         title = paste0("Sample type", batch_label, " distribution"),
         yaxis = list(title = 'Count'),
         barmode = 'stack',
-        bargap = 0.2)
-      fig = plotly::layout(
-        p = fig,
         dragmode = FALSE,
         bargap = 0.2,
         legend = list(
           title = list(
             text = "Batches"
           )
-        )
-      )
+        ))
       fig = plotly::config(
         p = fig,
         displayModeBar = FALSE,
@@ -2797,6 +2796,7 @@ Omics_exp = R6::R6Class(
       self$plots$sample_group_distribution = fig
     },
     
+    # Missingness donut plot
     plot_missing_donut = function(input_table = self$tables$indexed_data) {
       
       fig = plotly::plot_ly(labels = c('Missing', 'Non-missing'), values = c(
@@ -2828,6 +2828,7 @@ Omics_exp = R6::R6Class(
       self$plots$missing_donut = fig
     },
     
+    # Sample missingness plot
     plot_sample_missingness = function(input_table = self$tables$indexed_data){
       fig = plot_bar_missingness(
         input_table = input_table,
@@ -2836,12 +2837,24 @@ Omics_exp = R6::R6Class(
       self$plots$sample_missingness = fig
     },
     
+    # Feature missingness plot
     plot_feature_missingness = function(input_table = self$tables$indexed_data){
       fig = plot_bar_missingness(
         input_table = input_table,
         type = "Features"
       )
       self$plots$feature_missingness = fig
+    },
+    
+    # Plot feature annotation distribution
+    plot_feature_annotation_distribution = function(indexed_feat = self$tables$indexed_feat,
+                                                    input_table = self$tables$raw_feat,
+                                                    column = "None") {
+      fig = plot_feature_annotation_distribution(
+        indexed_feat = indexed_feat,
+        input_table = input_table,
+        column = column)
+      self$plots$feature_annotation_distribution = fig
     },
 
     # Dendrogram
