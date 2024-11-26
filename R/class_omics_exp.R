@@ -2721,7 +2721,12 @@ Omics_exp = R6::R6Class(
       fig = plotly::layout(
         p = fig,
         dragmode = FALSE,
-        bargap = 0.2
+        bargap = 0.2,
+        legend = list(
+          title = list(
+            text = "Batches"
+          )
+        )
       )
       fig = plotly::config(
         p = fig,
@@ -2776,7 +2781,12 @@ Omics_exp = R6::R6Class(
       fig = plotly::layout(
         p = fig,
         dragmode = FALSE,
-        bargap = 0.2
+        bargap = 0.2,
+        legend = list(
+          title = list(
+            text = "Batches"
+          )
+        )
       )
       fig = plotly::config(
         p = fig,
