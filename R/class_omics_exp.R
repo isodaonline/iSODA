@@ -1570,6 +1570,7 @@ Omics_exp = R6::R6Class(
         base::warning('Undefined or unsupplied batch column, proceding without batches')
         self$tables$indexed_meta$isoda_batch = 1
         batch_column = "isoda_batch"
+        self$set_raw_meta()
 
       } else if (base::any(base::is.na(indexed_meta[,batch_column]))) {
 
