@@ -1485,7 +1485,7 @@ render_feature_filtering = function(ns, r6) {
             shiny::selectInput(
               inputId = ns('sparse_delimiter'),
               label = "Sparse delimiter",
-              choices = c('|'),
+              choices = c('|', ':', '/', ';'),
               selected = '|',
               width = "100%"
             ),
