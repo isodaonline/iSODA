@@ -2856,6 +2856,42 @@ Omics_exp = R6::R6Class(
         column = column)
       self$plots$feature_annotation_distribution = fig
     },
+    
+    # Sparse feature distribution
+    plot_sparse_feat_distribution = function(sparse_table,
+                                             top_annotations = 50) {
+      
+      top_annotations = as.numeric(top_annotations)
+      
+      if (!(sparse_table %in% names(self$tables$sparse_feat))) {
+        self$plots$sparse_feat_distribution = create_blank_plot()
+        return()
+      }
+      
+      terms_table = self$tables$sparse_feat[[sparse_table]]$terms_table
+      terms_distribution = table(na.omit(terms_table$values))
+      total_terms = length(terms_distribution)
+      terms_distribution = sort(terms_distribution, decreasing = T)
+      terms_distribution = terms_distribution[1:min(top_annotations, length(terms_distribution))]
+      
+      fig = plotly::plot_ly(labels = names(terms_distribution), values = c(terms_distribution)
+      )
+      fig = plotly::add_pie(
+        p = fig,
+        hole = 0.6
+      )
+      fig = plotly::layout(
+        p = fig,
+        title = paste0("Top ", top_annotations, " sparse annotations (total: ", total_terms, ")"),
+        showlegend = F,
+        xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+        yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE
+      )
+      self$plots$sparse_feat_distribution = fig
+    },
 
     # Dendrogram
     plot_dendrogram = function(dataset = self$params$dendrogram$dataset,

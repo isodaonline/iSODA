@@ -5,7 +5,7 @@ base::source('./iSODA/R/class_snf_exp.R')
 
 #--------------------------------------------- DEBUG TRANSCRIPTOMICS 241010 ----
 
-if (T) {
+if (F) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/230828_multiomics_1/t_lipidomics_metadata.csv'
@@ -72,7 +72,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # LIPS
-if (T) {
+if (F) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/240419_Birol_data/iso_data/sample_annotations.csv'
@@ -138,7 +138,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # PROT
-if (F) {
+if (T) {
   name = 'prot_1'
   type = "Proteomics"
   meta_file = './test_data/230927_Cellminer_data/cellminer_data/sample_annotations_filtered.tsv'
@@ -339,16 +339,20 @@ self = initialize_omics(
   norm_col = norm_col
 )
 
+raw_feat = self$tables$raw_feat
+colnames(raw_feat)
+column_name = "Gene Ontology (GO)"
+top_annotations = 50
+self$add_sparse_feat(column_name = column_name)
+
+names(self$tables$sparse_feat[[column_name]])
+self$tables$sparse_feat[[column_name]]$sparse_matrix
+terms_list = self$tables$sparse_feat[[column_name]]$terms_list
+terms_table = self$tables$sparse_feat[[column_name]]$terms_table
 
 
-indexed_feat = self$tables$indexed_feat
-input_table = self$tables$raw_feat
-column = "Lipid class"
-input_table = input_table[input_table[,column] != "CE", ]
 
-plot_feature_annotation_distribution(indexed_feat = self$tables$indexed_feat,
-                                     input_table = self$tables$raw_feat,
-                                     column = "Lipid class")
+
 
 
 #------------------------------------------------------ MOFA TEST CELLMINER ----

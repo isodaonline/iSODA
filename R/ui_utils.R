@@ -1403,9 +1403,25 @@ render_feature_filtering = function(ns, r6) {
         shiny::column(
           width = 6,
           plotly::plotlyOutput(
-            outputId = ns('sparse_table_feedback'),
+            outputId = ns('sparse_feat_distribution'),
             width = '100%',
-            height = '400px'
+            height = '370px'
+          ),
+          shiny::fluidRow(
+            shiny::selectInput(
+              inputId = ns('sparse_table_select'),
+              label = NULL,
+              choices = c("None", names(r6$tables$sparse_feat)),
+              selected = "None",
+              width = "48%"
+            ),
+            shiny::selectInput(
+              inputId = ns('top_sparse_features'),
+              label = NULL,
+              choices = c(25, 50, 100),
+              selected = 25,
+              width = "50%"
+            )
           )
         )
       )
@@ -1777,6 +1793,10 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
       r6$add_sparse_feat(sep = input$sparse_delimiter,
                          column_name = input$sparse_col_selection)
       print_tm(m = r6$name, in_print = "Sparse table successfully generated ")
+      
+      # Update triggers
+      reactive_triggers$sparse_table_update = reactive_triggers$sparse_table_update + 1
+      
     },warning = function(w){
       print_tmw(r6$name, paste0("Warning: " , w))
     },error=function(e){
@@ -1793,6 +1813,10 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
     base::withCallingHandlers({
       r6$add_all_sparse_feat(sep = input$sparse_delimiter)
       print_tm(m = r6$name, in_print = paste0("Sparse tables generated for columns", paste(names(r6$tables$sparse_feat), collapse = ", ")))
+      
+      # Update triggers
+      reactive_triggers$sparse_table_update = reactive_triggers$sparse_table_update + 1
+      
     },warning = function(w){
       print_tmw(r6$name, paste0("Warning: " , w))
     },error=function(e){
@@ -1806,10 +1830,24 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
   session$userData[[id]]$reset_sparse_tables = shiny::observeEvent(input$reset_sparse_tables, {
     print_tm(m = r6$name, in_print = "Clearing sparse tables")
     r6$reset_sparse_feat()
+    
+    # Update triggers
+    reactive_triggers$sparse_table_update = reactive_triggers$sparse_table_update + 1
   })
   
+  # Update select input for sparse_table_select
+  session$userData[[id]]$updatesparse_table_select = shiny::observeEvent(
+    reactive_triggers$sparse_table_update, {
+      shiny::req(input$feature_annotations_preview_table)
+      shiny::updateSelectInput(
+        session = session,
+        inputId = "sparse_table_select",
+        choices = c("None", names(r6$tables$sparse_feat)),
+      )
+    })
+  
   # Observe preview plots
-  session$userData[[id]]$render_data_preview_plots = shiny::observeEvent(
+  session$userData[[id]]$render_feat_preview_plots = shiny::observeEvent(
     c(reactive_triggers$feat_plots,
       input$feature_annotation_distribution_column), {
       
@@ -1825,9 +1863,27 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
       output$feature_annotation_distribution = plotly::renderPlotly({
         r6$plots$feature_annotation_distribution
       })
-      
-      
     })
+  
+  # Observe sparse table plot
+  session$userData[[id]]$render_sparse_feat_preview_plots = shiny::observeEvent(
+    c(reactive_triggers$feat_plots,
+      input$sparse_table_select,
+      input$top_sparse_features), {
+        
+        shiny::req(input$feature_annotations_preview_table)
+        
+        # Feature annotation distribution
+        try_method(
+          r6 = r6,
+          method_name = "plot_sparse_feat_distribution",
+          sparse_table = input$sparse_table_select,
+          top_annotations = input$top_sparse_features)
+        
+        output$sparse_feat_distribution = plotly::renderPlotly({
+          r6$plots$sparse_feat_distribution
+        })
+      })
 
 
   # Download the features table

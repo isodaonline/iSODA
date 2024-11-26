@@ -1424,6 +1424,9 @@ plot_bar_missingness = function(input_table,
   }
   
   missing_data = base::which(is.na(input_table), arr.ind = T)
+  if (length(missing_data) == 0){
+    return(create_blank_plot())
+  }
   missing_data = sort(table(missing_data[,idx]), decreasing = T)
   names(missing_data) = table_names[as.integer(names(missing_data))]
   missing_data = missing_data[1:min(10, length(missing_data))]
