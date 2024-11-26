@@ -19,3 +19,10 @@ You can access iSODA online or download it for local usage:
 
 - **Online Version**: [iSODA Web Platform](http://isoda.online/)
 - **Download & Setup**: Download the code from this page and run the app locally.
+
+## Tutorials
+
+### Uploading data from scratch
+https://github.com/user-attachments/assets/cef3de8c-9362-4585-a7ee-155b55132e0c
+
+
