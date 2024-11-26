@@ -501,7 +501,8 @@ single_omics_server = function(id, ns, input, output, session, module_controler,
     data_table_preview = 0,
     feat_table_preview = 0,
     set_raw_data = 0,
-    meta_plots = 0
+    meta_plots = 0,
+    data_plots = 0
   )
 
   #------------------------------------------------------------ SAMPLES TAB ----

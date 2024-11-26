@@ -791,6 +791,7 @@ Omics_exp = R6::R6Class(
       # Preview plots
       sample_type_distribution = NULL,
       sample_group_distribution = NULL,
+      missing_donut = NULL,
 
       # Interactive visualization
       dendrogram = NULL,
@@ -2794,6 +2795,37 @@ Omics_exp = R6::R6Class(
         scrollZoom = FALSE
       )
       self$plots$sample_group_distribution = fig
+    },
+    
+    plot_missing_donut = function(input_table = self$tables$indexed_data) {
+      
+      fig = plotly::plot_ly(labels = c('Missing', 'Non-missing'), values = c(
+        sum(is.na(input_table)),
+        sum(!is.na(input_table)))
+      )
+      fig = plotly::add_pie(
+        p = fig,
+        hole = 0.6,
+        marker = list(colors = c('lightblue', 'deepskyblue'))
+      )
+      fig = plotly::layout(
+        p = fig,
+        title = "Missing values",
+        legend = list(
+          orientation = 'h',
+          x = 0.5, 
+          y = -0.2, 
+          xanchor = 'center',
+          yanchor = 'top' 
+        ),
+        showlegend = T,
+        xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+        yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE
+      )
+      self$plots$missing_donut = fig
     },
 
     # Dendrogram

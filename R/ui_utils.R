@@ -919,8 +919,7 @@ events_sample_filtering = function(input, output, session, id, r6, reactive_trig
     reactive_triggers$meta_plots, {
 
       if (is.null(input$sample_annotations_type_col)) {return()}
-
-      # r6$plot_sample_type_distribution(input_table = r6$table_switch_local(input$sample_annotations_preview_table))
+      
       try_method(
         r6 = r6,
         method_name = "plot_sample_type_distribution",
@@ -930,8 +929,6 @@ events_sample_filtering = function(input, output, session, id, r6, reactive_trig
         r6$plots$sample_type_distribution
       })
 
-
-      # r6$plot_sample_group_distribution(input_table = r6$table_switch_local(input$sample_annotations_preview_table))
       try_method(
         r6 = r6,
         method_name = "plot_sample_group_distribution",
@@ -1014,7 +1011,32 @@ render_measurement_filtering = function(ns, r6) {
           )
         )
       ),
-      shiny::h4('plot placeholder')
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          plotly::plotlyOutput(
+            outputId = ns('missingness_donut'),
+            width = '100%',
+            height = '400px'
+          )
+        ),
+        shiny::column(
+          width = 3,
+          plotly::plotlyOutput(
+            outputId = ns('sample_missingness'),
+            width = '100%',
+            height = '400px'
+          )
+        ),
+        shiny::column(
+          width = 3,
+          plotly::plotlyOutput(
+            outputId = ns('feature_missingness'),
+            width = '100%',
+            height = '400px'
+          )
+        )
+      )
     ),
     shiny::column(
       width = 4,
@@ -1221,6 +1243,9 @@ events_measurement_filtering = function(input, output, session, id, r6, reactive
         total = nrow(r6$tables$indexed_data),
         title = 'Sample count'
       )
+      
+      # Update triggers
+      reactive_triggers$data_plots = reactive_triggers$data_plots + 1
 
     })
 
@@ -1253,6 +1278,7 @@ events_measurement_filtering = function(input, output, session, id, r6, reactive
           # Trigger the preview table
           reactive_triggers$data_table_preview = reactive_triggers$data_table_preview + 1
           reactive_triggers$feat_table_preview = reactive_triggers$feat_table_preview + 1
+          reactive_triggers$data_plots = reactive_triggers$data_plots + 1
 
         },warning = function(w){
           print_tmw(r6$name, paste0("Warning: " , w))
@@ -1260,6 +1286,26 @@ events_measurement_filtering = function(input, output, session, id, r6, reactive
           print_tme(r6$name, paste0("Error:" , e))
         })
       })
+  
+  # Observe preview plots
+  session$userData[[id]]$render_data_preview_plots = shiny::observeEvent(
+    reactive_triggers$data_plots, {
+
+      shiny::req(input$measurement_data_preview_table)
+      
+      # if (is.null(r6$tables$raw_data)) {return()}
+
+
+      try_method(
+        r6 = r6,
+        method_name = "plot_missing_donut",
+        input_table = r6$table_switch_local(input$measurement_data_preview_table))
+
+      output$missingness_donut = plotly::renderPlotly({
+        r6$plots$missing_donut
+      })
+
+    })
 
   # Download the measurements table
   output$measurement_download = shiny::downloadHandler(
