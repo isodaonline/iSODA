@@ -729,7 +729,6 @@ events_sample_filtering = function(input, output, session, id, r6, reactive_trig
     reactive_triggers$meta_table_preview
   ), {
     shiny::req(input$sample_annotations_preview_table)
-    print_t('meta table preview')
 
     # Head preview table
     preview_table = r6$table_switch_local(input$sample_annotations_preview_table)
@@ -1210,7 +1209,7 @@ events_measurement_filtering = function(input, output, session, id, r6, reactive
       input$reset_feat_table),
     {
       shiny::req(input$measurement_data_preview_table)
-      print_t("data table preview")
+      
       # Head preview table
       preview_table = r6$table_switch_local(input$measurement_data_preview_table)
 
@@ -1650,7 +1649,7 @@ events_feature_filtering = function(input, output, session, id, r6, reactive_tri
     ),
     {
       shiny::req(input$feature_annotations_preview_table)
-      print_t('feat table preview')
+      
       # Head preview table
       preview_table = r6$table_switch_local(input$feature_annotations_preview_table)
       if (input$head_feature_annotations) {
