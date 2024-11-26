@@ -72,7 +72,7 @@ if (F) {
   norm_col = "None"
   verbose = T
 } # LIPS
-if (F) {
+if (T) {
   name = 'lips_1'
   type = "Lipidomics"
   meta_file = './test_data/240419_Birol_data/iso_data/sample_annotations.csv'
@@ -338,6 +338,14 @@ self = initialize_omics(
   operation_order = operation_order,
   norm_col = norm_col
 )
+
+raw_meta = self$tables$raw_meta
+
+kept_samples = rownames(raw_meta)[raw_meta$LTP_Family == "OSBP"]
+self$exclude_samples(selection = kept_samples,
+                     drop = F)
+self$set_raw_meta()
+
 
 # Sparse table stuff
 set_raw_data = function(indexed_data = self$tables$indexed_data,

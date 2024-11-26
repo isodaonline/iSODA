@@ -52,7 +52,7 @@ Omics_exp = R6::R6Class(
 
     #----------------------------------------------------------- Parameters ----
     params = list(
-      
+
       # Feature signal filtering
       measurement_filter = list(
         operation_order = c('Imputation', 'Batch correction', 'Filtering'),
@@ -700,7 +700,7 @@ Omics_exp = R6::R6Class(
       imp_data = NULL,
       indexed_data = NULL,
       raw_data = NULL,
-      
+
       # Feature tables
       imp_feat = NULL,
       indexed_feat = NULL,
@@ -711,7 +711,7 @@ Omics_exp = R6::R6Class(
       feature_list = NULL,
       external_feature_tables = list(),
       external_enrichment_tables = list(),
-      
+
       # Non sample tables
       blank_table = NULL,
       qc_table = NULL,
@@ -753,11 +753,11 @@ Omics_exp = R6::R6Class(
       ea_feature_table = NULL,
       ea_object = NULL,
       ea_table = NULL,
-      
+
       ora_feature_table = NULL,
       ora_object = NULL,
       ora_table = NULL,
-      
+
       # Functional analysis tables
       ea_dot_plot = NULL,
       ora_dot_plot = NULL,
@@ -791,7 +791,7 @@ Omics_exp = R6::R6Class(
       # Preview plots
       sample_type_distribution = NULL,
       sample_group_distribution = NULL,
-      
+
       # Interactive visualization
       dendrogram = NULL,
       class_distribution = NULL,
@@ -825,7 +825,7 @@ Omics_exp = R6::R6Class(
                             hardcoded_settings = self$hardcoded_settings)
       base::dput(parameter_file, file = file_name)
     },
-    
+
     param_measurement_filter = function(operation_order, batch_effect_correction, imputation_method, blank_multiplier, sample_threshold, group_threshold, norm_col) {
       self$params$measurement_filter$operation_order = operation_order
       self$params$measurement_filter$batch_effect_correction = batch_effect_correction
@@ -835,7 +835,7 @@ Omics_exp = R6::R6Class(
       self$params$measurement_filter$group_threshold = group_threshold
       self$params$measurement_filter$norm_col = norm_col
     },
-    
+
     toggle_dendrogram = function() {
       if (self$params$dendrogram$update) {
         self$params$dendrogram$update = F
@@ -1655,7 +1655,7 @@ Omics_exp = R6::R6Class(
         self$indices$excluded_samples = excluded_samples
       }
     },
-    
+
     non_sample_exclusion = function(indexed_meta = self$tables$indexed_meta,
                                     excluded_samples = self$indices$excluded_samples,
                                     select_blanks = F,
@@ -1688,16 +1688,18 @@ Omics_exp = R6::R6Class(
         selected_samples = c(selected_samples, index_pools)
       }
 
-      if (exclude) {
-        excluded_samples = c(excluded_samples, selected_samples)
-      } else {
-        excluded_samples = c(excluded_samples, rownames(indexed_meta)[!(rownames(indexed_meta) %in% selected_samples)])
+      if (!is.null(selected_samples)) {
+        if (length(selected_samples) > 0) {
+          if (exclude) {
+            excluded_samples = c(excluded_samples, selected_samples)
+          } else {
+            excluded_samples = c(excluded_samples, rownames(indexed_meta)[!(rownames(indexed_meta) %in% selected_samples)])
+          }
+          excluded_samples = base::sort(base::unique(excluded_samples))
+          self$indices$excluded_samples = excluded_samples
+        }
       }
 
-      # Unique and sort
-      excluded_samples = base::sort(base::unique(excluded_samples))
-
-      self$indices$excluded_samples = excluded_samples
     },
 
     reset_sample_exclusion = function() {
@@ -1748,11 +1750,11 @@ Omics_exp = R6::R6Class(
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
-      
-      
+
+
       self$tables$imp_data = imp_data
     },
-    
+
     import_feat = function(path, input_format = "Long") {
       if (is.null(path)) {return()}
       if (!base::file.exists(path)) {base::stop("Feature annotations file not found")}
@@ -1766,7 +1768,7 @@ Omics_exp = R6::R6Class(
 
     set_indexed_meta = function(id_col = self$indices$id_col_meta,
                                 imp_meta = self$tables$imp_meta) {
-      
+
       indexed_meta = get_indexed_table(id_col = id_col,
                                        input_table = imp_meta)
       indexed_meta[is.na(indexed_meta)] = "NA"
@@ -1783,7 +1785,7 @@ Omics_exp = R6::R6Class(
 
       indexed_df = get_indexed_table(id_col = id_col,
                                      input_table = imp_data)
-      
+
       indexed_data = as.matrix(sapply(indexed_df, as.numeric))
       rownames(indexed_data) = rownames(indexed_df)
       colnames(indexed_data) = colnames(indexed_df)
@@ -1793,7 +1795,7 @@ Omics_exp = R6::R6Class(
       self$tables$indexed_data = indexed_data
 
     },
-    
+
     set_indexed_feat = function(id_col = self$indices$id_col_feat,
                                 id_col_data = self$indices$id_col_data,
                                 imp_feat = self$tables$imp_feat,
@@ -1811,18 +1813,18 @@ Omics_exp = R6::R6Class(
         indexed_feat = get_indexed_table(id_col = id_col,
                                          input_table = imp_feat)
       }
-      
+
       if (type == "Lipidomics") {
         indexed_feat = get_feature_metadata(
           feature_table = indexed_feat)
       }
-      
+
       # Store
       self$indices$id_col_feat = id_col
       self$tables$indexed_feat = indexed_feat
-      
+
     },
-    
+
     check_indexed_table_consistency = function(indexed_data = self$tables$indexed_data,
                                                indexed_meta = self$tables$indexed_meta,
                                                indexed_feat = self$tables$indexed_feat) {
@@ -1839,7 +1841,7 @@ Omics_exp = R6::R6Class(
         self$tables$indexed_data = indexed_data
         self$tables$indexed_meta = indexed_meta
       }
-      
+
       # Check data - feat
       shared_features = base::intersect(colnames(indexed_data), rownames(indexed_feat))
       if (length(shared_features) < 3) {
@@ -1853,13 +1855,14 @@ Omics_exp = R6::R6Class(
 
     set_raw_meta = function(indexed_meta = self$tables$indexed_meta,
                             excluded_samples = self$indices$excluded_samples){
-      
+
       if (is.null(indexed_meta)) {
         base::stop('Error while setting Raw meta: missing indexed meta')
       }
-      
+
       if (!is.null(excluded_samples)) {
-        indexed_meta = indexed_meta[-which(rownames(indexed_meta) %in% excluded_samples), ]
+        matched_excluded = which(rownames(indexed_meta) %in% excluded_samples)
+        indexed_meta = indexed_meta[-matched_excluded, ]
       }
 
       if (nrow(indexed_meta) == 0) {
@@ -1886,28 +1889,28 @@ Omics_exp = R6::R6Class(
                             batch_effect_correction = self$params$measurement_filter$batch_effect_correction,
                             norm_col = self$params$measurement_filter$norm_col
     ) {
-      
+
       # Check on indexed data
       if (is.null(indexed_data)) {
         base::stop('Error while setting Raw data: missing indexed data')
       } else {
         raw_data = indexed_data
       }
-      
+
       # Exclude features
       if (!is.null(excluded_features)) {
         if (length(excluded_features) > 0) {
           raw_data = raw_data[, -which(colnames(raw_data) %in% excluded_features)]
         }
       }
-      
+
       # Exclude samples
       if (!is.null(excluded_samples)) {
         if (length(excluded_samples) > 0) {
           raw_data = raw_data[-which(rownames(raw_data) %in% excluded_samples),]
         }
       }
-      
+
       # Remove any columns with either only 0s or NAs that can have survived
       empty_cols = colSums(raw_data, na.rm = T)
       empty_cols = which(empty_cols == 0)
@@ -1915,12 +1918,12 @@ Omics_exp = R6::R6Class(
         empty_cols = names(empty_cols)
         raw_data = raw_data[,-which(colnames(raw_data) %in% empty_cols)]
       }
-      
+
       # Get non-sample tables
       blank_table = indexed_data[index_blanks, colnames(raw_data)]
       qc_table = indexed_data[index_qcs, colnames(raw_data)]
       pool_table = indexed_data[index_pools, colnames(raw_data)]
-      
+
       # Process raw_data indexed_meta
       for (func_name in operation_order) {
         if (func_name == "Imputation") {
@@ -1947,7 +1950,7 @@ Omics_exp = R6::R6Class(
             raw_data = corrected_data$raw_data
             blank_table = corrected_data$blank_table
           }
-          
+
         } else if (func_name == "Filtering") {
           if (nrow(blank_table) > 0) {
             raw_data = measurement_filtering(
@@ -1968,13 +1971,13 @@ Omics_exp = R6::R6Class(
               }
             }
             self$indices$filtered_out_features = filtered_out_features
-            
+
           }
         } else {
           base::stop(paste0('Requested process does not exist: ', func_name))
         }
       }
-      
+
       # Normalization
       if (norm_col != "None") {
         indexed_meta = indexed_meta[rownames(raw_data),]
@@ -1984,11 +1987,11 @@ Omics_exp = R6::R6Class(
           base::warning("Normalization skipped, selected column contains either non numeric or missing data.")
         }
       }
-      
+
       self$tables$raw_data = raw_data
     },
-    
-    
+
+
     set_raw_feat = function(indexed_data = self$tables$indexed_data,
                             indexed_feat = self$tables$indexed_feat,
                             excluded_features = self$indices$excluded_features,
@@ -1997,14 +2000,14 @@ Omics_exp = R6::R6Class(
       if (is.null(indexed_data)) {
         base::stop('Error while setting Raw feat: missing indexed data')
       }
-      
+
       # Get the features from the indexed data
       features_data = colnames(indexed_data)
       features_feat = rownames(indexed_feat)
-      
+
       # Merge excluded_features and filtered_out_features
       excluded_features = c(excluded_features, filtered_out_features)
-      
+
       # Remove excluded features
       if (!is.null(excluded_features)) {
         if (length(excluded_features) > 0) {
@@ -2015,51 +2018,36 @@ Omics_exp = R6::R6Class(
       shared_keys = base::intersect(features_data, features_feat)
       missing_keys = base::setdiff(features_data, features_feat)
       raw_feat = indexed_feat[shared_keys, ]
-      
+
       new_rows = data.frame(matrix(NA, nrow = length(missing_keys), ncol = ncol(raw_feat)))
       rownames(new_rows) = missing_keys
       colnames(new_rows) = colnames(raw_feat)
-      
+
       if (nrow(new_rows) > 0) {
         raw_feat = rbind(raw_feat, new_rows)
       }
       self$tables$raw_feat = raw_feat
 
     },
-    
-    reset_raw_meta = function() {
-      self$reset_sample_exclusion()
-      self$set_raw_meta()
-    },
-    
-    reset_raw_data = function() {
-      self$reset_feature_exclusion()
-      self$set_raw_data()
-    },
-    
-    reset_raw_feat = function() {
-      self$reset_feature_exclusion()
-      self$set_raw_feat()
-    },
 
     add_sparse_feat = function(feature_table = self$tables$indexed_feat,
                                sep = "|",
                                column_name) {
-      
+
       if (is.null(feature_table)) {
         base::stop('Set indexed_feat before adding a sparse table')
       }
-      
+
       column_values = feature_table[,column_name]
       column_values[is.na(column_values)] = ""
-      
+
       if (!any(stringr::str_detect(column_values, fixed(sep)))) {
         base::stop(paste0("Separator ", sep, " not found in column ", column_name))
       }
-      
+
       column_values[column_values == ""] = NA
       names(column_values) = rownames(feature_table)
-      
+
       column_terms = vector("list", length(column_values))
       for (i in 1:length(column_values)) {
         if (is.na(column_values[i])) {
@@ -2074,15 +2062,15 @@ Omics_exp = R6::R6Class(
                                         terms_list = terms_list)
       terms_table = get_terms_table(column_values = column_values,
                                     sep = sep)
-      
+
       self$tables$sparse_feat[[column_name]]$terms_list = terms_list
       self$tables$sparse_feat[[column_name]]$terms_table = terms_table
       self$tables$sparse_feat[[column_name]]$sparse_matrix = sparse_matrix
     },
-    
+
     add_all_sparse_feat = function(feature_table = self$tables$indexed_feat,
                                    sep = "|") {
-      
+
       for (column_name in colnames(feature_table)){
         if (any(stringr::str_detect(stats::na.exclude(feature_table[,column_name]), fixed(sep)))) {
           self$add_sparse_feat(
@@ -2092,9 +2080,9 @@ Omics_exp = R6::R6Class(
           )
         }
       }
-      
+
     },
-    
+
     reset_sparse_feat = function() {
       self$tables$sparse_feat = NULL
     },
@@ -2174,7 +2162,7 @@ Omics_exp = R6::R6Class(
       }
 
       self$indices$feature_id_type = "SYMBOL"
-      
+
       # Set plotting parameters
 
       self$param_dendrogram(auto_refresh = F,
@@ -2596,7 +2584,7 @@ Omics_exp = R6::R6Class(
                              verbose = self$params$ea_process$verbose,
                              OrgDb = self$params$ea_process$OrgDb,
                              seed = self$params$ea_process$seed) {
-      
+
       # Get the terms table
       if (!is.null(custom_col)) {
         if (custom_col %in% names(sparse_feat)) {
@@ -2645,7 +2633,7 @@ Omics_exp = R6::R6Class(
                               minGSSize = self$params$ora_process$minGSSize,
                               maxGSSize  = self$params$ora_process$maxGSSize,
                               seed = self$params$ora_process$seed) {
-      
+
       # Get the terms table
       if (!is.null(custom_col)) {
         if (custom_col %in% names(sparse_feat)) {
@@ -2659,7 +2647,7 @@ Omics_exp = R6::R6Class(
       } else {
         terms_table = NULL
       }
-      
+
 
       ora_object = get_ora_object(ora_feature_table = ora_feature_table,
                                   terms_table = terms_table,
@@ -2676,7 +2664,7 @@ Omics_exp = R6::R6Class(
                                   minGSSize = minGSSize,
                                   maxGSSize  = maxGSSize,
                                   seed = seed)
-      
+
       if (is.null(ora_object)) {
         base::stop('No over representation found')
       }
@@ -2708,13 +2696,13 @@ Omics_exp = R6::R6Class(
         plot_df$Pools = c(plot_df$Pools, length(base::intersect(batch_rows, index_pools)))
         plot_df$Mixed = c(plot_df$Mixed, length(base::intersect(batch_rows, mixed_samples)))
       }
-      
+
       plot_df = data.frame(plot_df)
       rownames(plot_df) = plot_df$Batch
       plot_df$Batch = NULL
-      
+
       batch_label = base::ifelse(length(batches) > 1, " & batch", "")
-      
+
       fig = plotly::plot_ly(x = factor(colnames(plot_df), levels = colnames(plot_df)))
       for (i in rownames(plot_df)) {
         fig = plotly::add_trace(
@@ -2741,19 +2729,19 @@ Omics_exp = R6::R6Class(
       )
       self$plots$sample_type_distribution = fig
     },
-    
+
     # Sample group distribution
     plot_sample_group_distribution = function(
     input_table = self$tables$indexed_meta,
     batch_column = self$indices$batch_column,
     group_column = self$indices$group_column) {
-      
+
       batches = sort(unique(input_table[,batch_column]))
       groups = sort(unique(input_table[,group_column]))
-      
+
       # Check on groups
       if (length(groups) < 2) {base::stop('Less than two groups in selected group column')}
-      
+
       plot_df = list()
       for (batch in batches) {
         batch_rows = rownames(input_table)[input_table[,batch_column] == batch]
@@ -2763,13 +2751,13 @@ Omics_exp = R6::R6Class(
           plot_df[[group]] = c(plot_df[[group]], length(base::intersect(batch_rows, index_group)))
         }
       }
-      
+
       plot_df = data.frame(plot_df, check.names = F)
       rownames(plot_df) = plot_df$Batch
       plot_df$Batch = NULL
-      
+
       batch_label = base::ifelse(length(batches) > 1, " & batch", "")
-      
+
       fig = plotly::plot_ly(x = factor(colnames(plot_df), levels = colnames(plot_df)))
       for (i in rownames(plot_df)) {
         fig = plotly::add_trace(
@@ -2796,7 +2784,7 @@ Omics_exp = R6::R6Class(
       )
       self$plots$sample_group_distribution = fig
     },
-    
+
     # Dendrogram
     plot_dendrogram = function(dataset = self$params$dendrogram$dataset,
                                meta_table = self$tables$raw_meta,
