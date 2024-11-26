@@ -2827,6 +2827,22 @@ Omics_exp = R6::R6Class(
       )
       self$plots$missing_donut = fig
     },
+    
+    plot_sample_missingness = function(input_table = self$tables$indexed_data){
+      fig = plot_bar_missingness(
+        input_table = input_table,
+        type = "Samples"
+      )
+      self$plots$sample_missingness = fig
+    },
+    
+    plot_feature_missingness = function(input_table = self$tables$indexed_data){
+      fig = plot_bar_missingness(
+        input_table = input_table,
+        type = "Features"
+      )
+      self$plots$feature_missingness = fig
+    },
 
     # Dendrogram
     plot_dendrogram = function(dataset = self$params$dendrogram$dataset,

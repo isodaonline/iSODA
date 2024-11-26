@@ -1354,6 +1354,48 @@ lips_get_del_cols = function(data_table,
 
 #------------------------------------------------------- Plotting functions ----
 
+plot_bar_missingness = function(input_table,
+                                type) {
+  if (!(type %in% c('Samples', 'Features'))){
+    base::stop('type should be either Samples or Features')
+  } else if (type == "Samples") {
+    idx = 1
+    autorange = "reversed"
+    table_names = rownames(input_table)
+  } else {
+    idx = 2
+    autorange = NULL
+    table_names = colnames(input_table)
+  }
+  
+  missing_data = base::which(is.na(input_table), arr.ind = T)
+  missing_data = sort(table(missing_data[,idx]), decreasing = T)
+  names(missing_data) = table_names[as.integer(names(missing_data))]
+  missing_data = missing_data[1:min(10, length(missing_data))]
+  missing_data = sort(missing_data, decreasing = F)
+  data_names = factor(names(missing_data), levels = names(missing_data))
+  
+  
+  fig = plotly::plot_ly(
+    x = missing_data,
+    y = data_names,
+    type = "bar",
+    marker = list(color = 'deepskyblue'),
+    orientation = "h"
+  )
+  fig = plotly::layout(
+    p = fig,
+    title = paste0(type, " missingness (top 10)"),
+    xaxis = list(autorange = autorange),
+    dragmode = FALSE
+  )
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE
+  )
+  return(fig)
+}
+
 plot_sample_types_per_batch = function(
     imp_meta,
     type_column,

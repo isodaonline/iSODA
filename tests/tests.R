@@ -340,39 +340,20 @@ self = initialize_omics(
 )
 
 
-input_table = self$tables$raw_data
-
-plot_missing_donut = function(input_table = self$tables$indexed_meta) {
-  
-  fig = plotly::plot_ly(labels = c('Missing', 'Non-missing'), values = c(
-    sum(is.na(input_table)),
-    sum(!is.na(input_table)))
-  )
-  fig = plotly::add_pie(
-    p = fig,
-    hole = 0.6,
-    marker = list(colors = c('lightblue', 'deepskyblue'))
-  )
-  fig = plotly::layout(
-    p = fig,
-    legend = list(
-      orientation = 'h',
-      x = 0.5, 
-      y = -0.2, 
-      xanchor = 'center',
-      yanchor = 'top' 
-    ),
-    showlegend = T,
-    xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
-  fig = plotly::config(
-    p = fig,
-    displayModeBar = FALSE
-  )
-  self$plots$missing_donut = fig
-}
 
 
+
+
+
+plot_bar_missingness(
+  input_table = self$tables$raw_data,
+  type = "Samples"
+)
+
+plot_bar_missingness(
+  input_table = self$tables$raw_data,
+  type = "Features"
+)
 
 
 truffles = base::which(is.na(self$tables$raw_data), arr.ind = T)

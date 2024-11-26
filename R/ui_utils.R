@@ -1292,10 +1292,8 @@ events_measurement_filtering = function(input, output, session, id, r6, reactive
     reactive_triggers$data_plots, {
 
       shiny::req(input$measurement_data_preview_table)
-      
-      # if (is.null(r6$tables$raw_data)) {return()}
 
-
+      # Missing donut
       try_method(
         r6 = r6,
         method_name = "plot_missing_donut",
@@ -1304,7 +1302,25 @@ events_measurement_filtering = function(input, output, session, id, r6, reactive
       output$missingness_donut = plotly::renderPlotly({
         r6$plots$missing_donut
       })
-
+      
+      # Sample missingness
+      try_method(
+        r6 = r6,
+        method_name = "plot_sample_missingness",
+        input_table = r6$table_switch_local(input$measurement_data_preview_table)) 
+      output$sample_missingness = plotly::renderPlotly({
+        r6$plots$sample_missingness
+      })
+      
+      # Feature missingness
+      try_method(
+        r6 = r6,
+        method_name = "plot_feature_missingness",
+        input_table = r6$table_switch_local(input$measurement_data_preview_table)) 
+      output$feature_missingness = plotly::renderPlotly({
+        r6$plots$feature_missingness
+      })
+      
     })
 
   # Download the measurements table
