@@ -30,6 +30,9 @@ Once uploaded, the data can be visualized via the multiple available interactive
 - Input settings: tables, samples or feature groups to use
 - Data settings: statistics and filtering to apply
 - Aesthetic settings: color palettes, marker size, font size
-- Output settings: image format, table downloads  
+- Output settings: image format, table downloads
+https://github.com/user-attachments/assets/c7eef5a4-acec-4c88-90d3-47e751259a65
+
+
 
 
