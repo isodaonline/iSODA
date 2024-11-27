@@ -25,6 +25,16 @@ You can access iSODA online or download it for local usage:
 ### Single-omics data upload
 https://github.com/user-attachments/assets/cef3de8c-9362-4585-a7ee-155b55132e0c
 
+### Upload feature annotation and processing sparse annotations  
+In addition to the samples and measurement tables, feature annotations can also be uploaded. These can be used to color features on plots, filtering etc... 
+- Sparse annotations are character-delimited features stored within a feature annotation column (often delimited using the pipe "|" character).
+- These can be processed in iSODA using the Sparse annotations section in the features tab.
+- They can then be used in plots like the volcano plot. Selecting one sparse annotation will show which features are associated to that annotation.
+- Selecting multiple sparse annotations will color the features according to the number of these sparse annotations they are associated with.
+- They can also be used in functional analysis.  
+    
+	
+
 ### Single-omics data visualization  
 Once uploaded, the data can be visualized via the multiple available interactive plots. Up to four plots can be displayed simultaneously and the parameters for each plot can be accessed on the associated sidebars. Parameters include:  
 - Input settings: tables, samples or feature groups to use
