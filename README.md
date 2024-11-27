@@ -22,7 +22,14 @@ You can access iSODA online or download it for local usage:
 
 ## Tutorials
 
-### Uploading data from scratch
+### Single-omics data upload
 https://github.com/user-attachments/assets/cef3de8c-9362-4585-a7ee-155b55132e0c
+
+### Single-omics data visualization  
+Once uploaded, the data can be visualized via the multiple available interactive plots. Up to four plots can be displayed simultaneously and the parameters for each plot can be accessed on the associated sidebars. Parameters include:  
+- Input settings: tables, samples or feature groups to use
+- Data settings: statistics and filtering to apply
+- Aesthetic settings: color palettes, marker size, font size
+- Output settings: image format, table downloads  
 
 
