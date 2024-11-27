@@ -33,7 +33,7 @@ In addition to the samples and measurement tables, feature annotations can also 
 - Selecting multiple sparse annotations will color the features according to the number of these sparse annotations they are associated with.
 - They can also be used in functional analysis.  
     
-	
+https://github.com/user-attachments/assets/7b6a1856-eb0c-4d61-9cb9-c98912391f37
 
 ### Single-omics data visualization  
 Once uploaded, the data can be visualized via the multiple available interactive plots. Up to four plots can be displayed simultaneously and the parameters for each plot can be accessed on the associated sidebars. Parameters include:  
