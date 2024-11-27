@@ -6675,7 +6675,8 @@ plot_volcano_violin = function(
                                    opacity = opacity,
                                    marker_size = marker_size,
                                    x_label_font_size = x_label_font_size,
-                                   y_label_font_size = y_label_font_size))
+                                   y_label_font_size = y_label_font_size,
+                                   legend_font_size = legend_font_size))
   }
 
   p = plotly::plot_ly()
@@ -6729,7 +6730,7 @@ plot_volcano_violin = function(
                           legendgroup = group,
                           text = group_table$names,
                           hoverinfo = 'text',
-                          showlegend = show_legend)
+                          showlegend = F) #
   }
   p = plotly::layout(p,
 
@@ -6756,11 +6757,12 @@ plot_volcano_violin_top = function(data,
                                    opacity,
                                    marker_size,
                                    x_label_font_size,
-                                   y_label_font_size) {
+                                   y_label_font_size,
+                                   legend_font_size) {
 
   xlabel = base::ifelse(x_label_font_size == 0, '', 'Log2(Fold Change)')
   ylabel = base::ifelse(y_label_font_size == 0, '', 'No p-value')
-  show_legend = base::ifelse(y_label_font_size == 0, F, T)
+  show_legend = base::ifelse(legend_font_size == 0, F, T)
 
   p = plotly::plot_ly()
 
@@ -6777,7 +6779,7 @@ plot_volcano_violin_top = function(data,
                         name = 'Not significant',
                         legendgroup = 'Not significant',
                         hoverinfo = 'none',
-                        showlegend = F,
+                        showlegend = F, #
                         orientation = 'h')
 
   for (group in unique(data$groups)) {
@@ -6793,7 +6795,7 @@ plot_volcano_violin_top = function(data,
                           legendgroup = group,
                           text = group_table$names,
                           hoverinfo = 'text',
-                          showlegend = show_legend)
+                          showlegend = F) 
 
   }
 
