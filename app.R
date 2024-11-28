@@ -71,14 +71,14 @@ library(rclipboard)
 
 #------------------------------------------------------------- Setup header ----
 header_ui = function() {
-
+  
   # Get data from the description file
   desc = read.delim("DESCRIPTION", header = FALSE)
-
+  
   # Extract and capitalise name
   name = stringr::str_split(desc[1,1], ":")[[1]][2]
   name = trimws(name)
-
+  
   # Extract version
   version = gsub("[^0-9.-]", "", desc[3,1])
   header = paste(name, "|", version, sep = " ")
@@ -104,15 +104,15 @@ sidebar_ui = function() {
         text = "Single-omics",
         tabName = "single_omics",
         icon = shiny::icon("list")
-        ),
-
+      ),
+      
       bs4Dash::sidebarMenuOutput("exp_1"),
       bs4Dash::sidebarMenuOutput("exp_2"),
       bs4Dash::sidebarMenuOutput("exp_3"),
       bs4Dash::sidebarMenuOutput("exp_4"),
       bs4Dash::sidebarMenuOutput("exp_5"),
       bs4Dash::sidebarMenuOutput("exp_6"),
-
+      
       bs4Dash::bs4SidebarMenuItem(
         text = "Multi-omics",
         tabName = "multi_omics",
@@ -128,7 +128,7 @@ sidebar_ui = function() {
           icon = shiny::icon("circle")
         )
       ),
-
+      
       bs4Dash::bs4SidebarMenuItem(
         text = "Help",
         tabName = "help",
@@ -163,7 +163,7 @@ sidebar_ui = function() {
 body_ui = function() {
   
   bs4Dash::dashboardBody(
-
+    
     # Detect UI functions
     shinyjs::useShinyjs(),
     shinybrowser::detect(),
@@ -181,72 +181,72 @@ body_ui = function() {
         tabName = "single_omics",
         main_single_omics_ui(id = 'mod_single_omics')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "exp_1",
         experiment_ui(id = 'mod_exp_1')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "exp_2",
         experiment_ui(id = 'mod_exp_2')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "exp_3",
         experiment_ui(id = 'mod_exp_3')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "exp_4",
         experiment_ui(id = 'mod_exp_4')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "exp_5",
         experiment_ui(id = 'mod_exp_5')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "exp_6",
         experiment_ui(id = 'mod_exp_6')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "mofa_tab",
         mofa_ui(id = "mofa")
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "snf_tab",
         snf_ui(id = "snf")
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "logs_tab",
         logs_ui(id = "logs")
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "about",
         about_ui(id = 'mod_about')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "help_start",
         help_start_ui(id = 'mod_help_start')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "help_single_omics",
         help_single_omics_ui(id = 'mod_help_single_omics')
       ),
-
+      
       bs4Dash::tabItem(
         tabName = "help_multi_omics",
         help_multi_omics_ui(id = 'mod_help_multi_omics')
       )
-
+      
     )
   )
 }
@@ -262,9 +262,39 @@ ui = bs4Dash::dashboardPage(
   body = body,
   help = NULL)
 
+# Authentication switch
+if (F) {
+  ui = shinymanager::secure_app(ui,
+                                tags_top = tags$div(
+                                  shiny::h2('What is iSODA?'),
+                                  shiny::p('iSODA is designed to analyze and visualize
+                                preprocessed omics data. Currently available omic
+                                experiments are lipidomics, metabolomics, proteomics, transcriptomics and genomics'),
+                                  shiny::p("The app is designed for efficient data
+                                exploration, providing interactive plots with extensive
+                                flexibility in terms of input data, analytical processes,
+                                         and visual customization."),
+                                  shiny::p("Visit our GitHub page to access the code.")
+                                )
+  )
+} 
+
+
 #------------------------------------------------------------------- Server ----
 
 server = function(input, output, session) {
+  
+  # Authentication switch
+  if (F) {
+    res_auth = shinymanager::secure_server(
+      check_credentials = shinymanager::check_credentials(db = data.frame(
+        user = "user",
+        password = "password",
+        admin = FALSE)
+      )
+    )
+  }
+  
   
   # Get software version
   desc = read.delim("DESCRIPTION", header = FALSE)
@@ -285,15 +315,15 @@ server = function(input, output, session) {
   # Source the tooltips file and utils
   base::source("./man/tooltips_data.R")
   base::source('./R/utils.R')
-
+  
   options(shiny.maxRequestSize=300*1024^2)
-
+  
   module_controler = shiny::reactiveValues(
     
     name = NULL,
     user = NULL,
     comment = NULL,
-
+    
     slot_taken = list(
       'exp_1' = FALSE,
       'exp_2' = FALSE,
@@ -302,7 +332,7 @@ server = function(input, output, session) {
       'exp_5' = FALSE,
       'exp_6' = FALSE
     ),
-
+    
     module_loaded = list(
       'exp_1' = FALSE,
       'exp_2' = FALSE,
@@ -311,7 +341,7 @@ server = function(input, output, session) {
       'exp_5' = FALSE,
       'exp_6' = FALSE
     ),
-
+    
     exp_types = list(
       'exp_1' = NULL,
       'exp_2' = NULL,
@@ -320,7 +350,7 @@ server = function(input, output, session) {
       'exp_5' = NULL,
       'exp_6' = NULL
     ),
-
+    
     exp_names = list(
       'exp_1' = NULL,
       'exp_2' = NULL,
@@ -329,7 +359,7 @@ server = function(input, output, session) {
       'exp_5' = NULL,
       'exp_6' = NULL
     ),
-
+    
     exp_r6 = list(
       'exp_1' = NULL,
       'exp_2' = NULL,
@@ -351,11 +381,11 @@ server = function(input, output, session) {
     mofa_exp = Mofa_class$new(
       name = "mofa_1"
     ),
-
+    
     snf_exp = Snf_class$new(
       name = "snf_1"
     ),
-
+    
     dims = list(
       x_box = 0.9,
       y_box = 0.75,
@@ -375,8 +405,8 @@ server = function(input, output, session) {
   help_start_server(id = 'mod_help_start', main_output = output)
   help_single_omics_server(id = 'mod_help_single_omics', main_output = output)
   help_multi_omics_server(id = 'mod_help_multi_omics', main_output = output)
-
-
+  
+  
   # Single omics modules
   shiny::observe({
     set_1 = names(which(module_controler$slot_taken == TRUE))
@@ -395,13 +425,13 @@ server = function(input, output, session) {
       module_controler$exp_preloaded[[slot]] = TRUE
     }
   })
-
+  
   # MOFA module
   mofa_server("mofa", r6 = module_controler$mofa_exp, module_controler = module_controler, main_input = input)
-
+  
   # SNF module
   snf_server("snf", r6 = module_controler$snf_exp, module_controler = module_controler, main_input = input)
-
+  
 }
 
 #---------------------------------------------------------------------- End ----
