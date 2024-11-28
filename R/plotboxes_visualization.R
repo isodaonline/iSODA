@@ -782,7 +782,6 @@ volcano_plot_generate = function(r6, dimensions_obj, input) {
 
 }
 
-
 volcano_plot_spawn = function(r6, format, output) {
   print_tm(r6$name, "Volcano plot: spawning plot.")
   output$volcano_plot_plot = plotly::renderPlotly({
@@ -803,7 +802,6 @@ volcano_plot_ui = function(dimensions_obj, session) {
                  session = session)
 
 }
-
 
 volcano_plot_server = function(r6, output, session) {
 
@@ -844,17 +842,23 @@ volcano_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('volcano_plot_feature_metadata'),
         label = "Feature annotations",
-        choices = c('None', colnames(r6$tables$feature_table)),
+        choices = c('None', colnames(r6$tables$raw_feat)),
         selected = r6$params$volcano_plot$feature_metadata,
         multiple = FALSE
       ),
-      shiny::selectizeInput(
-        inputId = ns('volcano_plot_annotation_terms'),
-        label = "Feature pipe-separated values",
-        choices = NULL,
-        selected = NULL,
-        multiple = TRUE
+      
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns('volcano_plot_sparse_feat'),
+          label = "Sparse annotations",
+          choices = NULL,
+          selected = NULL,
+          multiple = TRUE
+        ),
+        title = tooltip_data$single_omics$volcano_plot_sparse_feat,
+        placement = "top"
       ),
+      
       shinyWidgets::prettySwitch(
         inputId = ns('volcano_plot_keep_significant'),
         label = 'Keep only significant data',
@@ -1048,16 +1052,16 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   })
 
   shiny::observeEvent(input$volcano_plot_feature_metadata, {
-    if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
+    if (input$volcano_plot_feature_metadata %in% names(r6$tables$sparse_feat)) {
       shiny::updateSelectizeInput(
-        inputId = "volcano_plot_annotation_terms",
+        inputId = "volcano_plot_sparse_feat",
         session = session,
-        choices = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$feature_list,
+        choices = r6$tables$sparse_feat[[input$volcano_plot_feature_metadata]]$terms_list,
         selected = character(0)
       )
     } else {
       shiny::updateSelectizeInput(
-        inputId = "volcano_plot_annotation_terms",
+        inputId = "volcano_plot_sparse_feat",
         session = session,
         choices = NULL,
         selected = character(0)
@@ -1071,7 +1075,7 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
       input$volcano_plot_data_table,
       input$volcano_plot_metagroup,
       input$volcano_plot_feature_metadata,
-      input$volcano_plot_annotation_terms,
+      input$volcano_plot_sparse_feat,
       input$volcano_plot_keep_significant,
       input$volcano_plot_displayed_plot,
       input$volcano_plot_function,
@@ -1093,10 +1097,10 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
     ),{
 
       # Is the column multivalue?
-      if (input$volcano_plot_feature_metadata %in% names(r6$tables$feature_list)) {
-        if (length(input$volcano_plot_annotation_terms) > 0) {
-          feature_metadata = match_go_terms(terms_list = input$volcano_plot_annotation_terms,
-                                            sparse_table = r6$tables$feature_list[[input$volcano_plot_feature_metadata]]$sparse_matrix)
+      if (input$volcano_plot_feature_metadata %in% names(r6$tables$sparse_feat)) {
+        if (length(input$volcano_plot_sparse_feat) > 0) {
+          feature_metadata = match_go_terms(terms_list = input$volcano_plot_sparse_feat,
+                                            sparse_table = r6$tables$sparse_feat[[input$volcano_plot_feature_metadata]]$sparse_matrix)
         } else {
           return()
         }
@@ -1154,8 +1158,6 @@ volcano_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   # Push expression to meta
   shiny::observeEvent(input$volcano_plot_push_expression,{
     r6$push_volcano_to_meta()
-    # r6$tables$feature_table$volcano_plot_expression = "None"
-    # r6$tables$feature_table[rownames(r6$tables$volcano_plot), "volcano_plot_expression"] = r6$tables$volcano_plot[, "expression"]
     print_tm(r6$name, "Volcano plot: pushed expression to the metadata")
 
   })
@@ -1268,24 +1270,30 @@ heatmap_server = function(r6, output, session) {
         inputId = ns("heatmap_map_cols"),
         label = "Map feature data",
         multiple = TRUE,
-        choices = colnames(r6$tables$feature_table)[!(colnames(r6$tables$feature_table) %in% names(r6$tables$feature_list))],
+        choices = colnames(r6$tables$raw_feat)[!(colnames(r6$tables$raw_feat) %in% names(r6$tables$sparse_feat))],
         selected = r6$params$heatmap$map_feature_data
       ),
-
-      shiny::selectizeInput(
-        inputId = ns("heatmap_multival_cols"),
-        label = "Feature annotations col",
-        multiple = F,
-        choices = c('None', names(r6$tables$feature_list)),
-        selected = r6$params$heatmap$multival_cols
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns("heatmap_sparse_table"),
+          label = "Sparse table",
+          multiple = F,
+          choices = c('None', names(r6$tables$sparse_feat)),
+          selected = r6$params$heatmap$sparse_table
+        ),
+        title = tooltip_data$single_omics$heatmap_sparse_table,
+        placement = "top"
       ),
-
-      shiny::selectizeInput(
-        inputId = ns("heatmap_multival_terms"),
-        label = "Feature terms",
-        multiple = T,
-        choices = NULL,
-        selected = r6$params$heatmap$map_feature_terms
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns("heatmap_sparse_feat"),
+          label = "Sparse annotations",
+          multiple = T,
+          choices = NULL,
+          selected = r6$params$heatmap$sparse_features
+        ),
+        title = tooltip_data$single_omics$heatmap_sparse_feat,
+        placement = "top"
       ),
       ## Output settings
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
@@ -1503,17 +1511,17 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     }
   })
 
-  shiny::observeEvent(input$heatmap_multival_cols, {
-    if (input$heatmap_multival_cols %in% names(r6$tables$feature_list)) {
+  shiny::observeEvent(input$heatmap_sparse_table, {
+    if (input$heatmap_sparse_table %in% names(r6$tables$sparse_feat)) {
       shiny::updateSelectizeInput(
-        inputId = "heatmap_multival_terms",
+        inputId = "heatmap_sparse_feat",
         session = session,
-        choices = r6$tables$feature_list[[input$heatmap_multival_cols]]$feature_list,
+        choices = r6$tables$sparse_feat[[input$heatmap_sparse_table]]$terms_list,
         selected = character(0)
       )
     } else {
       shiny::updateSelectizeInput(
-        inputId = "heatmap_multival_terms",
+        inputId = "heatmap_sparse_feat",
         session = session,
         choices = NULL,
         selected = character(0)
@@ -1532,7 +1540,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       input$heatmap_k_clusters_features,
       input$heatmap_map_rows,
       input$heatmap_map_cols,
-      input$heatmap_multival_terms,
+      input$heatmap_sparse_feat,
       input$heatmap_group_col_da,
       input$heatmap_apply_da,
       input$heatmap_alpha_da,
@@ -1548,12 +1556,12 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
     ),{
 
       # Feature annotation terms
-      if (length(input$heatmap_multival_terms) > 0) {
-        map_feature_terms = list()
-        map_feature_terms[[input$heatmap_multival_cols]] = match_go_terms(terms_list = input$heatmap_multival_terms,
-                                                                          sparse_table = r6$tables$feature_list[[input$heatmap_multival_cols]]$sparse_matrix)
+      if (length(input$heatmap_sparse_feat) > 0) {
+        sparse_features = list()
+        sparse_features[[input$heatmap_sparse_table]] = match_go_terms(terms_list = input$heatmap_sparse_feat,
+                                                                          sparse_table = r6$tables$sparse_feat[[input$heatmap_sparse_table]]$sparse_matrix)
       } else {
-        map_feature_terms = NULL
+        sparse_features = NULL
       }
 
       r6$param_heatmap(auto_refresh = input$heatmap_auto_refresh,
@@ -1567,8 +1575,8 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                        k_clusters_features = input$heatmap_k_clusters_features,
                        map_sample_data = input$heatmap_map_rows,
                        map_feature_data = input$heatmap_map_cols,
-                       map_feature_terms = map_feature_terms,
-                       multival_cols = input$heatmap_multival_cols,
+                       sparse_features = sparse_features,
+                       sparse_table = input$heatmap_sparse_table,
                        group_column_da = input$heatmap_group_col_da,
                        apply_da = input$heatmap_apply_da,
                        alpha_da = input$heatmap_alpha_da,
@@ -1617,8 +1625,8 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
   # Push k clusters features to meta
   shiny::observeEvent(input$heatmap_push_feature_clusters,{
     if ('k_clusters_heatmap' %in% colnames(r6$tables$heatmap$feature_clusters)){
-      r6$tables$feature_table$k_clusters_heatmap = "None"
-      r6$tables$feature_table[rownames(r6$tables$heatmap$feature_clusters), 'k_clusters_heatmap'] = r6$tables$heatmap$feature_clusters$k_clusters_heatmap
+      r6$tables$raw_feat$k_clusters_heatmap = "None"
+      r6$tables$raw_feat[rownames(r6$tables$heatmap$feature_clusters), 'k_clusters_heatmap'] = r6$tables$heatmap$feature_clusters$k_clusters_heatmap
       print_tm(r6$name, "Heatmap: pushed feature clusters to the metadata")
     } else {
       print_tm(r6$name, "Heatmap: no clusters to be pushed")
@@ -2111,33 +2119,38 @@ feature_correlation_server = function(r6, output, session) {
         inputId = ns("feature_correlation_map_rows"),
         label = "Map data on rows",
         multiple = TRUE,
-        choices = colnames(r6$tables$feature_table)[!(colnames(r6$tables$feature_table) %in% names(r6$tables$feature_list))],
+        choices = colnames(r6$tables$raw_feat)[!(colnames(r6$tables$raw_feat) %in% names(r6$tables$sparse_feat))],
         selected = r6$params$feature_correlation$row_annotations
       ),
       shiny::selectizeInput(
         inputId = ns("feature_correlation_map_cols"),
         label = "Map data on cols",
         multiple = TRUE,
-        choices = colnames(r6$tables$feature_table)[!(colnames(r6$tables$feature_table) %in% names(r6$tables$feature_list))],
+        choices = colnames(r6$tables$raw_feat)[!(colnames(r6$tables$raw_feat) %in% names(r6$tables$sparse_feat))],
         selected = r6$params$feature_correlation$col_annotations
       ),
-
-      shiny::selectizeInput(
-        inputId = ns("feature_correlation_multival_cols"),
-        label = "Feature annotations col",
-        multiple = F,
-        choices = c('None', names(r6$tables$feature_list)),
-        selected = r6$params$feature_correlation$multival_cols
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns("feature_correlation_sparse_table"),
+          label = "Sparse table",
+          multiple = F,
+          choices = c('None', names(r6$tables$sparse_feat)),
+          selected = r6$params$feature_correlation$sparse_table
+        ),
+        title = tooltip_data$single_omics$feature_correlation_sparse_table,
+        placement = "top"
       ),
-
-      shiny::selectizeInput(
-        inputId = ns("feature_correlation_multival_terms"),
-        label = "Feature terms",
-        multiple = T,
-        choices = NULL,
-        selected = r6$params$feature_correlation$map_feature_terms
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns("feature_correlation_sparse_features"),
+          label = "Sparse annotations",
+          multiple = T,
+          choices = NULL,
+          selected = r6$params$feature_correlation$sparse_features
+        ),
+        title = tooltip_data$single_omics$feature_correlation_sparse_feat,
+        placement = "top"
       ),
-
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::h3("Filter features"),
       shiny::sliderInput(inputId = ns("feature_correlation_roh_threshold"),
@@ -2260,17 +2273,17 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
     }
   })
 
-  shiny::observeEvent(input$feature_correlation_multival_cols, {
-    if (input$feature_correlation_multival_cols %in% names(r6$tables$feature_list)) {
+  shiny::observeEvent(input$feature_correlation_sparse_table, {
+    if (input$feature_correlation_sparse_table %in% names(r6$tables$sparse_feat)) {
       shiny::updateSelectizeInput(
-        inputId = "feature_correlation_multival_terms",
+        inputId = "feature_correlation_sparse_features",
         session = session,
-        choices = r6$tables$feature_list[[input$feature_correlation_multival_cols]]$feature_list,
+        choices = r6$tables$sparse_feat[[input$feature_correlation_sparse_table]]$terms_list,
         selected = character(0)
       )
     } else {
       shiny::updateSelectizeInput(
-        inputId = "feature_correlation_multival_terms",
+        inputId = "feature_correlation_sparse_features",
         session = session,
         choices = NULL,
         selected = character(0)
@@ -2289,7 +2302,7 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
       input$feature_correlation_center,
       input$feature_correlation_map_rows,
       input$feature_correlation_map_cols,
-      input$feature_correlation_multival_terms,
+      input$feature_correlation_sparse_features,
       input$feature_correlation_roh_threshold,
       input$feature_correlation_top_features,
       input$feature_correlation_colors_palette,
@@ -2303,18 +2316,18 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
     ),{
 
       # Feature annotation terms
-      if (length(input$feature_correlation_multival_terms) > 0) {
-        map_feature_terms = list()
-        map_feature_terms[[input$feature_correlation_multival_cols]] = match_go_terms(terms_list = input$feature_correlation_multival_terms,
-                                                                                      sparse_table = r6$tables$feature_list[[input$feature_correlation_multival_cols]]$sparse_matrix)
+      if (length(input$feature_correlation_sparse_features) > 0) {
+        sparse_features = list()
+        sparse_features[[input$feature_correlation_sparse_table]] = match_go_terms(terms_list = input$feature_correlation_sparse_features,
+                                                                                      sparse_table = r6$tables$sparse_feat[[input$feature_correlation_sparse_table]]$sparse_matrix)
       } else {
-        map_feature_terms = NULL
+        sparse_features = NULL
       }
 
       r6$param_feature_correlation(auto_refresh = input$feature_correlation_auto_refresh,
                                    dataset = input$feature_correlation_dataset,
-                                   multival_cols = input$feature_correlation_multival_cols,
-                                   map_feature_terms = map_feature_terms,
+                                   sparse_table = input$feature_correlation_sparse_table,
+                                   sparse_features = sparse_features,
                                    correlation_method = input$feature_correlation_correlation_method,
                                    use = input$feature_correlation_use,
                                    distance_method = input$feature_correlation_distance_method,
@@ -2358,8 +2371,8 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
   # Push k clusters to meta
   shiny::observeEvent(input$feature_correlation_push_clusters,{
     if ('k_clusters' %in% colnames(r6$tables$feature_correlation_clusters)){
-      r6$tables$feature_table$correlation_clusters = "None"
-      r6$tables$feature_table[rownames(r6$tables$feature_correlation_clusters), 'correlation_clusters'] = r6$tables$feature_correlation_clusters$k_clusters
+      r6$tables$raw_feat$correlation_clusters = "None"
+      r6$tables$raw_feat[rownames(r6$tables$feature_correlation_clusters), 'correlation_clusters'] = r6$tables$feature_correlation_clusters$k_clusters
       print_tm(r6$name, "Feature correlation: pushed clusters to the metadata")
     } else {
       print_tm(r6$name, "Feature correlation: no clusters to be pushed")
@@ -2466,15 +2479,19 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns("pca_feature_group"),
         label = "Feature metadata",
-        choices = c('None', colnames(r6$tables$feature_table)),
+        choices = c('None', colnames(r6$tables$raw_feat)),
         selected = r6$params$pca$feature_groups_col
       ),
-      shiny::selectizeInput(
-        inputId = ns('pca_plot_annotation_terms'),
-        label = "Feature annotations",
-        choices = NULL,
-        selected = NULL,
-        multiple = TRUE
+      bsplus::bs_embed_tooltip(
+        shiny::selectizeInput(
+          inputId = ns('pca_sparse_features'),
+          label = "Sparse annotations",
+          choices = NULL,
+          selected = NULL,
+          multiple = TRUE
+        ),
+        title = tooltip_data$single_omics$pca_sparse_feat,
+        placement = "top"
       ),
       shiny::selectInput(
         inputId = ns('pca_displayed_plots'),
@@ -2688,16 +2705,16 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
   })
 
   shiny::observeEvent(input$pca_feature_group, {
-    if (input$pca_feature_group %in% names(r6$tables$feature_list)) {
+    if (input$pca_feature_group %in% names(r6$tables$sparse_feat)) {
       shiny::updateSelectizeInput(
-        inputId = "pca_plot_annotation_terms",
+        inputId = "pca_sparse_features",
         session = session,
-        choices = r6$tables$feature_list[[input$pca_feature_group]]$feature_list,
+        choices = r6$tables$sparse_feat[[input$pca_feature_group]]$terms_list,
         selected = character(0)
       )
     } else {
       shiny::updateSelectizeInput(
-        inputId = "pca_plot_annotation_terms",
+        inputId = "pca_sparse_features",
         session = session,
         choices = NULL,
         selected = character(0)
@@ -2709,7 +2726,7 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
     input$pca_data_table,
     input$pca_sample_groups_col,
     input$pca_feature_group,
-    input$pca_plot_annotation_terms,
+    input$pca_sparse_features,
     input$pca_impute_median,
     input$pca_apply_da,
     input$pca_sample_groups_da,
@@ -2733,10 +2750,10 @@ pca_events = function(r6, dimensions_obj, color_palette, input, output, session)
     input$pca_img_format),{
 
       # Is the column multivalue?
-      if (input$pca_feature_group %in% names(r6$tables$feature_list)) {
-        if (length(input$pca_plot_annotation_terms) > 0) {
-          feature_metadata = match_go_terms(terms_list = input$pca_plot_annotation_terms,
-                                            sparse_table = r6$tables$feature_list[[input$pca_feature_group]]$sparse_matrix)
+      if (input$pca_feature_group %in% names(r6$tables$sparse_feat)) {
+        if (length(input$pca_sparse_features) > 0) {
+          feature_metadata = match_go_terms(terms_list = input$pca_sparse_features,
+                                            sparse_table = r6$tables$sparse_feat[[input$pca_feature_group]]$sparse_matrix)
         } else {
           return()
         }
@@ -2909,7 +2926,7 @@ fa_analysis_plot_server = function(r6, output, session) {
             label = "Select lipid class (A)",
             choices = c("All (incl. TG)" = "All",
                         "All (excl. TG)" = "All_noTG",
-                        unique(r6$tables$feature_table[['Lipid class']])[!(unique(r6$tables$feature_table[['Lipid class']]) %in% c("PA"))]),
+                        unique(r6$tables$raw_feat[['Lipid class']])[!(unique(r6$tables$raw_feat[['Lipid class']]) %in% c("PA"))]),
             selected = r6$params$fa_analysis_plot$selected_lipidclass,
             multiple = FALSE,
             width = "98%"
@@ -2920,7 +2937,7 @@ fa_analysis_plot_server = function(r6, output, session) {
           shiny::selectizeInput(
             inputId = ns("fa_analysis_plot_selected_fa"),
             label = "Select fatty acid (B)",
-            choices = get_fa_tails(r6$tables$feature_table),
+            choices = get_fa_tails(r6$tables$raw_feat),
             selected = r6$params$fa_analysis_plot$selected_fa,
             multiple = TRUE,
             width = "98%"
@@ -3213,7 +3230,7 @@ fa_comp_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_comp_plot_selected_lipidclass"),
         label = "Select lipid class",
-        choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table[["Lipid class"]])),
+        choices = c("All (excl. PA)" = "All", unique(r6$tables$raw_feat[["Lipid class"]])),
         selected = r6$params$fa_comp_plot$selected_lipidclass,
         multiple = FALSE
       ),
@@ -3309,9 +3326,9 @@ fa_comp_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   # auto-update the lipid classes
   shiny::observeEvent(input$fa_comp_plot_composition, {
     if(input$fa_comp_plot_composition == "fa_tail") {
-      lipidclass_choices = c("All (excl. PA)" = "All", unique(r6$tables$feature_table[["Lipid class"]]))
+      lipidclass_choices = c("All (excl. PA)" = "All", unique(r6$tables$raw_feat[["Lipid class"]]))
     } else {
-      lipidclass_choices = unique(r6$tables$feature_table[["Lipid class"]])
+      lipidclass_choices = unique(r6$tables$raw_feat[["Lipid class"]])
     }
 
     if(r6$params$fa_comp_plot$selected_lipidclass == "All") {
@@ -3549,7 +3566,7 @@ double_bonds_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("double_bonds_plot_selected_lipid_class"),
         label = "Lipid class",
-        choices = sort(unique(r6$tables$feature_table$`Lipid class`)),
+        choices = sort(unique(r6$tables$raw_feat$`Lipid class`)),
         selected = r6$params$double_bonds_plot$selected_lipid_class,
         multiple = FALSE,
         width = '100%'

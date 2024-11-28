@@ -63,6 +63,8 @@ library(R6)
 library(data.table)
 library(matrixStats)
 library(bsplus)
+library(uuid)
+library(rclipboard)
 
 # Use basilisk
 # reticulate::use_condaenv(condaenv = 'mofa_1')
@@ -89,11 +91,18 @@ sidebar_ui = function() {
   bs4Dash::bs4DashSidebar(
     bs4Dash::bs4SidebarMenu(
       id = "main_sidebar",
-
+      
+      # Home menu
+      bs4Dash::bs4SidebarMenuItem(
+        text = "Home",
+        tabName = "home",
+        icon = shiny::icon("house")
+      ),
+      
       # Single-omics menu
       bs4Dash::bs4SidebarMenuItem(
         text = "Single-omics",
-        tabName = "start",
+        tabName = "single_omics",
         icon = shiny::icon("list")
         ),
 
@@ -161,11 +170,16 @@ body_ui = function() {
     waiter::autoWaiter(html = spin_3k(), color = "rgba(255, 255, 255, 0)"),
     
     bs4Dash::tabItems(
-
+      
       # Start page
       bs4Dash::tabItem(
-        tabName = "start",
-        start_ui(id = 'mod_start')
+        tabName = "home",
+        home_ui(id = 'home')
+      ),
+      
+      bs4Dash::tabItem(
+        tabName = "single_omics",
+        main_single_omics_ui(id = 'mod_single_omics')
       ),
 
       bs4Dash::tabItem(
@@ -242,11 +256,19 @@ header = header_ui()
 sidebar = sidebar_ui()
 body = body_ui()
 
-ui = bs4Dash::dashboardPage(header, sidebar, body)
+ui = bs4Dash::dashboardPage(
+  header = header,
+  sidebar = sidebar,
+  body = body,
+  help = NULL)
 
 #------------------------------------------------------------------- Server ----
 
 server = function(input, output, session) {
+  
+  # Get software version
+  desc = read.delim("DESCRIPTION", header = FALSE)
+  isoda_version = gsub("[^0-9.-]", "", desc[3,1])
   
   # Create logfile
   log_file <<- paste0("./logs/", get_day_time_code(), ".log")
@@ -256,15 +278,21 @@ server = function(input, output, session) {
   if (!base::file.exists("./models/")) {
     base::dir.create("./models/")
   }
+  if (!base::file.exists("./isoda_files/")) {
+    base::dir.create("./isoda_files/")
+  }
   
   # Source the tooltips file and utils
   base::source("./man/tooltips_data.R")
-  # tooltip_data <<- tooltip_data
   base::source('./R/utils.R')
 
   options(shiny.maxRequestSize=300*1024^2)
 
   module_controler = shiny::reactiveValues(
+    
+    name = NULL,
+    user = NULL,
+    comment = NULL,
 
     slot_taken = list(
       'exp_1' = FALSE,
@@ -310,6 +338,23 @@ server = function(input, output, session) {
       'exp_5' = NULL,
       'exp_6' = NULL
     ),
+    
+    exp_preloaded = list(
+      'exp_1' = FALSE,
+      'exp_2' = FALSE,
+      'exp_3' = FALSE,
+      'exp_4' = FALSE,
+      'exp_5' = FALSE,
+      'exp_6' = FALSE
+    ),
+    
+    mofa_exp = Mofa_class$new(
+      name = "mofa_1"
+    ),
+
+    snf_exp = Snf_class$new(
+      name = "snf_1"
+    ),
 
     dims = list(
       x_box = 0.9,
@@ -322,18 +367,9 @@ server = function(input, output, session) {
       ypx_total = NULL
     )
   )
-
-  mofa_exp = Mofa_class$new(
-    name = "mofa_1"
-  )
-
-  snf_exp = Snf_class$new(
-    name = "snf_1"
-  )
-
-
-
-  start_server(id = 'mod_start', main_input = input, main_output = output, main_session = session, module_controler = module_controler)
+  
+  main_single_omics_server(id = 'mod_single_omics', main_input = input, main_output = output, main_session = session, module_controler = module_controler)
+  home_server(id = "home", main_input = input, main_output = output, main_session = session, module_controler = module_controler)
   about_server(id = 'mod_about', main_output = output)
   logs_server(id = "logs", main_input = input, main_output = output)
   help_start_server(id = 'mod_help_start', main_output = output)
@@ -349,116 +385,22 @@ server = function(input, output, session) {
     if (length(slot) > 0) {
       slot = slot[1]
       exp_type = module_controler$exp_types[[slot]]
+      preloaded = module_controler$exp_preloaded[[slot]]
       module_controler$module_loaded[[slot]] = TRUE
       experiment_server(id = paste0(c('mod', slot), collapse = '_'),
                         type = exp_type,
-                        module_controler = module_controler)
+                        module_controler = module_controler,
+                        preloaded = preloaded,
+                        isoda_version = isoda_version)
+      module_controler$exp_preloaded[[slot]] = TRUE
     }
   })
 
   # MOFA module
-  mofa_server("mofa", r6 = mofa_exp, module_controler = module_controler, main_input = input)
+  mofa_server("mofa", r6 = module_controler$mofa_exp, module_controler = module_controler, main_input = input)
 
   # SNF module
-  snf_server("snf", r6 = snf_exp, module_controler = module_controler, main_input = input)
-
-  # Example datasets
-  shiny::observeEvent(input[['mod_start-add_lipidomics_ex']],{
-    if (!file.exists('./examples/multiomics/lipidomics.csv') | !file.exists('./examples/multiomics/lipidomics_metadata.csv')) {
-      print('example file missing')
-      return()
-    }
-    print('Loading example lipidomics')
-    shinyjs::disable('mod_start-add_lipidomics_ex')
-    for (slot in names(module_controler$slot_taken)){
-      if (!module_controler$slot_taken[[slot]]) {
-        module_controler$module_loaded[[slot]] = T
-        module_controler$slot_taken[[slot]] = T
-        module_controler$exp_types[[slot]] = 'Lipidomics'
-        module_controler$exp_names[[slot]] = 'lips_example'
-        module_controler$exp_r6[[slot]] = example_lipidomics(name = 'lips_example',
-                                                             id = paste0(c('mod', slot), collapse = '_'),
-                                                             slot = slot)
-        output[[slot]] = bs4Dash::renderMenu({
-          bs4Dash::sidebarMenu(
-            bs4Dash::menuItem(text = 'lips_example',
-                              tabName = slot,
-                              icon = icon('l'))
-          )
-        })
-        experiment_server(id = paste0(c('mod', slot), collapse = '_'),
-                          type = 'Lipidomics',
-                          module_controler = module_controler)
-        break
-      }
-    }
-  })
-
-  shiny::observeEvent(input[['mod_start-add_proteomics_ex']],{
-    if (!file.exists('./examples/multiomics/proteomics_2.tsv') | !file.exists('./examples/multiomics/metadata.csv')) {
-      print('example file missing')
-      return()
-    }
-    print('Loading example proteomics')
-
-    shinyjs::disable('mod_start-add_proteomics_ex')
-
-    for (slot in names(module_controler$slot_taken)){
-      if (!module_controler$slot_taken[[slot]]) {
-        module_controler$module_loaded[[slot]] = T
-        module_controler$slot_taken[[slot]] = T
-        module_controler$exp_types[[slot]] = 'Proteomics'
-        module_controler$exp_names[[slot]] = 'prot_example'
-        module_controler$exp_r6[[slot]] = example_proteomics(name = 'prot_example',
-                                                             id = paste0(c('mod', slot), collapse = '_'),
-                                                             slot = slot)
-        output[[slot]] = bs4Dash::renderMenu({
-          bs4Dash::sidebarMenu(
-            bs4Dash::menuItem(text = 'prot_example',
-                              tabName = slot,
-                              icon = icon('p'))
-          )
-        })
-        experiment_server(id = paste0(c('mod', slot), collapse = '_'),
-                          type = 'Proteomics',
-                          module_controler = module_controler)
-        break
-      }
-    }
-  })
-
-  shiny::observeEvent(input[['mod_start-add_transcriptomics_ex']],{
-    if (!file.exists('./examples/multiomics/transcriptomics_2_genename_test.tsv') | !file.exists('./examples/multiomics/metadata.csv')) {
-      print('example file missing')
-      return()
-    }
-    print('Loading example transcriptomics')
-
-    shinyjs::disable('mod_start-add_transcriptomics_ex')
-
-    for (slot in names(module_controler$slot_taken)){
-      if (!module_controler$slot_taken[[slot]]) {
-        module_controler$module_loaded[[slot]] = T
-        module_controler$slot_taken[[slot]] = T
-        module_controler$exp_types[[slot]] = 'Transcriptomics'
-        module_controler$exp_names[[slot]] = 'trns_example'
-        module_controler$exp_r6[[slot]] = example_transcriptomics(name = 'trns_example',
-                                                                  id = paste0(c('mod', slot), collapse = '_'),
-                                                                  slot = slot)
-        output[[slot]] = bs4Dash::renderMenu({
-          bs4Dash::sidebarMenu(
-            bs4Dash::menuItem(text = 'trns_example',
-                              tabName = slot,
-                              icon = icon('t'))
-          )
-        })
-        experiment_server(id = paste0(c('mod', slot), collapse = '_'),
-                          type = 'Transcriptomics',
-                          module_controler = module_controler)
-        break
-      }
-    }
-  })
+  snf_server("snf", r6 = module_controler$snf_exp, module_controler = module_controler, main_input = input)
 
 }
 

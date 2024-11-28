@@ -1,17 +1,31 @@
 tooltip_data = list(
-  data_upload = list( # Sublists based on R modules / namespaces
+  start = list(
+    start_method = "-New: create a new single-omics session to upload your data or previously processed single-omics data. \n-Load: Load multi-omics datasets through a .misoda file. \n-Download: store your single and multi-omics data either locally or on the server."
+  ),
+  single_omics = list( # Sublists based on R modules / namespaces
+    # Upload method
+    upload_method = "Input type: \n\t-File upload: for new experiments by uploading the user data \n\t-iSODA file: upload an iSODA single-omics file downloaded through the app \n\t-iSODA UUID: load a single-omics experiment from the server using a UUID key produced by iSODA",
+    load_single_omics = "Load the experiment using the selected method. Once loaded, the input files cannot be altered",
+    
+    # Omics file
+    omics_file = ".isoda file produced by iSODA",
+    
+    # Omics uuid key
+    omics_uuid = "UUID key to connect to a single omics experiment stored on the server. These are provided through the dedicated iSODA tab",
+    
     # Metadata
     file_meta = "Browse for the sample annotations file (recommended: tsv, csv, csv2 or excel first sheet)",
-    meta_file_format = "File format: Wide = samples as rows, descriptors as columns, Long: descriptors as rows, samples as columns. Default is Wide",
+    meta_file_format = "File format: \n\tWide = samples as rows, annotations as columns \n\tLong: annotations as rows, samples as columns \nDefault is Wide",
     select_meta_table = "Selected table to display",
     download_metatable = "Download the displayed table",
+    head_sample_annoations = "Only display the first rows and columns from the table. \nTypically this will be turned on for measurement data as supplying a table with more than 10K columns will significantly slow down the table rendering",
     select_id_meta = "Select ID column for samples (IDs must be unique)",
-    select_group_col = "Main sample groups to compare (at least two groups and two samples per group)",
-    select_type_col = "Column containing text pattern that allow to match blank, QC and pool samples",
-    select_batch_col = "Batch column, if no batch column is found, samples are assumed from the same batch. Blanks, QCs and pools must also have a batch value for filtering",
-    blank_pattern = "Substring to be searched in the type column to identify blanks",
-    qc_pattern = "Substring to be searched in the type column to identify QCs",
-    pool_pattern = "Substring to be searched in the type column to identify Pools",
+    sample_annotations_group_col = "Main sample groups to compare (at least two groups and two samples per group)",
+    sample_annotations_type_col = "Column containing text pattern that allow to match blank, QC and pool samples",
+    sample_annotations_batch_col = "Batch column, if no batch column is found, samples are assumed from the same batch. Blanks, QCs and pools must also have a batch value for filtering",
+    sample_annotations_blank_pattern = "Substring to be searched in the type column to identify blanks",
+    sample_annotations_qc_pattern = "Substring to be searched in the type column to identify QCs",
+    sample_annotations_pool_pattern = "Substring to be searched in the type column to identify Pools",
     non_samples_selection = "Sample filtering - select non-samples (all three selected by default)",
     selection_manual = "Manual selection of samples",
     exclusion_meta_col = "Sample annotation column from which to select samples",
@@ -24,10 +38,11 @@ tooltip_data = list(
     
     # Data
     file_data = "Browse for the measurements file (only numeric, recommended: tsv, csv, csv2 or excel first sheet)",
-    data_file_format = "File format: Wide = samples as rows, features as columns, Long: features as rows, samples as columns. Default is Wide",
+    data_file_format = "File format: \n\tWide = samples as rows, features as columns \n\tLong: features as rows, samples as columns \nDefault is Wide",
     select_data_table = "Selected table to display",
     download_datatable = "Download the displayed table",
-    select_id_data = "Select ID column for samples (IDs must be unique)",
+    head_measurement_data = "Only display the first rows and columns from the table. \nTypically this will be turned on for measurement data as supplying a table with more than 10K columns will significantly slow down the table rendering",
+    # select_id_data = "Select ID column for samples (IDs must be unique)",
     select_feature_type = "Select the feature ID type (relevant for proteomics, transcriptomics and genomics data",
     operation_order = "Order in which Imputation, Batch correction and Filtering should be run. Removing = not running",
     batch_effect_correction = "Performs batch effect correction using ComBat, either without reference (No control), with reference samples (Pool or QC), or skipped (None).",
@@ -37,22 +52,34 @@ tooltip_data = list(
     group_threshold = "Alternative to the Sample threshold: operates on sample groups instead of all samples to also salvage features which might be produced only in one specific group",
     normalise_to_col = "Normalizes signals by dividing them by a column value in the sample annotations table (numeric)",
     feature_col_selection = "Choose a column from the feature table (if provided or if lipidomics) to start selecting features based on metadata",
-    class_selection = "Select features based on a specific value within the selected column",
-    manual_selection = "Manual selection of features",
+    feature_value = "Select features based on a specific value within the selected column",
+    feature_selection = "Manual selection of features",
     drop_cols = "Feature filtering - drop selection",
     keep_cols = "Feature filtering - keep selection",
     clear_data_filters = "Feature filtering - clear selection",
-    reset_data_table = "Feature filtering - reset sample table",
+    reset_feat_table = "Feature filtering - reset feature table",
     
     # Features
-    feat_add = "Browse for feature metadata files (recommended: tsv, csv, csv2 or excel first sheet)",
-    feat_name_add = "Name to store the table (several tables can be uploaded. Defaults to feat_$n",
-    feat_file_format = "File format: Wide = descriptors as rows, features as columns, Long: features as rows, descriptors as columns. Default is Long",
+    file_feat = "Browse for the feature annotations file (recommended: tsv, csv, csv2 or excel first sheet)",
+    feat_file_format = "File format: \n\tLong: features as rows, annotations as columns \n\tWide = annotations as rows, features as columns \nDefault is Long",
+    select_id_feat = "Select ID column for features (IDs must be unique)",
     feat_table_select = "Selected table to display",
     download_feature_table = "Download the displayed table",
-    feat_name_del = "Select the feature table to remove",
-    feat_del = "Remove selected feature table",
-
+    head_feature_annotations = "Only display the first rows and columns from the table. \nTypically this will be turned on for measurement data as supplying a table with more than 10K columns will significantly slow down the table rendering",
+    help_sparse_annotations = "Character delimited annotations within a column in the features table.
+    \t-Sparse annotations are in essence a new table stored within a column, but with most of the data missing and only the non-missing values reported as a character separated text.
+    \t-This type of data (like Gene Ontologies) can be understood by iSODA here by specifying the delimiter below and running either Add sparse table for one specific column, or Parse all columns to run this on all columns with the specified delimiter. 
+    \t-Once the sparse table is generated, these complex annotations can be displayed on the features in the volcano plot, PCA, heatmap and feature correlation.
+    \t-These can also be used in functional analysis as ontology terms would be used.
+    \t-Make sure the delimiter used is not a common character in your data.",
+    sparse_feature_column = "Select a column from the feature table to produce a sparse table",
+    sparse_delimiter = "Subdelimiter used within the feature column to produce sparse tables. 
+    \t-Delimiter must not be the same as the table delimiter (csv: do not use comma)
+    \t-Delimiter must not be a common character in the sparse annotations to avoid malforming sparse annotations",
+    add_sparse_single = "Generate sparse annotations from the selected feature column using the sparse delimiter",
+    add_sparse_all = "Generate sparse tables from all columns containing the sparse delimiter",
+    reset_sparse_tables = "Remove all sparse tables",
+    
     # Functional analysis
     gseaprep_table_select = "Data used as input",
     gseaprep_group_col = "Sample metadata column from which to pick groups",
@@ -81,7 +108,15 @@ tooltip_data = list(
     or_qval_cutoff = "q-value threshold for the feature sets via the over-representation analysis test",
     ora_seed = "Seed to ensure reproductibility during over-representation analysis",
     download_ora_feature_table = "Download the features used as input for the over-representation analysis along with the associated statistical values",
-    download_ora_table = "Download the over-representation analysis results, i.e. the feature sets and the associated values"
+    download_ora_table = "Download the over-representation analysis results, i.e. the feature sets and the associated values",
+    
+    # Visualization
+    volcano_plot_sparse_feat = "Pick one or more annotations from the sparse table selected above to color features according to the number of sparse features they are associated with. Sparse tables are generated in the Features tab's Sparse annotations section.",
+    heatmap_sparse_feat = "Pick one or more annotations from the sparse table selected above to color features according to the number of sparse features they are associated with. Sparse tables are generated in the Features tab's Sparse annotations section.",
+    feature_correlation_sparse_feat = "Pick one or more annotations from the sparse table selected above to color features according to the number of sparse features they are associated with. Sparse tables are generated in the Features tab's Sparse annotations section.",
+    pca_sparse_feat = "Pick one or more annotations from the sparse table selected above to color features according to the number of sparse features they are associated with. Sparse tables are generated in the Features tab's Sparse annotations section.",
+    heatmap_sparse_table = "Select a sparse table generated from the Feature tab's Sparse annotations section to map ontology type annotations on the features",
+    feature_correlation_sparse_table = "Select a sparse table generated from the Feature tab's Sparse annotations section to map ontology type annotations on the features"
   ),
   mofa = list(
     data_scale_views = "If views have different ranges/variances, it is good practice to scale each view to unit variance.",

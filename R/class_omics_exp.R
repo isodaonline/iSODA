@@ -2,12 +2,12 @@
 Omics_exp = R6::R6Class(
   "Omics_exp",
   public = list(
-    initialize = function(name, type = NA, id = NA, slot = NA, preloaded = F, param_file = NULL){
+    initialize = function(name, type = NA, id = NA, slot = NA, version = NA, param_file = NULL){
       self$name = name
       self$type = type
       self$id = id
       self$slot = slot
-      self$preloaded_data = preloaded
+      self$version = version
 
       if (!is.null(param_file)) {
         if (file.exists(param_file)){
@@ -46,10 +46,23 @@ Omics_exp = R6::R6Class(
     id = NA,
     slot = NA,
     type = NA,
-    preloaded_data = F,
+    version = NA,
+    owner = NA,
+    comment = NA,
 
     #----------------------------------------------------------- Parameters ----
     params = list(
+
+      # Feature signal filtering
+      measurement_filter = list(
+        operation_order = c('Imputation', 'Batch correction', 'Filtering'),
+        batch_effect_correction = "None",
+        imputation_method = "None",
+        blank_multiplier = 2,
+        sample_threshold = 0.8,
+        group_threshold = 0.8,
+        norm_col = "None"
+      ),
 
       # Dendrogram parameters
       dendrogram = list(
@@ -145,8 +158,8 @@ Omics_exp = R6::R6Class(
         k_clusters_features = 1,
         map_sample_data = NULL,
         map_feature_data = NULL,
-        map_feature_terms = NULL,
-        multival_cols = 'None',
+        sparse_features = NULL,
+        sparse_table = 'None',
         group_column_da = NULL,
         apply_da = T,
         alpha_da = 0.8,
@@ -190,8 +203,8 @@ Omics_exp = R6::R6Class(
       feature_correlation = list(
         auto_refresh = F,
         dataset = 'Z-scored total normalized table',
-        multival_cols = 'None',
-        map_feature_terms = NULL,
+        sparse_table = 'None',
+        sparse_features = NULL,
         correlation_method = "pearson",
         use = 'pairwise.complete.obs',
         distance_method = "euclidian",
@@ -656,23 +669,11 @@ Omics_exp = R6::R6Class(
     indices = list(
       id_col_meta = NA,
       id_col_data = NA,
-      type_col = NA, # Deprecated
-      group_col = NA, # Deprecated
-      batch_col = NA, # Deprecated
+      id_col_feat = NA,
 
       type_column = NA,
       group_column = NA,
       batch_column = NA,
-
-      idx_blanks = NULL, # Deprecated
-      idx_qcs = NULL, # Deprecated
-      idx_pools = NULL, # Deprecated
-      idx_samples = NULL, # Deprecated
-
-      rownames_blanks = NULL, # Deprecated
-      rownames_qcs = NULL, # Deprecated
-      rownames_pools = NULL, # Deprecated
-      rownames_samples = NULL, # Deprecated
 
       index_blanks = NULL,
       index_qcs = NULL,
@@ -681,6 +682,7 @@ Omics_exp = R6::R6Class(
 
       excluded_samples = NULL,
       excluded_features = NULL,
+      filtered_out_features = NULL,
 
       feature_id_type = NULL
     ),
@@ -689,26 +691,31 @@ Omics_exp = R6::R6Class(
 
     tables = list(
 
+      # Metadata tables
       imp_meta = NULL,
+      indexed_meta = NULL,
       raw_meta = NULL,
 
+      # Data tables
       imp_data = NULL,
+      indexed_data = NULL,
       raw_data = NULL,
 
+      # Feature tables
+      imp_feat = NULL,
+      indexed_feat = NULL,
+      raw_feat = NULL,
+      sparse_feat = NULL,
+
+      # Feature list for the sparse tables
+      feature_list = NULL,
+      external_feature_tables = list(),
+      external_enrichment_tables = list(),
+
+      # Non sample tables
       blank_table = NULL,
       qc_table = NULL,
       pool_table = NULL,
-
-      #Feature tables
-      imp_feature_table = NULL,
-      feature_table = NULL,
-      feature_list = NULL,
-
-      # External feature tables
-      external_feature_tables = list(),
-
-      # External feature tables
-      external_enrichment_tables = list(),
 
       # Group summaries
       summary_species_table = NULL,
@@ -746,11 +753,11 @@ Omics_exp = R6::R6Class(
       ea_feature_table = NULL,
       ea_object = NULL,
       ea_table = NULL,
-      
+
       ora_feature_table = NULL,
       ora_object = NULL,
       ora_table = NULL,
-      
+
       # Functional analysis tables
       ea_dot_plot = NULL,
       ora_dot_plot = NULL,
@@ -763,24 +770,9 @@ Omics_exp = R6::R6Class(
     #-------------------------------------------------------------- Local table
 
     table_switch_local = function(table_name) {
-      switch(EXPR = table_name,
-             'Imported metadata table' = self$tables$imp_meta,
-             'Raw metadata table' = self$tables$raw_meta,
-             'Imported data table' = self$tables$imp_data,
-             'Raw data table' = self$tables$raw_data,
-             'Feature table' = self$tables$feature_table,
-             'Blank table' = self$tables$blank_table,
-             'Class normalized table' = self$tables$class_norm_data,
-             'Total normalized table' = self$tables$total_norm_data,
-             'Z-scored table' = self$tables$z_scored_data,
-             'Z-scored class normalized table' = self$tables$z_scored_class_norm_data,
-             'Z-scored total normalized table' = self$tables$z_scored_total_norm_data,
-             'Class table' = self$tables$class_table,
-             'Class table z-scored' = self$tables$class_table_z_scored,
-             'Class table total normalized' = self$tables$class_table_total_norm,
-             'Class table z-scored total normalized' = self$tables$class_table_z_scored_total_norm,
-             'Species summary table' = self$tables$summary_species_table,
-             'Class summary table' = self$tables$summary_class_table
+      table_switch(
+        table_name = table_name,
+        r6 = self
       )
     },
 
@@ -795,6 +787,14 @@ Omics_exp = R6::R6Class(
 
     #---------------------------------------------------------------- Plots ----
     plots = list(
+
+      # Preview plots
+      sample_type_distribution = NULL,
+      sample_group_distribution = NULL,
+      missing_donut = NULL,
+      sample_missingness = NULL,
+      feature_missingness = NULL,
+      feature_annotation_distribution = NULL,
 
       # Interactive visualization
       dendrogram = NULL,
@@ -828,6 +828,16 @@ Omics_exp = R6::R6Class(
       parameter_file = list(params = self$params,
                             hardcoded_settings = self$hardcoded_settings)
       base::dput(parameter_file, file = file_name)
+    },
+
+    param_measurement_filter = function(operation_order, batch_effect_correction, imputation_method, blank_multiplier, sample_threshold, group_threshold, norm_col) {
+      self$params$measurement_filter$operation_order = operation_order
+      self$params$measurement_filter$batch_effect_correction = batch_effect_correction
+      self$params$measurement_filter$imputation_method = imputation_method
+      self$params$measurement_filter$blank_multiplier = blank_multiplier
+      self$params$measurement_filter$sample_threshold = sample_threshold
+      self$params$measurement_filter$group_threshold = group_threshold
+      self$params$measurement_filter$norm_col = norm_col
     },
 
     toggle_dendrogram = function() {
@@ -946,7 +956,7 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_min, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, map_feature_terms, multival_cols, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
+    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_min, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
       self$params$heatmap$auto_refresh = auto_refresh
       self$params$heatmap$dataset = dataset
       self$params$heatmap$distance_method = distance_method
@@ -958,8 +968,8 @@ Omics_exp = R6::R6Class(
       self$params$heatmap$k_clusters_features = k_clusters_features
       self$params$heatmap$map_sample_data = map_sample_data
       self$params$heatmap$map_feature_data = map_feature_data
-      self$params$heatmap$map_feature_terms = map_feature_terms
-      self$params$heatmap$multival_cols = multival_cols
+      self$params$heatmap$sparse_table = sparse_table
+      self$params$heatmap$sparse_features = sparse_features
       self$params$heatmap$group_column_da = group_column_da
       self$params$heatmap$apply_da = apply_da
       self$params$heatmap$alpha_da = alpha_da
@@ -1014,12 +1024,12 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_feature_correlation = function(auto_refresh, dataset, multival_cols, map_feature_terms, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, roh_threshold, top_features, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
+    param_feature_correlation = function(auto_refresh, dataset, sparse_table, sparse_features, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, roh_threshold, top_features, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
 
       self$params$feature_correlation$auto_refresh = auto_refresh
       self$params$feature_correlation$dataset = dataset
-      self$params$feature_correlation$multival_cols = multival_cols
-      self$params$feature_correlation$map_feature_terms = map_feature_terms
+      self$params$feature_correlation$sparse_table = sparse_table
+      self$params$feature_correlation$sparse_features = sparse_features
       self$params$feature_correlation$correlation_method = correlation_method
       self$params$feature_correlation$use = use
       self$params$feature_correlation$distance_method = distance_method
@@ -1564,6 +1574,7 @@ Omics_exp = R6::R6Class(
         base::warning('Undefined or unsupplied batch column, proceding without batches')
         self$tables$indexed_meta$isoda_batch = 1
         batch_column = "isoda_batch"
+        self$set_raw_meta()
 
       } else if (base::any(base::is.na(indexed_meta[,batch_column]))) {
 
@@ -1633,14 +1644,32 @@ Omics_exp = R6::R6Class(
 
     exclude_samples = function(indexed_meta = self$tables$indexed_meta,
                                excluded_samples = self$indices$excluded_samples,
-                               manual_selection = NULL,
-                               select_blanks = F,
-                               select_qcs = F,
-                               select_pools = F,
-                               index_blanks = self$indices$index_blanks,
-                               index_qcs = self$indices$index_qcs,
-                               index_pools = self$indices$index_pools,
-                               exclude = TRUE) {
+                               selection = NULL,
+                               drop = T
+                               ) {
+      if (!is.null(selection)) {
+        remaining_samples = rownames(indexed_meta)[!(rownames(indexed_meta) %in% excluded_samples)]
+        selected_samples = selection[selection %in% remaining_samples]
+        if (drop) {
+          excluded_samples = c(excluded_samples, selected_samples)
+        } else {
+          excluded_samples = c(excluded_samples,
+                               remaining_samples[!(remaining_samples %in% selected_samples)])
+        }
+        excluded_samples = sort(unique(excluded_samples))
+        self$indices$excluded_samples = excluded_samples
+      }
+    },
+
+    non_sample_exclusion = function(indexed_meta = self$tables$indexed_meta,
+                                    excluded_samples = self$indices$excluded_samples,
+                                    select_blanks = F,
+                                    select_qcs = F,
+                                    select_pools = F,
+                                    index_blanks = self$indices$index_blanks,
+                                    index_qcs = self$indices$index_qcs,
+                                    index_pools = self$indices$index_pools,
+                                    exclude = TRUE) {
 
       # Filter out from indexed_meta samples that were already excluded
       if (!is.null(excluded_samples)) {
@@ -1648,11 +1677,6 @@ Omics_exp = R6::R6Class(
       }
 
       selected_samples = NULL
-
-      # Manual selection
-      if (!is.null(manual_selection)) {
-        selected_samples = c(selected_samples, rownames(indexed_meta)[rownames(indexed_meta) %in% manual_selection])
-      }
 
       # Add blanks
       if (select_blanks) {
@@ -1669,26 +1693,28 @@ Omics_exp = R6::R6Class(
         selected_samples = c(selected_samples, index_pools)
       }
 
-      if (exclude) {
-        excluded_samples = c(excluded_samples, selected_samples)
-      } else {
-        excluded_samples = c(excluded_samples, rownames(indexed_meta)[!(rownames(indexed_meta) %in% selected_samples)])
+      if (!is.null(selected_samples)) {
+        if (length(selected_samples) > 0) {
+          if (exclude) {
+            excluded_samples = c(excluded_samples, selected_samples)
+          } else {
+            excluded_samples = c(excluded_samples, rownames(indexed_meta)[!(rownames(indexed_meta) %in% selected_samples)])
+          }
+          excluded_samples = base::sort(base::unique(excluded_samples))
+          self$indices$excluded_samples = excluded_samples
+        }
       }
 
-      # Unique and sort
-      excluded_samples = base::sort(base::unique(excluded_samples))
-
-      self$indices$excluded_samples = excluded_samples
     },
 
     reset_sample_exclusion = function() {
       self$indices$excluded_samples = NULL
     },
 
-    feature_manual_exclusion = function(indexed_data = self$tables$indexed_data,
-                                        excluded_features = self$indices$excluded_features,
-                                        selection = NULL,
-                                        drop = T) {
+    exclude_features = function(indexed_data = self$tables$indexed_data,
+                                excluded_features = self$indices$excluded_features,
+                                selection = NULL,
+                                drop = T) {
 
       if (!is.null(selection)) {
         remaining_features = colnames(indexed_data)[!(colnames(indexed_data) %in% excluded_features)]
@@ -1700,9 +1726,8 @@ Omics_exp = R6::R6Class(
                                 remaining_features[!(remaining_features %in% selected_features)])
         }
         excluded_features = sort(unique(excluded_features))
+        self$indices$excluded_features = excluded_features
       }
-
-      self$indices$excluded_features = excluded_features
     },
 
     reset_feature_exclusion = function() {
@@ -1712,7 +1737,8 @@ Omics_exp = R6::R6Class(
     #-------------------------------------------------------- Table methods ----
 
     import_meta = function(path, input_format = "Wide") {
-      
+      if (is.null(path)) {base::stop("Sample annotations file not provided")}
+      if (!base::file.exists(path)) {base::stop("Sample annotations file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
       imp_meta = soda_read_table(file_path = path,
                                  sep = NA,
@@ -1722,32 +1748,28 @@ Omics_exp = R6::R6Class(
     },
 
     import_data = function(path, input_format = "Wide") {
-      
+      if (is.null(path)) {base::stop("Measurement data file not provided")}
+      if (!base::file.exists(path)) {base::stop("Measurement data file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
       imp_data = soda_read_table(file_path = path,
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
+
+
       self$tables$imp_data = imp_data
     },
-    
-    import_feature_table = function(name, feature_file, input_format = "Long") {
-      
+
+    import_feat = function(path, input_format = "Long") {
+      if (is.null(path)) {return()}
+      if (!base::file.exists(path)) {base::stop("Feature annotations file not found")}
       transpose = base::ifelse(input_format == "Wide", T, F)
-      ext_feature_table = soda_read_table(file_path = feature_file,
-                                          sep = NA,
-                                          first_column_as_index = T,
-                                          transpose = transpose)
-      self$tables$external_feature_tables[[name]] = ext_feature_table
+      imp_feat = soda_read_table(file_path = path,
+                                 sep = NA,
+                                 first_column_as_index = F,
+                                 transpose = transpose)
+      self$tables$imp_feat = imp_feat
     },
-    
-    del_feature_table = function(name) {
-      self$tables$external_feature_tables[[name]] = NULL
-      if (length(names(self$tables$external_feature_tables)) == 0) {
-        names(self$tables$external_feature_tables) = NULL
-      }
-    },
-    
 
     set_indexed_meta = function(id_col = self$indices$id_col_meta,
                                 imp_meta = self$tables$imp_meta) {
@@ -1755,6 +1777,7 @@ Omics_exp = R6::R6Class(
       indexed_meta = get_indexed_table(id_col = id_col,
                                        input_table = imp_meta)
       indexed_meta[is.na(indexed_meta)] = "NA"
+      indexed_meta[indexed_meta == ""] = "NA"
 
       # Store
       self$indices$id_col_meta = id_col
@@ -1762,12 +1785,12 @@ Omics_exp = R6::R6Class(
 
     },
 
-    set_indexed_data = function(id_col,
+    set_indexed_data = function(id_col = self$indices$id_col_data,
                                 imp_data = self$tables$imp_data) {
 
       indexed_df = get_indexed_table(id_col = id_col,
                                      input_table = imp_data)
-      
+
       indexed_data = as.matrix(sapply(indexed_df, as.numeric))
       rownames(indexed_data) = rownames(indexed_df)
       colnames(indexed_data) = colnames(indexed_df)
@@ -1778,10 +1801,73 @@ Omics_exp = R6::R6Class(
 
     },
 
+    set_indexed_feat = function(id_col = self$indices$id_col_feat,
+                                id_col_data = self$indices$id_col_data,
+                                imp_feat = self$tables$imp_feat,
+                                indexed_data = self$tables$indexed_data,
+                                type = self$type) {
+      if (is.null(imp_feat)) {
+        if (is.null(indexed_data)) {
+          return()
+        } else {
+          indexed_feat = base::data.frame(base::matrix(data = NA, nrow = ncol(indexed_data), ncol = 0))
+          rownames(indexed_feat) = colnames(indexed_data)
+          id_col = id_col_data
+        }
+      } else {
+        indexed_feat = get_indexed_table(id_col = id_col,
+                                         input_table = imp_feat)
+      }
+
+      if (type == "Lipidomics") {
+        indexed_feat = get_feature_metadata(
+          feature_table = indexed_feat)
+      }
+
+      # Store
+      self$indices$id_col_feat = id_col
+      self$tables$indexed_feat = indexed_feat
+
+    },
+
+    check_indexed_table_consistency = function(indexed_data = self$tables$indexed_data,
+                                               indexed_meta = self$tables$indexed_meta,
+                                               indexed_feat = self$tables$indexed_feat) {
+      # Check meta - data
+      shared_samples = base::intersect(rownames(indexed_meta), rownames(indexed_data))
+      if (length(shared_samples) < 3) {
+        base::stop("Less than three shared samples between sample annotations and measurement data tables")
+      } else if ((length(shared_samples) != nrow(indexed_data)) | (length(shared_samples) != nrow(indexed_meta))) {
+        missing_data_samples = base::setdiff(rownames(indexed_data), shared_samples)
+        missing_meta_samples = base::setdiff(rownames(indexed_meta), shared_samples)
+        base::warning(paste0("Dropping ", length(missing_data_samples) + length(missing_meta_samples), " samples not shared between tables"))
+        indexed_data = indexed_data[shared_samples,]
+        indexed_meta = indexed_meta[shared_samples,]
+        self$tables$indexed_data = indexed_data
+        self$tables$indexed_meta = indexed_meta
+      }
+
+      # Check data - feat
+      shared_features = base::intersect(colnames(indexed_data), rownames(indexed_feat))
+      if (length(shared_features) < 3) {
+        base::stop("Less than three shared features between measurement data and feature annotations tables")
+      } else if (nrow(indexed_feat) != length(shared_features)) {
+        indexed_feat = indexed_feat[colnames(indexed_data),]
+        rownames(indexed_feat) = colnames(indexed_data)
+        self$tables$indexed_feat = indexed_feat
+      }
+    },
+
     set_raw_meta = function(indexed_meta = self$tables$indexed_meta,
                             excluded_samples = self$indices$excluded_samples){
+
+      if (is.null(indexed_meta)) {
+        base::stop('Error while setting Raw meta: missing indexed meta')
+      }
+
       if (!is.null(excluded_samples)) {
-        indexed_meta = indexed_meta[-which(rownames(indexed_meta) %in% excluded_samples), ]
+        matched_excluded = which(rownames(indexed_meta) %in% excluded_samples)
+        indexed_meta = indexed_meta[-matched_excluded, ]
       }
 
       if (nrow(indexed_meta) == 0) {
@@ -1792,40 +1878,58 @@ Omics_exp = R6::R6Class(
     },
 
     set_raw_data = function(indexed_data = self$tables$indexed_data,
-                            indexed_meta = self$tables$indexed_meta,
                             excluded_samples = self$indices$excluded_samples,
                             excluded_features = self$indices$excluded_features,
+                            indexed_meta = self$tables$indexed_meta,
                             index_blanks = self$indices$index_blanks,
                             index_qcs = self$indices$index_qcs,
                             index_pools = self$indices$index_pools,
                             batch_column = self$indices$batch_column,
                             group_column = self$indices$group_column,
-                            operation_order = c("Imputation", "Batch correction", "Filtering"),
-                            blank_multiplier = 2, # 2
-                            sample_threshold = 0.8, # 0.8
-                            group_threshold = 0.8, # 0.8
-                            imputation_method = "None", # 'minimum', 'mean', 'median', 'max'
-                            batch_effect_correction = "None", # None, No controls, Pool, QC
-                            norm_col = "None"
-                            ) {
+                            operation_order = self$params$measurement_filter$operation_order,
+                            blank_multiplier = self$params$measurement_filter$blank_multiplier,
+                            sample_threshold = self$params$measurement_filter$sample_threshold,
+                            group_threshold = self$params$measurement_filter$group_threshold,
+                            imputation_method = self$params$measurement_filter$imputation_method,
+                            batch_effect_correction = self$params$measurement_filter$batch_effect_correction,
+                            norm_col = self$params$measurement_filter$norm_col
+    ) {
 
-      #Set raw_data, exclude samples and features
-      raw_data = indexed_data[rownames(indexed_meta), ]
-
-      if (!is.null(excluded_features)) {
-        raw_data = raw_data[, -which(colnames(raw_data) %in% excluded_features)]
+      # Check on indexed data
+      if (is.null(indexed_data)) {
+        base::stop('Error while setting Raw data: missing indexed data')
+      } else {
+        raw_data = indexed_data
       }
 
+      # Exclude features
+      if (!is.null(excluded_features)) {
+        if (length(excluded_features) > 0) {
+          raw_data = raw_data[, -which(colnames(raw_data) %in% excluded_features)]
+        }
+      }
+
+      # Exclude samples
       if (!is.null(excluded_samples)) {
-        raw_data = raw_data[-which(rownames(raw_data) %in% excluded_samples),]
+        if (length(excluded_samples) > 0) {
+          raw_data = raw_data[-which(rownames(raw_data) %in% excluded_samples),]
+        }
+      }
+
+      # Remove any columns with either only 0s or NAs that can have survived
+      empty_cols = colSums(raw_data, na.rm = T)
+      empty_cols = which(empty_cols == 0)
+      if (length(empty_cols) > 0) {
+        empty_cols = names(empty_cols)
+        raw_data = raw_data[,-which(colnames(raw_data) %in% empty_cols)]
       }
 
       # Get non-sample tables
-      blank_table = indexed_data[index_blanks,]
-      qc_table = indexed_data[index_qcs,]
-      pool_table = indexed_data[index_pools,]
+      blank_table = indexed_data[index_blanks, colnames(raw_data)]
+      qc_table = indexed_data[index_qcs, colnames(raw_data)]
+      pool_table = indexed_data[index_pools, colnames(raw_data)]
 
-      # Process raw_data
+      # Process raw_data indexed_meta
       for (func_name in operation_order) {
         if (func_name == "Imputation") {
           if (imputation_method != "None") {
@@ -1854,7 +1958,7 @@ Omics_exp = R6::R6Class(
 
         } else if (func_name == "Filtering") {
           if (nrow(blank_table) > 0) {
-            raw_data = feature_signal_filtering(
+            raw_data = measurement_filtering(
               raw_data = raw_data,
               blank_table = blank_table,
               indexed_meta = indexed_meta,
@@ -1863,21 +1967,20 @@ Omics_exp = R6::R6Class(
               blank_multiplier = blank_multiplier,
               sample_threshold = sample_threshold,
               group_threshold = group_threshold)
+            filtered_out_features = base::setdiff(colnames(indexed_data), colnames(raw_data))
+            if (length(filtered_out_features) > 0) {
+              if (!is.null(excluded_features)) {
+                if (length(excluded_features) > 0) {
+                  filtered_out_features = base::setdiff(filtered_out_features, excluded_features)
+                }
+              }
+            }
+            self$indices$filtered_out_features = filtered_out_features
+
           }
         } else {
           base::stop(paste0('Requested process does not exist: ', func_name))
         }
-      }
-
-      # Remove any columns with either only 0s or NAs that can have survived
-      empty_cols = colSums(raw_data, na.rm = T)
-      empty_cols = which(empty_cols == 0)
-      if (length(empty_cols) > 0) {
-        empty_cols = names(empty_cols)
-        raw_data = raw_data[,-which(colnames(raw_data) %in% empty_cols)]
-        blank_table = blank_table[,colnames(raw_data)]
-        qc_table = qc_table[,colnames(raw_data)]
-        pool_table = pool_table[,colnames(raw_data)]
       }
 
       # Normalization
@@ -1891,122 +1994,102 @@ Omics_exp = R6::R6Class(
       }
 
       self$tables$raw_data = raw_data
-
     },
 
-    add_go_data = function(name,
-                           feature_names,
-                           keyType,
-                           ont,
-                           pvalueCutoff) {
-      go_data = annotate_go(feature_names = feature_names,
-                            keyType = keyType,
-                            ont = ont,
-                            pvalueCutoff = pvalueCutoff)
 
-      if (is.null(go_data)) {
-        print_tm(self$name, 'No GO enrichment with used parameters.')
-        return()
+    set_raw_feat = function(indexed_data = self$tables$indexed_data,
+                            indexed_feat = self$tables$indexed_feat,
+                            excluded_features = self$indices$excluded_features,
+                            filtered_out_features = self$indices$filtered_out_features) {
+
+      if (is.null(indexed_data)) {
+        base::stop('Error while setting Raw feat: missing indexed data')
       }
 
-      sparse_table = get_sparse_matrix(features_go_table = go_data$feature_table,
-                                       all_go_terms = rownames(go_data$go_table),
-                                       sep = '|')
+      # Get the features from the indexed data
+      features_data = colnames(indexed_data)
+      features_feat = rownames(indexed_feat)
 
-      self$tables$external_enrichment_tables[[name]]$terms_table = go_data$go_table
-      self$tables$external_enrichment_tables[[name]]$association_table = go_data$feature_table
-      self$tables$external_enrichment_tables[[name]]$sparse_table = sparse_table
-    },
+      # Merge excluded_features and filtered_out_features
+      excluded_features = c(excluded_features, filtered_out_features)
 
-    upload_enrichment_data = function(name,
-                                      association_table,
-                                      terms_table = NULL,
-                                      sep = '|') {
-
-      # Create terms table if null
-      if (is.null(terms_table)) {
-        go_list = vector("list", nrow(association_table))
-        # Loop through each row and split the 'go_terms' column by '|'
-        for (i in 1:nrow(association_table)) {
-          if (is.na(association_table[i,1])) {
-            next
-          } else {
-            go_list[[i]] = strsplit(as.character(association_table[i,1]), sep, fixed = TRUE)[[1]]
-          }
+      # Remove excluded features
+      if (!is.null(excluded_features)) {
+        if (length(excluded_features) > 0) {
+          features_data = features_data[-which(features_data %in% excluded_features)]
         }
-        go_list = sort(unique(unlist(go_list)))
-        terms_table = data.frame(
-          ID = go_list,
-          Description = go_list
-        )
-        rownames(terms_table) = terms_table$ID
-        terms_table$ID = NULL
       }
-      sparse_matrix = get_sparse_matrix(features_go_table = association_table[1],
-                                        all_go_terms = rownames(terms_table),
-                                        sep = sep)
 
-      self$tables$external_enrichment_tables[[name]]$terms_table = terms_table
-      self$tables$external_enrichment_tables[[name]]$association_table = association_table
-      self$tables$external_enrichment_tables[[name]]$sparse_table = sparse_matrix
+      shared_keys = base::intersect(features_data, features_feat)
+      missing_keys = base::setdiff(features_data, features_feat)
+      raw_feat = indexed_feat[shared_keys, ]
+
+      new_rows = data.frame(matrix(NA, nrow = length(missing_keys), ncol = ncol(raw_feat)))
+      rownames(new_rows) = missing_keys
+      colnames(new_rows) = colnames(raw_feat)
+
+      if (nrow(new_rows) > 0) {
+        raw_feat = rbind(raw_feat, new_rows)
+      }
+      self$tables$raw_feat = raw_feat
 
     },
 
-    del_go_data = function(name) {
-      self$tables$external_enrichment_tables[[name]] = NULL
-      if (length(names(self$tables$external_enrichment_tables)) == 0) {
-        names(self$tables$external_enrichment_tables) = NULL
-      }
-    },
+    add_sparse_feat = function(feature_table = self$tables$indexed_feat,
+                               sep = "|",
+                               column_name) {
 
-    get_feature_table = function() {
-      data_table = self$tables$imp_data
-      data_table = data_table[,2:ncol(data_table)]
-      self$tables$imp_feature_table = get_feature_metadata(data_table = data_table, dtype = base::tolower(self$type))
-    },
-
-    update_feature_table = function(sep = "|") {
-      if (sep == "|") {
-        regex_sep = "\\|"
-      } else {
-        regex_sep = sep
-      }
-      feature_table = self$tables$imp_feature_table[colnames(self$tables$raw_data),,drop = F]
-      ext_names = names(self$tables$external_feature_tables)
-      for (name in ext_names) {
-        feature_table = augment_feature_table(feature_table = feature_table,
-                                              external_table_name = name,
-                                              external_feature_table = self$tables$external_feature_tables[[name]])
+      if (is.null(feature_table)) {
+        base::stop('Set indexed_feat before adding a sparse table')
       }
 
-      multi_value_annotations = sapply(feature_table, function(column) sum(stringr::str_count(column, regex_sep), na.rm = T))
-      multi_value_annotations[is.na(multi_value_annotations)] = 0
-      feature_table[feature_table == ""] = NA
-      non_missing_counts = sapply(feature_table, function(column) sum(!is.na(column)))
-      multi_value_annotations = names(multi_value_annotations)[multi_value_annotations > non_missing_counts]
+      column_values = feature_table[,column_name]
+      column_values[is.na(column_values)] = ""
 
-      out_list = vector('list', length(multi_value_annotations))
-      names(out_list) = multi_value_annotations
+      if (!any(stringr::str_detect(column_values, fixed(sep)))) {
+        base::stop(paste0("Separator ", sep, " not found in column ", column_name))
+      }
 
-      for (col in multi_value_annotations) {
-        feature_list = vector("list", nrow(feature_table))
-        for (i in 1:nrow(feature_table)) {
-          if (is.na(feature_table[i,col])) {
-            next
-          } else {
-            feature_list[[i]] = strsplit(as.character(feature_table[i,col]), sep, fixed = TRUE)[[1]]
-          }
+      column_values[column_values == ""] = NA
+      names(column_values) = rownames(feature_table)
+
+      column_terms = vector("list", length(column_values))
+      for (i in 1:length(column_values)) {
+        if (is.na(column_values[i])) {
+          next
+        } else {
+          column_terms[[i]] = base::strsplit(as.character(column_values[i]), sep, fixed = TRUE)[[1]]
         }
-        feature_list = sort(unique(unlist(feature_list)))
-        sparse_matrix = get_sparse_matrix(features_go_table = feature_table[col],
-                                          all_go_terms = feature_list,
-                                          sep = sep)
-        out_list[[col]]$feature_list = feature_list
-        out_list[[col]]$sparse_matrix = sparse_matrix
+      }
+      terms_list = sort(unique(unlist(column_terms)))
+      sparse_matrix = get_sparse_matrix(column_values = column_values,
+                                        column_terms = column_terms,
+                                        terms_list = terms_list)
+      terms_table = get_terms_table(column_values = column_values,
+                                    sep = sep)
+
+      self$tables$sparse_feat[[column_name]]$terms_list = terms_list
+      self$tables$sparse_feat[[column_name]]$terms_table = terms_table
+      self$tables$sparse_feat[[column_name]]$sparse_matrix = sparse_matrix
+    },
+
+    add_all_sparse_feat = function(feature_table = self$tables$indexed_feat,
+                                   sep = "|") {
+
+      for (column_name in colnames(feature_table)){
+        if (any(stringr::str_detect(stats::na.exclude(feature_table[,column_name]), fixed(sep)))) {
+          self$add_sparse_feat(
+            feature_table = feature_table,
+            sep = sep,
+            column_name = column_name
+          )
+        }
       }
 
-      self$tables$feature_table = feature_table
-      self$tables$feature_list = out_list
+    },
+
+    reset_sparse_feat = function() {
+      self$tables$sparse_feat = NULL
     },
 
     # Class normalisation
@@ -2068,12 +2151,10 @@ Omics_exp = R6::R6Class(
 
     derive_data_tables = function(params_list = NULL) {
       # Derive tables
-      self$get_feature_table()
-      self$update_feature_table()
       self$normalise_total()
       self$normalise_z_score()
       self$normalise_total_z_score()
-      self$get_group_summary_species()
+      # self$get_group_summary_species()
 
       if (self$type == "Lipidomics") {
         self$normalise_class()
@@ -2085,8 +2166,9 @@ Omics_exp = R6::R6Class(
         self$get_group_summary_classes()
       }
 
+      self$indices$feature_id_type = "SYMBOL"
+
       # Set plotting parameters
-      self$indices$feature_id_type = 'SYMBOL'
 
       self$param_dendrogram(auto_refresh = F,
                             dataset = 'Z-scored table',
@@ -2225,8 +2307,8 @@ Omics_exp = R6::R6Class(
                          k_clusters_features = 1,
                          map_sample_data = NULL,
                          map_feature_data = NULL,
-                         map_feature_terms = NULL,
-                         multival_cols = "None",
+                         sparse_features = NULL,
+                         sparse_table = "None",
                          group_column_da = self$indices$group_column,
                          apply_da = T,
                          alpha_da = 0.8,
@@ -2265,8 +2347,8 @@ Omics_exp = R6::R6Class(
       self$param_feature_correlation(
         auto_refresh = F,
         dataset = 'Z-scored total normalized table',
-        multival_cols = 'None',
-        map_feature_terms = NULL,
+        sparse_table = 'None',
+        sparse_features = NULL,
         correlation_method = "pearson",
         use = 'pairwise.complete.obs',
         distance_method = "euclidian",
@@ -2372,7 +2454,7 @@ Omics_exp = R6::R6Class(
     # Volcano table
     get_volcano_table = function(data_table = self$params$volcano_plot_comparison$data_table,
                                  sample_table = self$tables$raw_meta,
-                                 feature_table = self$tables$feature_table,
+                                 feature_table = self$tables$raw_feat,
                                  group_col = self$params$volcano_plot_comparison$group_col,
                                  group_1 = self$params$volcano_plot_comparison$group_1,
                                  group_2 = self$params$volcano_plot_comparison$group_2,
@@ -2399,14 +2481,14 @@ Omics_exp = R6::R6Class(
     },
 
     push_volcano_to_meta = function() {
-      self$tables$feature_table$volcano_plot_expression = "None"
-      self$tables$feature_table[rownames(self$tables$volcano_plot), "volcano_plot_expression"] = self$tables$volcano_plot[, "expression"]
+      self$tables$raw_feat$volcano_plot_expression = "None"
+      self$tables$raw_feat[rownames(self$tables$volcano_plot), "volcano_plot_expression"] = self$tables$volcano_plot[, "expression"]
     },
 
     # Double bond plot table
     get_double_bonds_table = function(data_table = self$params$double_bonds_comparison$data_table,
                                       sample_table = self$tables$raw_meta,
-                                      feature_table = self$tables$feature_table,
+                                      feature_table = self$tables$raw_feat,
                                       group_col = self$params$double_bonds_comparison$group_col,
                                       group_1 = self$params$double_bonds_comparison$group_1,
                                       group_2 = self$params$double_bonds_comparison$group_2,
@@ -2438,7 +2520,7 @@ Omics_exp = R6::R6Class(
     # EA feature table
     get_ea_feature_table = function(data_table = self$tables$total_norm_data,
                                     sample_table = self$tables$raw_meta,
-                                    feature_table = self$tables$feature_table,
+                                    feature_table = self$tables$raw_feat,
                                     group_col = self$params$ea_selection$group_col,
                                     group_1 = self$params$ea_selection$group_1,
                                     group_2 = self$params$ea_selection$group_2,
@@ -2466,7 +2548,7 @@ Omics_exp = R6::R6Class(
     # ORA feature table
     get_ora_feature_table = function(data_table = self$tables$total_norm_data,
                                      sample_table = self$tables$raw_meta,
-                                     feature_table = self$tables$feature_table,
+                                     feature_table = self$tables$raw_feat,
                                      group_col = self$params$ora_selection$group_col,
                                      group_1 = self$params$ora_selection$group_1,
                                      group_2 = self$params$ora_selection$group_2,
@@ -2494,7 +2576,8 @@ Omics_exp = R6::R6Class(
 
     # Get EA object
     get_ea_object = function(ea_feature_table = self$tables$ea_feature_table,
-                             feature_table = self$tables$feature_table,
+                             feature_table = self$tables$raw_feat,
+                             sparse_feat = self$tables$sparse_feat,
                              keyType = self$indices$feature_id_type,
                              custom_col = self$params$ea_process$custom_col,
                              selected_features = self$params$ea_process$selected_features,
@@ -2507,8 +2590,22 @@ Omics_exp = R6::R6Class(
                              OrgDb = self$params$ea_process$OrgDb,
                              seed = self$params$ea_process$seed) {
 
+      # Get the terms table
+      if (!is.null(custom_col)) {
+        if (custom_col %in% names(sparse_feat)) {
+          terms_table = sparse_feat[[custom_col]]$terms_table
+        } else {
+          terms_table = data.frame(list(
+            values = feature_table[,custom_col],
+            ind = rownames(feature_table)
+            ))
+        }
+      } else {
+        terms_table = NULL
+      }
+
       ea_object = get_ea_object(ea_feature_table = ea_feature_table,
-                                custom_col = custom_col,
+                                terms_table = terms_table,
                                 selected_features = selected_features,
                                 feature_table = feature_table,
                                 keyType = keyType,
@@ -2529,7 +2626,7 @@ Omics_exp = R6::R6Class(
     get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
                               custom_col = self$params$ora_process$custom_col,
                               selected_features = self$params$ora_process$selected_features,
-                              feature_table = self$tables$feature_table,
+                              feature_table = self$tables$raw_feat,
                               pval_cutoff_features = self$params$ora_process$pval_cutoff_features,
                               padjust_features = self$params$ora_process$padjust_features,
                               pval_cutoff = self$params$ora_process$pval_cutoff,
@@ -2542,8 +2639,23 @@ Omics_exp = R6::R6Class(
                               maxGSSize  = self$params$ora_process$maxGSSize,
                               seed = self$params$ora_process$seed) {
 
+      # Get the terms table
+      if (!is.null(custom_col)) {
+        if (custom_col %in% names(sparse_feat)) {
+          terms_table = sparse_feat[[custom_col]]$terms_table
+        } else {
+          terms_table = data.frame(list(
+            values = feature_table[,custom_col],
+            ind = rownames(feature_table)
+          ))
+        }
+      } else {
+        terms_table = NULL
+      }
+
+
       ora_object = get_ora_object(ora_feature_table = ora_feature_table,
-                                  custom_col = custom_col,
+                                  terms_table = terms_table,
                                   selected_features = selected_features,
                                   feature_table = feature_table,
                                   pval_cutoff_features = pval_cutoff_features,
@@ -2558,11 +2670,228 @@ Omics_exp = R6::R6Class(
                                   maxGSSize  = maxGSSize,
                                   seed = seed)
 
+      if (is.null(ora_object)) {
+        base::stop('No over representation found')
+      }
+
       self$tables$ora_object = ora_object
       self$tables$ora_table = ora_object@result
     },
 
     #----------------------------------------------------- Plotting methods ----
+
+    # Sample type distribution
+    plot_sample_type_distribution = function(
+    input_table = self$tables$indexed_meta,
+    index_blanks = self$indices$index_blanks,
+    index_qcs = self$indices$index_qcs,
+    index_pools = self$indices$index_pools,
+    index_samples = self$indices$index_samples,
+    batch_column = self$indices$batch_column
+    ) {
+      mixed_samples = unique(c(intersect(index_blanks, index_qcs), intersect(index_qcs, index_pools), intersect(index_blanks, index_pools)))
+      batches = sort(unique(input_table[,batch_column]))
+      plot_df = list()
+      for (batch in batches) {
+        batch_rows = rownames(input_table)[input_table[,batch_column] == batch]
+        plot_df$Batch = c(plot_df$Batch, batch)
+        plot_df$Samples = c(plot_df$Samples, length(base::intersect(batch_rows, index_samples)))
+        plot_df$Blanks = c(plot_df$Blanks, length(base::intersect(batch_rows, index_blanks)))
+        plot_df$QCs = c(plot_df$QCs, length(base::intersect(batch_rows, index_qcs)))
+        plot_df$Pools = c(plot_df$Pools, length(base::intersect(batch_rows, index_pools)))
+        plot_df$Mixed = c(plot_df$Mixed, length(base::intersect(batch_rows, mixed_samples)))
+      }
+
+      plot_df = data.frame(plot_df)
+      rownames(plot_df) = plot_df$Batch
+      plot_df$Batch = NULL
+
+      batch_label = base::ifelse(length(batches) > 1, " & batch", "")
+
+      fig = plotly::plot_ly(x = factor(colnames(plot_df), levels = colnames(plot_df)))
+      for (i in rownames(plot_df)) {
+        fig = plotly::add_trace(
+          p = fig,
+          y = unname(unlist(plot_df[i,,T])),
+          type = 'bar',
+          name = i)
+      }
+      fig = plotly::layout(
+        p = fig,
+        title = paste0("Sample type", batch_label, " distribution"),
+        yaxis = list(title = 'Count'),
+        barmode = 'stack',
+        dragmode = FALSE,
+        bargap = 0.2,
+        legend = list(
+          title = list(
+            text = "Batches"
+          )
+        ))
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE,
+        scrollZoom = FALSE
+      )
+      self$plots$sample_type_distribution = fig
+    },
+
+    # Sample group distribution
+    plot_sample_group_distribution = function(
+    input_table = self$tables$indexed_meta,
+    batch_column = self$indices$batch_column,
+    group_column = self$indices$group_column) {
+
+      batches = sort(unique(input_table[,batch_column]))
+      groups = sort(unique(input_table[,group_column]))
+
+      # Check on groups
+      if (length(groups) < 2) {base::stop('Less than two groups in selected group column')}
+
+      plot_df = list()
+      for (batch in batches) {
+        batch_rows = rownames(input_table)[input_table[,batch_column] == batch]
+        plot_df$Batch = c(plot_df$Batch, batch)
+        for (group in groups) {
+          index_group = rownames(input_table)[input_table[,group_column] == group]
+          plot_df[[group]] = c(plot_df[[group]], length(base::intersect(batch_rows, index_group)))
+        }
+      }
+
+      plot_df = data.frame(plot_df, check.names = F)
+      rownames(plot_df) = plot_df$Batch
+      plot_df$Batch = NULL
+
+      batch_label = base::ifelse(length(batches) > 1, " & batch", "")
+
+      fig = plotly::plot_ly(x = factor(colnames(plot_df), levels = colnames(plot_df)))
+      for (i in rownames(plot_df)) {
+        fig = plotly::add_trace(
+          p = fig,
+          y = unname(unlist(plot_df[i,,T])),
+          type = 'bar',
+          name = i)
+      }
+      fig = plotly::layout(
+        p = fig,
+        title = paste0("Sample groups (", group_column, ")", batch_label, " distribution"),
+        yaxis = list(title = 'Count'),
+        barmode = 'stack',
+        bargap = 0.2)
+      fig = plotly::layout(
+        p = fig,
+        dragmode = FALSE,
+        bargap = 0.2,
+        legend = list(
+          title = list(
+            text = "Batches"
+          )
+        )
+      )
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE,
+        scrollZoom = FALSE
+      )
+      self$plots$sample_group_distribution = fig
+    },
+    
+    # Missingness donut plot
+    plot_missing_donut = function(input_table = self$tables$indexed_data) {
+      
+      fig = plotly::plot_ly(labels = c('Missing', 'Non-missing'), values = c(
+        sum(is.na(input_table)),
+        sum(!is.na(input_table)))
+      )
+      fig = plotly::add_pie(
+        p = fig,
+        hole = 0.6,
+        marker = list(colors = c('lightblue', 'deepskyblue'))
+      )
+      fig = plotly::layout(
+        p = fig,
+        title = "Missing values",
+        legend = list(
+          orientation = 'h',
+          x = 0.5, 
+          y = -0.2, 
+          xanchor = 'center',
+          yanchor = 'top' 
+        ),
+        showlegend = T,
+        xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+        yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE
+      )
+      self$plots$missing_donut = fig
+    },
+    
+    # Sample missingness plot
+    plot_sample_missingness = function(input_table = self$tables$indexed_data){
+      fig = plot_bar_missingness(
+        input_table = input_table,
+        type = "Samples"
+      )
+      self$plots$sample_missingness = fig
+    },
+    
+    # Feature missingness plot
+    plot_feature_missingness = function(input_table = self$tables$indexed_data){
+      fig = plot_bar_missingness(
+        input_table = input_table,
+        type = "Features"
+      )
+      self$plots$feature_missingness = fig
+    },
+    
+    # Plot feature annotation distribution
+    plot_feature_annotation_distribution = function(indexed_feat = self$tables$indexed_feat,
+                                                    input_table = self$tables$raw_feat,
+                                                    column = "None") {
+      fig = plot_feature_annotation_distribution(
+        indexed_feat = indexed_feat,
+        input_table = input_table,
+        column = column)
+      self$plots$feature_annotation_distribution = fig
+    },
+    
+    # Sparse feature distribution
+    plot_sparse_feat_distribution = function(sparse_table,
+                                             top_annotations = 50) {
+      
+      top_annotations = as.numeric(top_annotations)
+      
+      if (!(sparse_table %in% names(self$tables$sparse_feat))) {
+        self$plots$sparse_feat_distribution = create_blank_plot()
+        return()
+      }
+      
+      terms_table = self$tables$sparse_feat[[sparse_table]]$terms_table
+      terms_distribution = table(na.omit(terms_table$values))
+      total_terms = length(terms_distribution)
+      terms_distribution = sort(terms_distribution, decreasing = T)
+      terms_distribution = terms_distribution[1:min(top_annotations, length(terms_distribution))]
+      
+      fig = plotly::plot_ly(labels = names(terms_distribution), values = c(terms_distribution)
+      )
+      fig = plotly::add_pie(
+        p = fig,
+        hole = 0.6
+      )
+      fig = plotly::layout(
+        p = fig,
+        title = paste0("Top ", top_annotations, " sparse annotations (total: ", total_terms, ")"),
+        showlegend = F,
+        xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+        yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+      fig = plotly::config(
+        p = fig,
+        displayModeBar = FALSE
+      )
+      self$plots$sparse_feat_distribution = fig
+    },
 
     # Dendrogram
     plot_dendrogram = function(dataset = self$params$dendrogram$dataset,
@@ -2994,13 +3323,13 @@ Omics_exp = R6::R6Class(
                             impute_min = self$params$heatmap$impute_min,
                             center = self$params$heatmap$center,
                             meta_table = self$tables$raw_meta,
-                            meta_table_features = self$tables$feature_table,
+                            meta_table_features = self$tables$raw_feat,
                             apply_clustering = self$params$heatmap$apply_clustering,
                             k_clusters_samples = self$params$heatmap$k_clusters_samples,
                             k_clusters_features = self$params$heatmap$k_clusters_features,
                             row_annotations = self$params$heatmap$map_sample_data,
                             col_annotations = self$params$heatmap$map_feature_data,
-                            map_feature_terms = self$params$heatmap$map_feature_terms,
+                            sparse_features = self$params$heatmap$sparse_features,
                             apply_da = self$params$heatmap$apply_da,
                             group_column_da = self$params$heatmap$group_column_da,
                             alpha_da = self$params$heatmap$alpha_da,
@@ -3099,12 +3428,12 @@ Omics_exp = R6::R6Class(
       }
 
       # Add multivalue annotations
-      if (!is.null(map_feature_terms)) {
+      if (!is.null(sparse_features)) {
         if (is.null(col_annotations)) {
           col_annotations = as.data.frame(meta_table_features[, NULL])
         }
-        for (name in names(map_feature_terms))
-          col_annotations[[name]] = map_feature_terms[[name]][rownames(col_annotations)]
+        for (name in names(sparse_features))
+          col_annotations[[name]] = sparse_features[[name]][rownames(col_annotations)]
       }
 
       # Get the color palette
@@ -3325,8 +3654,8 @@ Omics_exp = R6::R6Class(
 
     ## Feature correlation plot
     plot_feature_correlation = function(dataset = self$params$feature_correlation$dataset,
-                                        meta_table = self$tables$feature_table,
-                                        map_feature_terms = self$params$feature_correlation$map_feature_terms,
+                                        meta_table = self$tables$raw_feat,
+                                        sparse_features = self$params$feature_correlation$sparse_features,
                                         correlation_method = self$params$feature_correlation$correlation_method,
                                         use = self$params$feature_correlation$use,
                                         distance_method = self$params$feature_correlation$distance_method,
@@ -3460,12 +3789,12 @@ Omics_exp = R6::R6Class(
       }
 
       # Add multivalue annotations
-      if (!is.null(map_feature_terms)) {
+      if (!is.null(sparse_features)) {
         if (is.null(col_annotations)) {
           col_annotations = as.data.frame(meta_table[, NULL])
         }
-        for (name in names(map_feature_terms))
-          col_annotations[[name]] = map_feature_terms[[name]][rownames(col_annotations)]
+        for (name in names(sparse_features))
+          col_annotations[[name]] = sparse_features[[name]][rownames(col_annotations)]
       }
 
       # Save table as heatmap table
@@ -3514,7 +3843,7 @@ Omics_exp = R6::R6Class(
     ## PCA scores and loading plots
     plot_pca = function(data_table = self$params$pca$data_table,
                         meta_table = self$tables$raw_meta,
-                        feature_table = self$tables$feature_table,
+                        feature_table = self$tables$raw_feat,
                         sample_groups_col = self$params$pca$sample_groups_col,
                         feature_groups_col = self$params$pca$feature_groups_col,
                         impute_median = self$params$pca$impute_median,
@@ -3628,7 +3957,7 @@ Omics_exp = R6::R6Class(
 
     ## FA analysis
     plot_fa_analysis = function(data_table = self$params$fa_analysis_plot$data_table,
-                                feature_table = self$tables$feature_table,
+                                feature_table = self$tables$raw_feat,
                                 sample_meta = self$tables$raw_meta,
                                 group_col = self$params$fa_analysis_plot$group_col,
                                 selected_view = self$params$fa_analysis_plot$selected_view,
@@ -3808,7 +4137,7 @@ Omics_exp = R6::R6Class(
     # plot Fatty acid composition heatmaps
     plot_fa_comp = function(data_table = self$params$fa_comp_plot$data_table,
                             sample_meta = self$tables$raw_meta,
-                            feature_table = self$tables$feature_table,
+                            feature_table = self$tables$raw_feat,
                             composition = self$params$fa_comp_plot$composition,
                             group_col = self$params$fa_comp_plot$group_col,
                             group_1 = self$params$fa_comp_plot$group_1,
@@ -3944,48 +4273,6 @@ Omics_exp = R6::R6Class(
             tickfont = list(size = fd$y_tick_font_size)
           )
         )
-
-      # plotly::layout(annotations =
-      #                  list(x = 1,
-      #                       y = -0.175,
-      #                       text = "NOTE: error bars are standard deviation",
-      #                       showarrow = FALSE,
-      #                       xref = "paper",
-      #                       yref = "paper",
-      #                       xanchor = "right",
-      #                       yanchor = "auto",
-      #                       xshift = 0,
-      #                       yshift = 0,
-      #                       font = list(size = 10)),
-      #                title = list(text = fd$title,
-      #                             x = 0,
-      #                             xanchor = "left",
-      #                             font = list(size = fd$title_font_size)),
-      #                legend = list(orientation = 'h',
-      #                              xanchor = "center",
-      #                              x = 0.5,
-      #                              title = list(text = fd$legend_label),
-      #                              font = list(
-      #                                size = fd$legend_font_size
-      #                              )),
-      #                showlegend = fd$legend_show,
-      #                xaxis = list(
-      #                  title = list(
-      #                    text = fd$x_label,
-      #                    font = list(size = fd$x_label_font_size)
-      #                  ),
-      #                  showticklabels = fd$x_tick_show,
-      #                  tickfont = list(size = fd$x_tick_font_size)
-      #                ),
-      #                yaxis = list(
-      #                  title = list(
-      #                    text = fd$y_label,
-      #                    font = list(size = fd$y_label_font_size)
-      #                  ),
-      #                  showticklabels = fd$y_tick_show,
-      #                  tickfont = list(size = fd$y_tick_font_size)
-      #                )
-      # )
 
       fig_bar_left = plotly::plot_ly(
         data = bar_left_data,

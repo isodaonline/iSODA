@@ -70,11 +70,14 @@ r6_switch = function(exp_type, name, id, slot){
 table_switch = function(table_name, r6) {
   switch(EXPR = table_name,
          'Imported metadata table' = r6$tables$imp_meta,
+         'Indexed metadata table' = r6$tables$indexed_meta,
          'Raw metadata table' = r6$tables$raw_meta,
          'Imported data table' = r6$tables$imp_data,
+         'Indexed data table' = r6$tables$indexed_data,
          'Raw data table' = r6$tables$raw_data,
-         'Imported feature table' = r6$tables$imp_feature_table,
-         'Feature table' = r6$tables$feature_table,
+         'Imported feature table' = r6$tables$imp_feat,
+         'Indexed feature table' = r6$tables$indexed_feat,
+         'Raw feature table' = r6$tables$raw_feat,
          'Blank table' = r6$tables$blank_table,
          'Class normalized table' = r6$tables$class_norm_data,
          'Total normalized table' = r6$tables$total_norm_data,
@@ -141,7 +144,18 @@ lipidomics_plot_list = function() {
   return(plot_list)
 }
 
-proteomics_plot_list = function() {
+generic_plot_list = function() {
+  plot_list = c("Dendrogram" = "select_dendrogram",
+                "Volcano plot" = "select_volcano_plot",
+                "Heatmap" = "select_heatmap",
+                "Samples correlation" = "select_samples_correlation",
+                "Feature correlation" = "select_feature_correlation",
+                "PCA" = "select_pca"
+  )
+  return(plot_list)
+}
+
+proteomics_plot_list = function() { # DEPRECATED
   plot_list = c("Dendrogram" = "select_dendrogram",
                 "Volcano plot" = "select_volcano_plot",
                 "Heatmap" = "select_heatmap",
@@ -211,7 +225,17 @@ get_indexed_table = function(id_col,
   if (is.null(input_table)) {
     base::stop('Import data table before setting an ID column')
   }
+  
+  # Check if id_col exists
+  if (is.null(id_col)) {
+    base::stop('ID column missing')
+  }
 
+  # If id_col is numeric
+  if (is.numeric(id_col) && id_col == as.integer(id_col)) {
+    id_col = colnames(input_table)[id_col]
+  }
+  
   # Check if id_col is a valid column name
   if (!id_col %in% colnames(input_table)) {
     stop(paste("Requested ID column '", id_col, "' not found in the table"))
@@ -260,7 +284,7 @@ get_indexed_table = function(id_col,
   return(input_table)
 }
 
-feature_signal_filtering = function(raw_data,
+measurement_filtering = function(raw_data,
                                     blank_table,
                                     indexed_meta,
                                     batch_column,
@@ -321,7 +345,9 @@ feature_signal_filtering = function(raw_data,
       salvaged_features = c(salvaged_features, names(above_threshold)[above_threshold])
     }
     excluded_features = sort(unique(setdiff(excluded_features, salvaged_features)))
-    raw_data = raw_data[,-which(colnames(raw_data) %in% excluded_features)]
+    if (length(excluded_features) > 1) {
+      raw_data = raw_data[,-which(colnames(raw_data) %in% excluded_features)]
+    }
   }
   return(raw_data)
 }
@@ -1083,6 +1109,8 @@ get_lipid_class_table = function(table){
 
   # Get a column vector to find easily which columns belong to each lipid group
   col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE)
+  
+  # table[, col_vector == "TG"] = table[, col_vector == 'TG'] / 3
 
   # Fill the table
   out_table = sapply(X = classes,
@@ -1161,67 +1189,65 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
   }
 }
 
-get_feature_metadata = function(data_table, dtype) {
-
-  if (!(dtype %in% c('lipidomics', 'metabolomics', 'proteomics', 'transcriptomics', 'genomics'))) {
-    print('Error: dtype should be one of [lipidomics, metabolomics, proteomics, transcriptomics, genomics]')
-    return()
-  }
-
-  if (dtype == 'lipidomics') {
-    feature_table = data.frame(row.names = sort(colnames(data_table)))
-    feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
-                                                       uniques = FALSE)
-    # Collect carbon and unsaturation counts
-    c_count_1 = c() # Main carbon count / total carbon count (TGs)
-    s_count_1 = c() # Main saturation count
-    c_count_2 = c() # Secondary carbon count (asyl groups or TGs)
-    s_count_2 = c() # Secondary saturation (asyl groups or TGs)
-    for (c in unique(feature_table[, 'Lipid class'])) {
-      idx = rownames(feature_table)[feature_table[, 'Lipid class'] == c]
-
-      if (c == "TG") {
-        # For triglycerides
-        for (i in stringr::str_split(string = idx, pattern = " |:|-FA")) {
-          c_count_1 = c(c_count_1, i[2])
-          c_count_2 = c(c_count_2, i[4])
-          s_count_1 = c(s_count_1, i[3])
-          s_count_2 = c(s_count_2, i[5])
-        }
-      } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) >0) {
-        # For species with asyl groups ("/" or "_")
-        for (i in stringr::str_split(string = idx, pattern = " |:|_|/")) {
-          c_count_1 = c(c_count_1, gsub("[^0-9]", "", i[2]))
-          c_count_2 = c(c_count_2, i[4])
-          s_count_1 = c(s_count_1, i[3])
-          s_count_2 = c(s_count_2, i[5])
-        }
-      } else {
-        # For the rest
-        for (i in stringr::str_split(string = idx, pattern = " |:")) {
-          c_count_1 = c(c_count_1, i[2])
-          c_count_2 = c(c_count_2, 0)
-          s_count_1 = c(s_count_1, i[3])
-          s_count_2 = c(s_count_2, 0)
-        }
-      }
+get_feature_metadata = function(feature_table) {
+  
+  feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
+                                                     uniques = FALSE)
+  # Collect carbon and unsaturation counts
+  new_feature_table = list()
+  
+  for (c in unique(feature_table[, 'Lipid class'])) {
+    idx = rownames(feature_table)[feature_table[, 'Lipid class'] == c]
+    
+    if (c == "TG") {
+      # For triglycerides
+      truffles = stringr::str_split(string = idx, pattern = " |:|-FA")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
+    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) > 0) {
+      # For species with asyl groups ("/" or "_")
+      truffles = stringr::str_split(string = idx, pattern = " |:|_|/")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
+    } else {
+      # For the rest
+      truffles = paste0(idx, ':0:0')
+      truffles = stringr::str_split(string = truffles, pattern = " |:")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
     }
-
-    feature_table[,'Carbon count (chain 1)'] = as.numeric(c_count_1)
-    feature_table[,'Carbon count (chain 2)'] = as.numeric(c_count_2)
-    feature_table[,'Carbon count (sum)'] = as.numeric(c_count_1) + as.numeric(c_count_2)
-    feature_table[,'Double bonds (chain 1)'] = as.numeric(s_count_1)
-    feature_table[,'Double bonds (chain 2)'] = as.numeric(s_count_2)
-    feature_table[,'Double bonds (sum)'] = as.numeric(s_count_1) + as.numeric(s_count_2)
-
-  } else if (dtype %in% c('metabolomics', 'proteomics', 'transcriptomics', 'genomics')) {
-
-    features = colnames(data_table)
-    feature_table = data.frame(row.names = features)
   }
-
-
-  return(feature_table)
+  
+  new_feature_table = as.data.frame(t(data.frame(new_feature_table, check.names = F)), check.names = F)
+  new_feature_table[,2] = gsub("[^0-9]", "", new_feature_table[,2])
+  for (col in colnames(new_feature_table)[2:ncol(new_feature_table)]) {
+    new_feature_table[,col] = as.numeric(new_feature_table[,col])
+  }
+  new_feature_table[,6] = new_feature_table[,2] + new_feature_table[,4]
+  new_feature_table[,7] = new_feature_table[,3] + new_feature_table[,5]
+  
+  idx_tgs = which(new_feature_table[,1] == "TG")
+  if (length(idx_tgs) > 0) {
+    new_feature_table[idx_tgs,6] = new_feature_table[idx_tgs,2]
+    new_feature_table[idx_tgs,7] = new_feature_table[idx_tgs,3]
+  }
+  
+  colnames(new_feature_table) = c(
+    'Lipid class',
+    'Carbon count (chain 1)',
+    'Double bonds (chain 1)',
+    'Carbon count (chain 2)',
+    'Double bonds (chain 2)',
+    'Carbon count (sum)',
+    'Double bonds (sum)'
+  )
+  
+  new_feature_table = new_feature_table[rownames(feature_table),]
+  
+  return(new_feature_table)
 }
 
 get_col_means = function(data_table) {
@@ -1327,6 +1353,243 @@ lips_get_del_cols = function(data_table,
 }
 
 #------------------------------------------------------- Plotting functions ----
+
+plot_feature_annotation_distribution = function(indexed_feat = self$tables$indexed_feat,
+                                                input_table = self$tables$raw_feat,
+                                                column) {
+  
+  if (!(column %in% colnames(indexed_feat))) {
+    return(create_blank_plot())
+  }
+  
+  if (length(unique(table(indexed_feat[,column]))) > 50) {
+    return(create_blank_plot())
+  }
+  
+  full_data = table(indexed_feat[,column])
+  filtered_data = table(factor(input_table[, column], levels = names(full_data)))
+  filtered_data =  full_data - filtered_data
+  
+  plot_data = data.frame(list(
+    remaining = as.vector(unname(full_data - filtered_data)),
+    filtered = as.vector(unname(filtered_data)),
+    name = factor(paste(names(filtered_data), " "), levels = paste(names(filtered_data), " "))
+  ),
+  check.names = F)
+  
+  fig = plotly::plot_ly(
+    x = plot_data$remaining,
+    y = plot_data$name,
+    type = 'bar',
+    orientation = "h",
+    marker = list(color = 'deepskyblue'),
+    name = 'Remaining')
+  fig = plotly::add_trace(
+    p = fig,
+    x = plot_data$filtered,
+    marker = list(color = 'lightblue'),
+    name = 'Filtered')
+  fig = plotly::layout(
+    p = fig,
+    barmode = 'stack',
+    title = paste0(column, " distribution"),
+    dragmode = FALSE,
+    legend = list(
+      orientation = 'h',
+      x = 0.5, 
+      y = -0.05, 
+      xanchor = 'center',
+      yanchor = 'top' 
+    ))
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE,
+    scrollZoom = FALSE
+  )
+  return(fig)
+}
+
+plot_bar_missingness = function(input_table,
+                                type) {
+  if (!(type %in% c('Samples', 'Features'))){
+    base::stop('type should be either Samples or Features')
+  } else if (type == "Samples") {
+    idx = 1
+    autorange = "reversed"
+    table_names = rownames(input_table)
+  } else {
+    idx = 2
+    autorange = NULL
+    table_names = colnames(input_table)
+  }
+  
+  missing_data = base::which(is.na(input_table), arr.ind = T)
+  if (length(missing_data) == 0){
+    return(create_blank_plot())
+  }
+  missing_data = sort(table(missing_data[,idx]), decreasing = T)
+  names(missing_data) = table_names[as.integer(names(missing_data))]
+  missing_data = missing_data[1:min(10, length(missing_data))]
+  missing_data = sort(missing_data, decreasing = F)
+  data_names = factor(names(missing_data), levels = names(missing_data))
+  
+  
+  fig = plotly::plot_ly(
+    x = missing_data,
+    y = data_names,
+    type = "bar",
+    marker = list(color = 'deepskyblue'),
+    orientation = "h"
+  )
+  fig = plotly::layout(
+    p = fig,
+    title = paste0(type, " missingness (top 10)"),
+    xaxis = list(autorange = autorange),
+    dragmode = FALSE
+  )
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE
+  )
+  return(fig)
+}
+
+plot_sample_types_per_batch = function(
+    imp_meta,
+    type_column,
+    batch_column = NULL,
+    blank_pattern,
+    qc_pattern,
+    pool_pattern) {
+  if (is.null(batch_column)) {
+    batch_column = 'tmp_batch'
+    imp_meta[,batch_column] = 1
+  }
+  batches = unique(imp_meta[,batch_column])
+  batch_blanks = c()
+  batch_qcs = c()
+  batch_pools = c()
+  batch_mixed = c()
+  batch_samples = c()
+  
+  for (batch in batches) {
+    batch_idx = rownames(imp_meta)[imp_meta[,batch_column] == batch]
+    
+    index_blanks = rownames(imp_meta)[grep(
+      pattern = blank_pattern,
+      x = imp_meta[batch_idx, type_column],
+      ignore.case = TRUE)]
+    
+    index_qcs = rownames(imp_meta)[grep(
+      pattern = qc_pattern,
+      x = imp_meta[batch_idx, type_column],
+      ignore.case = TRUE)]
+    
+    index_pools = rownames(imp_meta)[grep(
+      pattern = pool_pattern,
+      x = imp_meta[batch_idx, type_column],
+      ignore.case = TRUE)]
+    
+    mixed_samples = unique(c(intersect(index_blanks, index_qcs), intersect(index_qcs, index_pools), intersect(index_blanks, index_pools)))
+    
+    index_samples = base::setdiff(rownames(imp_meta), c(index_blanks, index_qcs, index_pools))
+    
+    batch_blanks = c(batch_blanks, length(index_blanks))
+    batch_qcs = c(batch_qcs, length(index_qcs))
+    batch_pools = c(batch_pools, length(index_pools))
+    batch_mixed = c(batch_mixed, length(mixed_samples))
+    batch_samples = c(batch_samples, length(index_samples))
+    
+  }
+  
+  data = base::data.frame(
+    "Batch" = as.character(batches),
+    "Samples" = batch_samples,
+    "Blanks" = batch_blanks,
+    "QCs" = batch_qcs,
+    "Pools" = batch_pools,
+    "Mixed" = batch_mixed)
+  
+  fig = plotly::plot_ly(x = data$Batch, y = data$Samples, type = 'bar', name = 'Samples')
+  for (col in colnames(data)[3:length(data)]) {
+    fig = plotly::add_trace(
+      p = fig,
+      y = data[[col]],
+      type = 'bar',
+      name = col)
+  }
+  fig = plotly::layout(
+    p = fig,
+    yaxis = list(title = 'Count'),
+    barmode = 'stack')
+  fig = plotly::layout(
+    p = fig,
+    dragmode = FALSE,
+    bargap = 0.2
+  )
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE,
+    scrollZoom = FALSE
+  )
+  
+  return(fig)
+  
+}
+
+plot_sample_groups_per_batch = function(
+    imp_meta,
+    batch_column = NULL,
+    group_column) {
+  
+  if (is.null(batch_column)) {
+    batch_column = 'tmp_batch'
+    imp_meta[,batch_column] = 1
+  }
+  
+  imp_meta[,group_column] = factor(imp_meta[,group_column], levels = unique(imp_meta[,group_column]))
+  
+  batches = unique(imp_meta[,batch_column])
+  data = list(
+    "Batch" = batches
+  )
+  
+  for (batch in batches) {
+    batch_idx = rownames(imp_meta)[imp_meta[,batch_column] == batch]
+    freq = base::table(imp_meta[batch_idx, group_column])
+    for (grp in names(freq)) {
+      data[[grp]] = c(data[[grp]], as.numeric(freq[grp]))
+    }
+  }
+  
+  data = data.frame(data, check.names = F)
+  
+  fig = plotly::plot_ly(x = data$Batch)
+  for (col in levels(imp_meta[,group_column])) {
+    fig = plotly::add_trace(
+      p = fig,
+      y = data[[col]],
+      type = 'bar',
+      name = col)
+  }
+  fig = plotly::layout(
+    p = fig,
+    yaxis = list(title = 'Count'),
+    barmode = 'stack')
+  fig = plotly::layout(
+    p = fig,
+    dragmode = FALSE,
+    bargap = 0.2
+  )
+  fig = plotly::config(
+    p = fig,
+    displayModeBar = FALSE,
+    scrollZoom = FALSE
+  )
+  
+  return(fig)
+  
+}
 
 fa_comp_hm_calc = function(data_table = NULL,
                            feature_table = NULL,
@@ -2241,91 +2504,144 @@ faster_cor=function(data_table, method="pearson") {
 }
 
 #--------------------------------------------------------- Example datasets ----
-example_omics = function(name,
-                         type,
-                         meta_file,
-                         data_file,
-                         meta_file_format = "Wide",
-                         data_file_format = "Wide",
-                         param_file = NULL,
-                         id_col_meta,
-                         type_column,
-                         group_column,
-                         batch_column,
-                         blank_pattern = "blank",
-                         qc_pattern = "quality",
-                         pool_pattern = "pool",
-                         excluded_samples = NULL,
-                         drop_blanks = T,
-                         drop_qcs = T,
-                         drop_pools = T,
-                         id_col_data,
-                         blank_multiplier = 2,
-                         sample_threshold = 0.8,
-                         group_threshold = 0.8,
-                         excluded_features = NULL,
-                         imputation_method = "None",
-                         batch_effect_correction = "None",
-                         operation_order = c("Imputation", "Batch correction", "Filtering"),
-                         norm_col = "None") {
+initialize_omics = function(name,
+                            type,
+                            version = NA,
+                            meta_file,
+                            data_file,
+                            feat_file = NULL,
+                            meta_file_format = "Wide",
+                            data_file_format = "Wide",
+                            feat_file_format = "Long",
+                            id_col_meta = NULL,
+                            id_col_data = NULL,
+                            id_col_feat = NULL,
+                            param_file = NULL,
+                            type_column = NULL,
+                            group_column = NULL,
+                            batch_column = NULL,
+                            blank_pattern = "blank",
+                            qc_pattern = "quality",
+                            pool_pattern = "pool",
+                            excluded_samples = NULL,
+                            drop_blanks = F,
+                            drop_qcs = F,
+                            drop_pools = F,
+                            blank_multiplier = 2,
+                            sample_threshold = 0.8,
+                            group_threshold = 0.8,
+                            excluded_features = NULL,
+                            imputation_method = "None",
+                            batch_effect_correction = "None",
+                            operation_order = c("Imputation", "Batch correction", "Filtering"),
+                            norm_col = "None",
+                            verbose = F) {
 
-  ####---- Initialize
+  ####---- Initialize ----
   self = Omics_exp$new(name = name,
                        type = type,
                        id = NULL,
                        slot = NULL,
-                       preloaded = F,
+                       version = version,
                        param_file = param_file)
+  if (verbose) {print("Initialized omics")}
 
+  ####---- Imported tables ----
+  self$import_meta(path = meta_file, input_format = meta_file_format)
+  self$import_data(path = data_file, input_format = data_file_format)
+  self$import_feat(path = feat_file, input_format = feat_file_format)
+  if (verbose) {print("Imported tables")}
+  
+  ####---- Indexed tables ----
+  if (!is.null(id_col_meta)) {self$set_indexed_meta(id_col = id_col_meta)}
+  if (!is.null(id_col_data)) {self$set_indexed_data(id_col = id_col_data)}
+  self$set_indexed_feat(id_col = id_col_feat)
+  if (base::all(c(!is.null(id_col_meta), !is.null(id_col_data)))) {
+    self$check_indexed_table_consistency()
+  }
+  if (verbose) {print("Indexed tables")}
+  
+  ####---- Raw tables ----
+  if (base::all(
+    !is.null(self$tables$indexed_meta),
+    !is.null(self$tables$indexed_data),
+    !is.null(self$tables$indexed_feat)
+  )) {
+    
+    # Set sample column types
+    if (base::all(c(
+      !is.null(type_column),
+      !is.null(group_column),
+      !is.null(batch_column)))) {
+      self$set_type_column(type_column = type_column)
+      self$set_group_column(group_column = group_column)
+      self$set_batch_column(batch_column = batch_column)
+      
+      self$set_blank_indices(blank_pattern = blank_pattern)
+      self$set_qc_indices(qc_pattern = qc_pattern)
+      self$set_pool_indices(pool_pattern = pool_pattern)
+      self$set_sample_indices()
+    }
+    
+    # Sample exclusion
+    self$exclude_samples(
+      selection = excluded_samples,
+      drop = T
+    )
+    
+    # Non-sample exclusion
+    self$non_sample_exclusion(
+      select_blanks = drop_blanks,
+      select_qcs = drop_qcs,
+      select_pools = drop_pools,
+      exclude = TRUE)
+    
+    # Feature exclusion
+    self$exclude_features(
+      selection = excluded_features,
+      drop = T
+    )
+    
+    # Apply measurement filtering
+    if (base::all(c(
+      !is.null(type_column),
+      !is.null(group_column),
+      !is.null(blank_multiplier),
+      !is.null(sample_threshold),
+      !is.null(group_threshold)))) {
+      
+      self$param_measurement_filter(operation_order = operation_order,
+                                    batch_effect_correction = batch_effect_correction,
+                                    imputation_method = imputation_method,
+                                    blank_multiplier = blank_multiplier,
+                                    sample_threshold = sample_threshold,
+                                    group_threshold = group_threshold,
+                                    norm_col = norm_col)
+    }
+    
+    # Set all raw tables
+    self$set_raw_meta()
+    self$set_raw_data()
+    self$set_raw_feat()
+    if (verbose) {print("Set raw tables")}
+    
+    # Derive data tables
+    if (!is.null(group_column)) {
+      self$derive_data_tables()
+      if (verbose) {print("Derived data tables")}
+    }
 
-  ####---- Meta import
-  self$import_meta(meta_file, meta_file_format)
-  self$set_indexed_meta(id_col = id_col_meta)
-
-  self$set_type_column(type_column = type_column)
-  self$set_group_column(group_column = group_column)
-  self$set_batch_column(batch_column = batch_column)
-
-  self$set_blank_indices(blank_pattern = blank_pattern)
-  self$set_qc_indices(qc_pattern = qc_pattern)
-  self$set_pool_indices(pool_pattern = pool_pattern)
-  self$set_sample_indices()
-
-
-
-  self$exclude_samples(manual_selection = excluded_samples,
-                       select_blanks = drop_blanks,
-                       select_qcs = drop_qcs,
-                       select_pools = drop_pools,
-                       exclude = T)
-
-  self$set_raw_meta()
-
-  ####---- Data import
-  self$import_data(data_file, data_file_format)
-  self$set_indexed_data(id_col = id_col_data)
-  self$feature_manual_exclusion(selection = excluded_features,
-                                drop = T)
-  self$set_raw_data(operation_order = operation_order,
-                    blank_multiplier = blank_multiplier, # 2
-                    sample_threshold = sample_threshold, # 0.8
-                    group_threshold = group_threshold, # 0.8
-                    imputation_method = imputation_method, # 'minimum' 'mean' 'median' 'max'
-                    batch_effect_correction = batch_effect_correction, # None No controls Pool QC
-                    norm_col = norm_col)
-
-  ####---- Derive data tables
-  self$derive_data_tables()
-
-  ####---- Return
+  }
+  ####---- Return ----
   return(self)
 }
-
+  
+    
 
 
 #---------------------------------------------- Enrichment & GSEA utilities ----
 get_ea_object = function(ea_feature_table,
-                         custom_col = NULL,
+                         terms_table = NULL,
                          selected_features = NULL,
                          feature_table,
                          keyType = "SYMBOL",
@@ -2354,17 +2670,14 @@ get_ea_object = function(ea_feature_table,
     feature_table = feature_table[selected_features, ]
   }
 
-  if (!is.null(custom_col)) {
-    term2gene = get_term2gene(feature_table = feature_table,
-                              column = custom_col,
-                              sep = "\\|")
+  if (!is.null(terms_table)) {
     ea_object = custom_gsea(geneList = feature_list,
                             minGSSize = minGSSize,
                             maxGSSize = maxGSSize,
                             pvalueCutoff = p_value_cutoff,
                             verbose = verbose,
                             pAdjustMethod = pAdjustMethod,
-                            term2gene = term2gene)
+                            term2gene = terms_table)
   } else {
     ea_object = clusterProfiler::gseGO(geneList=feature_list,
                                        ont = ont,
@@ -2382,7 +2695,7 @@ get_ea_object = function(ea_feature_table,
 
 
 get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
-                          custom_col = NULL,
+                          terms_table = NULL,
                           selected_features = NULL,
                           feature_table = self$tables$feature_table,
                           pval_cutoff_features = self$params$overrepresentation$pval_cutoff_features,
@@ -2428,17 +2741,14 @@ get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
   }
 
 
-  if (!is.null(custom_col)) {
-    term2gene = get_term2gene(feature_table = feature_table,
-                              column = custom_col,
-                              sep = "\\|")
+  if (!is.null(terms_table)) {
     ora_object = custom_ora(geneList = feature_list,
                             pvalueCutoff = pval_cutoff,
                             pAdjustMethod = pAdjustMethod,
                             qvalueCutoff = qval_cutoff,
                             minGSSize = minGSSize,
                             maxGSSize = maxGSSize,
-                            term2gene = term2gene)
+                            term2gene = terms_table)
   } else {
     ora_object = clusterProfiler::enrichGO(gene = feature_list,
                                            universe = universe,
@@ -2459,25 +2769,14 @@ get_ora_object = function(ora_feature_table = self$tables$ora_feature_table,
 
 
 
-get_sparse_matrix = function(features_go_table, all_go_terms, sep = '|') {
-  go_list = vector("list", nrow(features_go_table))
-  # Loop through each row and split the 'go_terms' column by '|'
-  for (i in 1:nrow(features_go_table)) {
-    if (is.na(features_go_table[i,1])) {
-      go_list[[i]] = NA
-    } else {
-      go_list[[i]] = strsplit(as.character(features_go_table[i,1]), sep, fixed = TRUE)[[1]]
-    }
-  }
-
-
+get_sparse_matrix = function(column_values, column_terms, terms_list) {
   # Initialize a list to store the one-hot encoded vectors
-  one_hot_list = vector("list", nrow(features_go_table))
+  one_hot_list = vector("list", length(column_values))
 
   # Loop through each gene and create a one-hot encoded vector
-  for (i in seq_along(rownames(features_go_table))) {
+  for (i in seq_along(names(column_values))) {
     # Create a boolean vector for the presence of each GO term
-    one_hot_vector = all_go_terms %in% go_list[[i]]
+    one_hot_vector = terms_list %in% column_terms[[i]]
     # Add the vector to the list
     one_hot_list[[i]] = one_hot_vector
   }
@@ -2489,8 +2788,8 @@ get_sparse_matrix = function(features_go_table, all_go_terms, sep = '|') {
   sparse_matrix = Matrix::Matrix(sparse_matrix, sparse = TRUE)
 
   # Add row and column names to the sparse matrix
-  rownames(sparse_matrix) = rownames(features_go_table)
-  colnames(sparse_matrix) = all_go_terms
+  rownames(sparse_matrix) = names(column_values)
+  colnames(sparse_matrix) = terms_list
   return(sparse_matrix)
 }
 
@@ -2503,11 +2802,11 @@ match_go_terms = function(terms_list, sparse_table) {
   return(matches)
 }
 
-get_term2gene = function(feature_table, column, sep = "\\|") {
-  term2gene=sapply(feature_table[,column], FUN = function(x) strsplit(x,sep)[[1]])
-  names(term2gene)=rownames(feature_table)
-  term2gene = utils::stack(term2gene)
-  return(term2gene)
+get_terms_table = function(column_values, sep = "|") {
+  terms_table=sapply(as.character(column_values), FUN = function(x) base::strsplit(x, split = sep, fixed = TRUE)[[1]])
+  names(terms_table)=names(column_values)
+  terms_table = utils::stack(terms_table)
+  return(terms_table)
 }
 
 custom_ora = function(geneList, pvalueCutoff = 0.05, pAdjustMethod = "BH", qvalueCutoff = 0.2, minGSSize = 10, maxGSSize = 500, term2gene) {
@@ -2521,6 +2820,12 @@ custom_ora = function(geneList, pvalueCutoff = 0.05, pAdjustMethod = "BH", qvalu
   return(enricher_result)
 }
 custom_gsea = function(geneList, minGSSize = 10, maxGSSize = 500, pvalueCutoff = 0.05, verbose = TRUE, pAdjustMethod = "BH", term2gene) {
+  
+  if (any(is.infinite(geneList))) {
+    base::warning(paste0("Removing ", sum(is.infinite(geneList)), " features with infinite fold changes"))
+    geneList = geneList[!is.infinite(geneList)]
+  }
+  
   gsea_result = clusterProfiler::GSEA(geneList = geneList,
                                       minGSSize = minGSSize,
                                       maxGSSize = maxGSSize,
@@ -2932,7 +3237,7 @@ plot_fa_ridge_plot = function(object,
   # Get feature values
   gs2val = list()
   for (gs in rownames(data_table)) {
-    feature_list = stringr::str_split(data_table[gs, queried_data], "/")[[1]]
+    feature_list = stringr::str_split(data_table[gs, queried_data], "/(?=[a-zA-Z])")[[1]]
     out_list = NULL
     for (feature in feature_list) {
       val = object@geneList[feature]
@@ -3267,7 +3572,7 @@ plot_fa_cnet_plot = function(x,
     stop("displayed_labels must be in ['Description', 'ID', 'ID and Description']")
   }
   set_nodes = data_table$set_nodes
-  feature_nodes = unique(stringr::str_split(paste0(data_table[,feature_col], collapse = '/'), '/')[[1]])
+  feature_nodes = unique(stringr::str_split(paste0(data_table[,feature_col], collapse = '/'), '/(?=[a-zA-Z])')[[1]])
 
   all_nodes = c(set_nodes, feature_nodes)
   set_nodes_idx = 1:length(set_nodes)
@@ -3317,7 +3622,7 @@ plot_fa_cnet_plot = function(x,
   source_nodes = c()
   target_nodes = c()
   for (i in rownames(data_table)) {
-    set_features = stringr::str_split(data_table[i, feature_col], '/')[[1]]
+    set_features = stringr::str_split(data_table[i, feature_col], '/(?=[a-zA-Z])')[[1]]
     target_nodes = c(target_nodes, set_features)
     source_nodes = c(source_nodes, rep(data_table[i, 'set_nodes'], length(set_features)))
   }
@@ -3456,7 +3761,10 @@ plot_fa_emap_plot = function(x,
   base::diag(edge_table) = 0
   edge_table = reshape2::melt(edge_table, na.rm = TRUE)
   colnames(edge_table) = c("from", "to", "score")
-  edge_table = edge_table[edge_table$score > score_threshold, ]
+  edge_table = edge_table[edge_table$score >= score_threshold, ]
+  if (nrow(edge_table) == 0) {
+    base::stop(paste0("No edges found above current threshold (", score_threshold, ")"))
+  }
   edge_table$from = unname(desc_id_dict[as.character(edge_table$from)])
   edge_table$to = unname(desc_id_dict[as.character(edge_table$to)])
   edge_table$title = paste0(similarity_score, ' score: ', format_values(edge_table$score))
@@ -6367,7 +6675,8 @@ plot_volcano_violin = function(
                                    opacity = opacity,
                                    marker_size = marker_size,
                                    x_label_font_size = x_label_font_size,
-                                   y_label_font_size = y_label_font_size))
+                                   y_label_font_size = y_label_font_size,
+                                   legend_font_size = legend_font_size))
   }
 
   p = plotly::plot_ly()
@@ -6421,7 +6730,7 @@ plot_volcano_violin = function(
                           legendgroup = group,
                           text = group_table$names,
                           hoverinfo = 'text',
-                          showlegend = show_legend)
+                          showlegend = F) #
   }
   p = plotly::layout(p,
 
@@ -6448,11 +6757,12 @@ plot_volcano_violin_top = function(data,
                                    opacity,
                                    marker_size,
                                    x_label_font_size,
-                                   y_label_font_size) {
+                                   y_label_font_size,
+                                   legend_font_size) {
 
   xlabel = base::ifelse(x_label_font_size == 0, '', 'Log2(Fold Change)')
   ylabel = base::ifelse(y_label_font_size == 0, '', 'No p-value')
-  show_legend = base::ifelse(y_label_font_size == 0, F, T)
+  show_legend = base::ifelse(legend_font_size == 0, F, T)
 
   p = plotly::plot_ly()
 
@@ -6469,7 +6779,7 @@ plot_volcano_violin_top = function(data,
                         name = 'Not significant',
                         legendgroup = 'Not significant',
                         hoverinfo = 'none',
-                        showlegend = F,
+                        showlegend = F, #
                         orientation = 'h')
 
   for (group in unique(data$groups)) {
@@ -6485,7 +6795,7 @@ plot_volcano_violin_top = function(data,
                           legendgroup = group,
                           text = group_table$names,
                           hoverinfo = 'text',
-                          showlegend = show_legend)
+                          showlegend = F) 
 
   }
 
@@ -7118,7 +7428,7 @@ fa_analysis_calc = function(data_table = NULL,
 
   ## Data
   # select the correct data
-  sel_data_table = data_table[, sel_feat_idx]
+  sel_data_table = data_table[, sel_feat_idx, drop = F]
 
   # get the unique chain lengths and unsaturation
   uniq_carbon = sort(union(unique(sel_feature_table[["Carbon count (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
