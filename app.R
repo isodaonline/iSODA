@@ -138,6 +138,10 @@ sidebar_ui = function() {
           tabName = "logs_tab"
         ),
         bs4Dash::bs4SidebarMenuSubItem(
+          text = "Tutorials",
+          tabName = "tutorials_tab"
+        ),
+        bs4Dash::bs4SidebarMenuSubItem(
           text = "About",
           tabName = "about"
         ),
@@ -225,6 +229,11 @@ body_ui = function() {
       bs4Dash::tabItem(
         tabName = "logs_tab",
         logs_ui(id = "logs")
+      ),
+      
+      bs4Dash::tabItem(
+        tabName = "tutorials_tab",
+        tutorials_ui(id = "tutorials")
       ),
       
       bs4Dash::tabItem(
@@ -402,6 +411,7 @@ server = function(input, output, session) {
   home_server(id = "home", main_input = input, main_output = output, main_session = session, module_controler = module_controler)
   about_server(id = 'mod_about', main_output = output)
   logs_server(id = "logs", main_input = input, main_output = output)
+  tutorials_server(id = "tutorials", main_output = output)
   help_start_server(id = 'mod_help_start', main_output = output)
   help_single_omics_server(id = 'mod_help_single_omics', main_output = output)
   help_multi_omics_server(id = 'mod_help_multi_omics', main_output = output)
