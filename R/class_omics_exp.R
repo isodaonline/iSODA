@@ -2627,6 +2627,7 @@ Omics_exp = R6::R6Class(
                               custom_col = self$params$ora_process$custom_col,
                               selected_features = self$params$ora_process$selected_features,
                               feature_table = self$tables$raw_feat,
+                              sparse_feat = self$tables$sparse_feat,
                               pval_cutoff_features = self$params$ora_process$pval_cutoff_features,
                               padjust_features = self$params$ora_process$padjust_features,
                               pval_cutoff = self$params$ora_process$pval_cutoff,
