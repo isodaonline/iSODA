@@ -58,6 +58,15 @@ You can access iSODA online or download it for local usage:
    https://github.com/user-attachments/assets/c7eef5a4-acec-4c88-90d3-47e751259a65
 </details>
 
+<details>
+  <summary><h2>Multi-omics data visualization </h2></summary>
+  With multiple single-omics instances active, the multi-omics modules can be used. These include:  
+  - MOFA (Multi-Omics Factor Analysis)
+  - SNF (Similarity Fusion Network)  
+  These each come with their own visualizations and the whole process can be saved as a miSODA file.   
+  
+  
+</details>
 
 
 
