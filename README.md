@@ -65,7 +65,7 @@ You can access iSODA online or download it for local usage:
   - SNF (Similarity Fusion Network)  
   These each come with their own visualizations and the whole process can be saved as a miSODA file.   
   
-  
+  https://github.com/user-attachments/assets/e751471d-81e1-48db-b363-55f85db28bda
 </details>
 
 
