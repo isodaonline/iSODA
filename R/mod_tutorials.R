@@ -9,14 +9,14 @@ tutorials_ui = function(id){
       shiny::p("Video tutorials are available on our github page for the following subjects:  "),
       shiny::p(
         shiny::a(
-          href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#single-omics-data-upload",
+          href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#single-omics-data-upload-",
           target = "_blank",
           "Single-omics data upload"
         )
       ),
       shiny::p(
         shiny::a(
-          href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#upload-feature-annotation-and-processing-sparse-annotations",
+          href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#upload-feature-annotation-and-processing-sparse-annotations-",
           target = "_blank",
           "Upload feature annotation and processing sparse annotations"
         )
@@ -30,9 +30,23 @@ tutorials_ui = function(id){
       ),
       shiny::p(
         shiny::a(
-          href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#single-omics-data-visualization",
+          href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#single-omics-data-visualization-",
           target = "_blank",
           "Single-omics data visualization"
+        )
+      ),
+      shiny::p(
+        shiny::a(
+          href = "https://github.com/isodaonline/iSODA/tree/main?tab=readme-ov-file#multi-omics-data-visualization-",
+          target = "_blank",
+          "Multi-omics data visualization"
+        )
+      ),
+      shiny::p(
+        shiny::a(
+          href = "https://github.com/isodaonline/iSODA/tree/main?tab=readme-ov-file#multi-omics-data-visualization-",
+          target = "_blank",
+          "Save multi-omics data"
         )
       )
     )

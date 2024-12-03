@@ -68,6 +68,14 @@ You can access iSODA online or download it for local usage:
   https://github.com/user-attachments/assets/e751471d-81e1-48db-b363-55f85db28bda
 </details>
 
-
+<details>
+  <summary><h2>Save multi-omics data </h2></summary>
+  Multiple single-omics instances and also the multi-omics sessions can be saved in the Home menu in the Save section. The data can be stored two ways:  
+  - Local user-side download as a miSODA file  
+  - Server-side UUID storage  
+  Both of these can be used to reload the data on the app. For the UUID, the code can be supplied to restore the instances and more conveniently shared with other users. In both cases, the miSODA file can be annotated with some descriptors which can be previewed before loading the actual data.     
+  
+  https://github.com/user-attachments/assets/e751471d-81e1-48db-b363-55f85db28bda
+</details>
 
 
