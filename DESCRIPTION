@@ -1,6 +1,6 @@
 Package: iSODA
 Title: integrated Simple Omics Data Analysis
-Version: 1.0.75
+Version: 1.0.76
 Authors@R:
   c(person(given = "Yassene",
            family = "Mohammed", 

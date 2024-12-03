@@ -23,6 +23,13 @@ tutorials_ui = function(id){
       ),
       shiny::p(
         shiny::a(
+          href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#functional-analysis-using-sparse-annotations",
+          target = "_blank",
+          "Functional analysis using sparse annotations"
+        )
+      ),
+      shiny::p(
+        shiny::a(
           href = "https://github.com/isodaonline/iSODA?tab=readme-ov-file#single-omics-data-visualization",
           target = "_blank",
           "Single-omics data visualization"
