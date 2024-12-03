@@ -44,7 +44,7 @@ You can access iSODA online or download it for local usage:
   <summary><h2>Functional analysis using sparse annotations </h2></summary>
   The sparse annotations generated in the previous section can be used in functional analysis (enrichment or over-representation). This will give access to the corresponding plots.
   
-  https://github.com/user-attachments/assets/7b6a1856-eb0c-4d61-9cb9-c98912391f37
+  https://github.com/user-attachments/assets/c30131f6-0850-4f9f-b337-87cab3dabda4
 </details>
 
 <details>
