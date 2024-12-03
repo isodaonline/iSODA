@@ -44,9 +44,16 @@ tutorials_ui = function(id){
       ),
       shiny::p(
         shiny::a(
-          href = "https://github.com/isodaonline/iSODA/tree/main?tab=readme-ov-file#multi-omics-data-visualization-",
+          href = "https://github.com/isodaonline/iSODA/tree/main?tab=readme-ov-file#save-multi-omics-data-",
           target = "_blank",
           "Save multi-omics data"
+        )
+      ),
+      shiny::p(
+        shiny::a(
+          href = "https://github.com/isodaonline/iSODA/tree/main?tab=readme-ov-file#save-single-omics-data",
+          target = "_blank",
+          "Save single-omics data"
         )
       )
     )

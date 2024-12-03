@@ -78,4 +78,13 @@ You can access iSODA online or download it for local usage:
   https://github.com/user-attachments/assets/c63bbafe-58f6-4f67-abea-522fae756f1a
 </details>
 
+<details>
+  <summary><h2>Save single-omics data</h2></summary>
+  Single-omics instances can be saved within the single-omics dahsboard in the Save tab under two formats:  
+  - Local user-side download as an iSODA file  
+  - Server-side UUID storage  
+  Both of these can be used to reload the data on the app. For the UUID, the code can be supplied to restore the instances and more conveniently shared with other users. In both cases, the iSODA file can be annotated with some descriptors which can be previewed before loading the actual data.     
+  
+  https://github.com/user-attachments/assets/c63bbafe-58f6-4f67-abea-522fae756f1a
+</details>
 
