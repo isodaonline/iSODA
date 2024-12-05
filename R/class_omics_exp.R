@@ -151,7 +151,7 @@ Omics_exp = R6::R6Class(
         dataset = 'Z-scored total normalized table',
         distance_method = "euclidian",
         clustering_method = "ward.D2",
-        impute_min = T,
+        impute_median = F,
         center = F,
         apply_clustering = T,
         k_clusters_samples = 1,
@@ -956,12 +956,12 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_min, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
+    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_median, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
       self$params$heatmap$auto_refresh = auto_refresh
       self$params$heatmap$dataset = dataset
       self$params$heatmap$distance_method = distance_method
       self$params$heatmap$clustering_method = clustering_method
-      self$params$heatmap$impute_min = impute_min
+      self$params$heatmap$impute_median = impute_median
       self$params$heatmap$center = center
       self$params$heatmap$apply_clustering = apply_clustering
       self$params$heatmap$k_clusters_samples = k_clusters_samples
@@ -2300,7 +2300,7 @@ Omics_exp = R6::R6Class(
                          dataset = 'Z-scored total normalized table',
                          distance_method = "euclidian",
                          clustering_method = "ward.D2",
-                         impute_min = T,
+                         impute_median = F,
                          center = F,
                          apply_clustering = T,
                          k_clusters_samples = 1,
@@ -3321,7 +3321,7 @@ Omics_exp = R6::R6Class(
     plot_heatmap = function(dataset = self$params$heatmap$dataset,
                             distance_method = self$params$heatmap$distance_method,
                             clustering_method = self$params$heatmap$clustering_method,
-                            impute_min = self$params$heatmap$impute_min,
+                            impute_median = self$params$heatmap$impute_median,
                             center = self$params$heatmap$center,
                             meta_table = self$tables$raw_meta,
                             meta_table_features = self$tables$raw_feat,
@@ -3356,8 +3356,8 @@ Omics_exp = R6::R6Class(
 
 
       # Impute missing values
-      if (impute_min) {
-        data_table[is.na(data_table)] = min(data_table, na.rm = TRUE)
+      if (impute_median) {
+        data_table[is.na(data_table)] = stats::median(data_table, na.rm = TRUE)
       }
 
       if (apply_da) {

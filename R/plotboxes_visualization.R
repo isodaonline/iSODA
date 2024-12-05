@@ -1321,9 +1321,9 @@ heatmap_server = function(r6, output, session) {
         status = "primary"
       ),
       shinyWidgets::materialSwitch(
-        inputId = ns('heatmap_impute_min'),
-        label = 'Impute to min.',
-        value = r6$params$heatmap$impute_min,
+        inputId = ns('heatmap_impute_median'),
+        label = 'Impute to median',
+        value = r6$params$heatmap$impute_median,
         right = TRUE,
         status = "primary"
       ),
@@ -1534,7 +1534,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       input$heatmap_clustering_method,
       input$heatmap_dataset,
       input$heatmap_center,
-      input$heatmap_impute_min,
+      input$heatmap_impute_median,
       input$heatmap_apply_clustering,
       input$heatmap_k_clusters_samples,
       input$heatmap_k_clusters_features,
@@ -1568,7 +1568,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                        dataset = input$heatmap_dataset,
                        distance_method = input$heatmap_distance_method,
                        clustering_method = input$heatmap_clustering_method,
-                       impute = input$heatmap_impute_min,
+                       impute_median = input$heatmap_impute_median,
                        center = input$heatmap_center,
                        apply_clustering = input$heatmap_apply_clustering,
                        k_clusters_samples = input$heatmap_k_clusters_samples,
