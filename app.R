@@ -325,7 +325,7 @@ server = function(input, output, session) {
   base::source("./man/tooltips_data.R")
   base::source('./R/utils.R')
   
-  options(shiny.maxRequestSize=300*1024^2)
+  options(shiny.maxRequestSize=1024*1024^2)
   
   module_controler = shiny::reactiveValues(
     
