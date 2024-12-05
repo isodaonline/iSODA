@@ -1359,11 +1359,11 @@ plot_feature_annotation_distribution = function(indexed_feat = self$tables$index
                                                 column) {
   
   if (!(column %in% colnames(indexed_feat))) {
-    return(create_blank_plot())
+    return(create_blank_plot(label = "Annotation distribution (select below)"))
   }
   
   if (length(unique(table(indexed_feat[,column]))) > 50) {
-    return(create_blank_plot())
+    return(create_blank_plot(label = "Annotation distribution (select below)"))
   }
   
   full_data = table(indexed_feat[,column])
@@ -1425,7 +1425,7 @@ plot_bar_missingness = function(input_table,
   
   missing_data = base::which(is.na(input_table), arr.ind = T)
   if (length(missing_data) == 0){
-    return(create_blank_plot())
+    return(create_blank_plot(label = paste0(type, ": no missing values")))
   }
   missing_data = sort(table(missing_data[,idx]), decreasing = T)
   names(missing_data) = table_names[as.integer(names(missing_data))]
@@ -2038,10 +2038,10 @@ calculate_subplot_grid_dimensions = function(total_plots) {
   return(list(rows = rows, cols = cols))
 }
 
-create_blank_plot = function(width = NULL, height = NULL) {
+create_blank_plot = function(label = NULL, width = NULL, height = NULL) {
   blank_plot = plotly::plot_ly(type = 'scatter', mode = 'markers', width = width, height = height)
   blank_plot = plotly::layout(blank_plot,
-                              title = NULL,
+                              title = label,
                               xaxis = list(zeroline = F,
                                            showticklabels = F,
                                            showgrid = F),

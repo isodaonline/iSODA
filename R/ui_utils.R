@@ -97,12 +97,16 @@ render_load_misoda_file = function(ns) {
       shiny::fluidRow(
         shiny::column(
           width = 12,
-          shiny::actionButton(
-            inputId = ns("load_misoda_file"),
-            label = "Load miSODA",
-            icon = icon("play"),
-            width = "100%",
-            style ="color: #fff; background-color: #00A86B; border-color: #00A86B"
+          bsplus::bs_embed_tooltip(
+            shiny::actionButton(
+              inputId = ns("load_misoda_file"),
+              label = "Load miSODA",
+              icon = icon("play"),
+              width = "100%",
+              style ="color: #fff; background-color: #00A86B; border-color: #00A86B"
+            ),
+            title = "Loads a multi-omics .miSODA file. \nDEACTIVATED IF A SINGLE OMICS INSTANCE WAS CREATED BEFORE",
+            placement = "top"
           )
         )
       )

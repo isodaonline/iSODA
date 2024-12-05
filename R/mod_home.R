@@ -369,7 +369,7 @@ home_server = function(id, main_input, main_output, main_session, module_control
         
       })
       
-      # Load .miSODA file
+      #### Load .miSODA file ----
       shiny::observeEvent(input$load_misoda_file, {
         
         print_tm(m = "Global", in_print = "Loading data")
@@ -497,7 +497,15 @@ home_server = function(id, main_input, main_output, main_session, module_control
         print_tm(m = "Global", in_print = "Data loaded")
       })
       
-      # Download miSODA file
+      #### Deactivate the load miSODA file ----
+      deactivate_load_misoda_file = shiny::observe(
+        if (module_controler$slot_taken[["exp_1"]]) {
+          shinyjs::disable(id = "load_misoda_file")
+          deactivate_load_misoda_file$destroy()
+        }
+      )
+      
+      #### Download miSODA file ----
       output$misoda_file_download = shiny::downloadHandler(
         
         filename = function() {
@@ -531,7 +539,7 @@ home_server = function(id, main_input, main_output, main_session, module_control
         }
       )
       
-      # Store miSODA UUID 
+      #### Store miSODA UUID ----
       session$userData[[id]]$misoda_file_store = shiny::observeEvent(input$misoda_file_store, {
         
         # User feedback start
@@ -567,7 +575,7 @@ home_server = function(id, main_input, main_output, main_session, module_control
         
       })
       
-      # Copy uuid to clipboard 
+      #### Copy uuid to clipboard ----
       output$misoda_uuid_clip = shiny::renderUI({
         rclipboard::rclipButton(
           inputId = ns("misoda_uuid_clip_button"),

@@ -1,7 +1,4 @@
 tooltip_data = list(
-  start = list(
-    start_method = "-New: create a new single-omics session to upload your data or previously processed single-omics data. \n-Load: Load multi-omics datasets through a .misoda file. \n-Download: store your single and multi-omics data either locally or on the server."
-  ),
   single_omics = list( # Sublists based on R modules / namespaces
     # Upload method
     upload_method = "Input type: \n\t-File upload: for new experiments by uploading the user data \n\t-iSODA file: upload an iSODA single-omics file downloaded through the app \n\t-iSODA UUID: load a single-omics experiment from the server using a UUID key produced by iSODA",

@@ -2865,7 +2865,7 @@ Omics_exp = R6::R6Class(
       top_annotations = as.numeric(top_annotations)
       
       if (!(sparse_table %in% names(self$tables$sparse_feat))) {
-        self$plots$sparse_feat_distribution = create_blank_plot()
+        self$plots$sparse_feat_distribution = create_blank_plot(label = "Sparse annotations distribution (select below)")
         return()
       }
       
