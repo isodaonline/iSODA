@@ -309,25 +309,34 @@ home_server = function(id, main_input, main_output, main_session, module_control
       shiny::observeEvent(input$input_misoda_file, {
         
         print_tm(m = "Global", in_print = "Previewing data")
+        shinyjs::disable("load_misoda_file")
         
-        file = input$input_misoda_file$datapath
         
-        input_misoda$data = base::readRDS(file)
-        
-        file_summary = c()
-        for (exp in names(input_misoda$data$module_loaded)) {
-          if (input_misoda$data$module_loaded[[exp]]) {
-            file_summary = c(file_summary, paste0(input_misoda$data$exp_types[[exp]], ': ', input_misoda$data$exp_names[[exp]]))
+        base::withCallingHandlers({
+          
+          file = input$input_misoda_file$datapath
+          input_misoda$data = base::readRDS(file)
+          file_summary = c()
+          for (exp in names(input_misoda$data$module_loaded)) {
+            if (input_misoda$data$module_loaded[[exp]]) {
+              file_summary = c(file_summary, paste0(input_misoda$data$exp_types[[exp]], ': ', input_misoda$data$exp_names[[exp]]))
+            }
           }
-        }
-        file_summary = shiny::HTML(paste(file_summary, collapse = '<br>'))
-        
-        output$misoda_name = shiny::renderText(input_misoda$data$name)
-        output$misoda_user = shiny::renderText(input_misoda$data$user)
-        output$misoda_comments = shiny::renderText(input_misoda$data$comment)
-        output$misoda_summary = shiny::renderText(file_summary)
-        
-        print_tm(m = "Global", in_print = "Preview ready")
+          file_summary = shiny::HTML(paste(file_summary, collapse = '<br>'))
+          output$misoda_name = shiny::renderText(input_misoda$data$name)
+          output$misoda_user = shiny::renderText(input_misoda$data$user)
+          output$misoda_comments = shiny::renderText(input_misoda$data$comment)
+          output$misoda_summary = shiny::renderText(file_summary)
+          print_tm(m = "Home", in_print = "Preview ready")
+          shinyjs::enable("load_misoda_file")
+          
+        },warning = function(w){
+          print_tmw("Home", paste0("Warning: " , w))
+        },error=function(e){
+          shinyjs::enable("load_misoda_file")
+          print_tme("Home", paste0("Error:" , e))
+        })
+
       })
       
       #### .miSODA UUID input ----
@@ -335,7 +344,8 @@ home_server = function(id, main_input, main_output, main_session, module_control
         
         if (input$input_misoda_uuid == "") {return()}
         
-        print_tm(m = "Global", in_print = "Previewing data")
+        print_tm(m = "Home", in_print = "Previewing data")
+        shinyjs::disable("load_misoda_file")
         
         base::withCallingHandlers({
           
@@ -359,12 +369,14 @@ home_server = function(id, main_input, main_output, main_session, module_control
           output$misoda_comments = shiny::renderText(input_misoda$data$comment)
           output$misoda_summary = shiny::renderText(file_summary)
           
-          print_tm(m = "Global", in_print = "Preview ready")
+          print_tm(m = "Home", in_print = "Preview ready")
+          shinyjs::enable("load_misoda_file")
           
         },warning = function(w){
-          print_tmw(m, paste0("Warning: " , w))
+          print_tmw("Home", paste0("Warning: " , w))
         },error=function(e){
-          print_tme(m, paste0("Error:" , e))
+          shinyjs::enable("load_misoda_file")
+          print_tme("Home", paste0("Error:" , e))
         })
         
       })
@@ -379,122 +391,141 @@ home_server = function(id, main_input, main_output, main_session, module_control
           html = spin_3k(),
           color = NULL
         )
-
-        # Load exp_1
-        if (!is.null(input_misoda$data$exp_names[["exp_1"]])) {
-          main_output[["exp_1"]] = shiny::renderUI({
-            bs4Dash::bs4SidebarMenuItem(
-              text = input_misoda$data$exp_names[["exp_1"]],
-              tabName = "exp_1",
-              icon = shiny::icon("circle")
-            )
-          })
-          module_controler$slot_taken[["exp_1"]] = TRUE
-          module_controler$exp_names[["exp_1"]] = input_misoda$data$exp_names[["exp_1"]]
-          module_controler$exp_types[["exp_1"]] = input_misoda$data$exp_types[["exp_1"]]
-          module_controler$exp_r6[["exp_1"]] = input_misoda$data$exp_r6[["exp_1"]]
-          module_controler$exp_preloaded[["exp_1"]] = input_misoda$data$exp_preloaded[["exp_1"]]
-        }
-
-
-        # Load exp_2
-        if (!is.null(input_misoda$data$exp_names[["exp_2"]])) {
-          main_output[["exp_2"]] = shiny::renderUI({
-            bs4Dash::bs4SidebarMenuItem(
-              text = input_misoda$data$exp_names[["exp_2"]],
-              tabName = "exp_2",
-              icon = shiny::icon("circle")
-            )
-          })
-          module_controler$slot_taken[["exp_2"]] = TRUE
-          module_controler$exp_names[["exp_2"]] = input_misoda$data$exp_names[["exp_2"]]
-          module_controler$exp_types[["exp_2"]] = input_misoda$data$exp_types[["exp_2"]]
-          module_controler$exp_r6[["exp_2"]] = input_misoda$data$exp_r6[["exp_2"]]
-          module_controler$exp_preloaded[["exp_2"]] = input_misoda$data$exp_preloaded[["exp_2"]]
-        }
-
-
-        # Load exp_3
-        if (!is.null(input_misoda$data$exp_names[["exp_3"]])) {
-          main_output[["exp_3"]] = shiny::renderUI({
-            bs4Dash::bs4SidebarMenuItem(
-              text = input_misoda$data$exp_names[["exp_3"]],
-              tabName = "exp_3",
-              icon = shiny::icon("circle")
-            )
-          })
-          module_controler$slot_taken[["exp_3"]] = TRUE
-          module_controler$exp_names[["exp_3"]] = input_misoda$data$exp_names[["exp_3"]]
-          module_controler$exp_types[["exp_3"]] = input_misoda$data$exp_types[["exp_3"]]
-          module_controler$exp_r6[["exp_3"]] = input_misoda$data$exp_r6[["exp_3"]]
-          module_controler$exp_preloaded[["exp_3"]] = input_misoda$data$exp_preloaded[["exp_3"]]
-        }
-
-
-        # Load exp_4
-        if (!is.null(input_misoda$data$exp_names[["exp_4"]])) {
-          main_output[["exp_4"]] = shiny::renderUI({
-            bs4Dash::bs4SidebarMenuItem(
-              text = input_misoda$data$exp_names[["exp_4"]],
-              tabName = "exp_4",
-              icon = shiny::icon("circle")
-            )
-          })
-          module_controler$slot_taken[["exp_4"]] = TRUE
-          module_controler$exp_names[["exp_4"]] = input_misoda$data$exp_names[["exp_4"]]
-          module_controler$exp_types[["exp_4"]] = input_misoda$data$exp_types[["exp_4"]]
-          module_controler$exp_r6[["exp_4"]] = input_misoda$data$exp_r6[["exp_4"]]
-          module_controler$exp_preloaded[["exp_4"]] = input_misoda$data$exp_preloaded[["exp_4"]]
-        }
-
-
-        # Load exp_5
-        if (!is.null(input_misoda$data$exp_names[["exp_5"]])) {
-          main_output[["exp_5"]] = shiny::renderUI({
-            bs4Dash::bs4SidebarMenuItem(
-              text = input_misoda$data$exp_names[["exp_5"]],
-              tabName = "exp_5",
-              icon = shiny::icon("circle")
-            )
-          })
-          module_controler$slot_taken[["exp_5"]] = TRUE
-          module_controler$exp_names[["exp_5"]] = input_misoda$data$exp_names[["exp_5"]]
-          module_controler$exp_types[["exp_5"]] = input_misoda$data$exp_types[["exp_5"]]
-          module_controler$exp_r6[["exp_5"]] = input_misoda$data$exp_r6[["exp_5"]]
-          module_controler$exp_preloaded[["exp_5"]] = input_misoda$data$exp_preloaded[["exp_5"]]
-        }
-
-
-        # Load exp_6
-        if (!is.null(input_misoda$data$exp_names[["exp_6"]])) {
-          main_output[["exp_6"]] = shiny::renderUI({
-            bs4Dash::bs4SidebarMenuItem(
-              text = input_misoda$data$exp_names[["exp_6"]],
-              tabName = "exp_6",
-              icon = shiny::icon("circle")
-            )
-          })
-          module_controler$slot_taken[["exp_6"]] = TRUE
-          module_controler$exp_names[["exp_6"]] = input_misoda$data$exp_names[["exp_6"]]
-          module_controler$exp_types[["exp_6"]] = input_misoda$data$exp_types[["exp_6"]]
-          module_controler$exp_r6[["exp_6"]] = input_misoda$data$exp_r6[["exp_6"]]
-          module_controler$exp_preloaded[["exp_6"]] = input_misoda$data$exp_preloaded[["exp_6"]]
-        }
-
-        # MOFA data
-        module_controler$mofa_exp = input_misoda$data$mofa_exp
-
-        # SNF data
-        module_controler$snf_exp = input_misoda$data$snf_exp
-
-        if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
-          shinyjs::disable("add_exp")
-        }
         
-        waiter::waiter_hide(
-          id = "load_misoda_file"
-        )
-        print_tm(m = "Global", in_print = "Data loaded")
+        base::withCallingHandlers({
+
+          # Raise error if nothing to load
+          if (is.null(input_misoda$data)) {
+            base::stop('No data loaded')
+          }
+          
+          # Load exp_1
+          if (!is.null(input_misoda$data$exp_names[["exp_1"]])) {
+            main_output[["exp_1"]] = shiny::renderUI({
+              bs4Dash::bs4SidebarMenuItem(
+                text = input_misoda$data$exp_names[["exp_1"]],
+                tabName = "exp_1",
+                icon = shiny::icon("circle")
+              )
+            })
+            module_controler$slot_taken[["exp_1"]] = TRUE
+            module_controler$exp_names[["exp_1"]] = input_misoda$data$exp_names[["exp_1"]]
+            module_controler$exp_types[["exp_1"]] = input_misoda$data$exp_types[["exp_1"]]
+            module_controler$exp_r6[["exp_1"]] = input_misoda$data$exp_r6[["exp_1"]]
+            module_controler$exp_preloaded[["exp_1"]] = input_misoda$data$exp_preloaded[["exp_1"]]
+          }
+          
+          
+          # Load exp_2
+          if (!is.null(input_misoda$data$exp_names[["exp_2"]])) {
+            main_output[["exp_2"]] = shiny::renderUI({
+              bs4Dash::bs4SidebarMenuItem(
+                text = input_misoda$data$exp_names[["exp_2"]],
+                tabName = "exp_2",
+                icon = shiny::icon("circle")
+              )
+            })
+            module_controler$slot_taken[["exp_2"]] = TRUE
+            module_controler$exp_names[["exp_2"]] = input_misoda$data$exp_names[["exp_2"]]
+            module_controler$exp_types[["exp_2"]] = input_misoda$data$exp_types[["exp_2"]]
+            module_controler$exp_r6[["exp_2"]] = input_misoda$data$exp_r6[["exp_2"]]
+            module_controler$exp_preloaded[["exp_2"]] = input_misoda$data$exp_preloaded[["exp_2"]]
+          }
+          
+          
+          # Load exp_3
+          if (!is.null(input_misoda$data$exp_names[["exp_3"]])) {
+            main_output[["exp_3"]] = shiny::renderUI({
+              bs4Dash::bs4SidebarMenuItem(
+                text = input_misoda$data$exp_names[["exp_3"]],
+                tabName = "exp_3",
+                icon = shiny::icon("circle")
+              )
+            })
+            module_controler$slot_taken[["exp_3"]] = TRUE
+            module_controler$exp_names[["exp_3"]] = input_misoda$data$exp_names[["exp_3"]]
+            module_controler$exp_types[["exp_3"]] = input_misoda$data$exp_types[["exp_3"]]
+            module_controler$exp_r6[["exp_3"]] = input_misoda$data$exp_r6[["exp_3"]]
+            module_controler$exp_preloaded[["exp_3"]] = input_misoda$data$exp_preloaded[["exp_3"]]
+          }
+          
+          
+          # Load exp_4
+          if (!is.null(input_misoda$data$exp_names[["exp_4"]])) {
+            main_output[["exp_4"]] = shiny::renderUI({
+              bs4Dash::bs4SidebarMenuItem(
+                text = input_misoda$data$exp_names[["exp_4"]],
+                tabName = "exp_4",
+                icon = shiny::icon("circle")
+              )
+            })
+            module_controler$slot_taken[["exp_4"]] = TRUE
+            module_controler$exp_names[["exp_4"]] = input_misoda$data$exp_names[["exp_4"]]
+            module_controler$exp_types[["exp_4"]] = input_misoda$data$exp_types[["exp_4"]]
+            module_controler$exp_r6[["exp_4"]] = input_misoda$data$exp_r6[["exp_4"]]
+            module_controler$exp_preloaded[["exp_4"]] = input_misoda$data$exp_preloaded[["exp_4"]]
+          }
+          
+          
+          # Load exp_5
+          if (!is.null(input_misoda$data$exp_names[["exp_5"]])) {
+            main_output[["exp_5"]] = shiny::renderUI({
+              bs4Dash::bs4SidebarMenuItem(
+                text = input_misoda$data$exp_names[["exp_5"]],
+                tabName = "exp_5",
+                icon = shiny::icon("circle")
+              )
+            })
+            module_controler$slot_taken[["exp_5"]] = TRUE
+            module_controler$exp_names[["exp_5"]] = input_misoda$data$exp_names[["exp_5"]]
+            module_controler$exp_types[["exp_5"]] = input_misoda$data$exp_types[["exp_5"]]
+            module_controler$exp_r6[["exp_5"]] = input_misoda$data$exp_r6[["exp_5"]]
+            module_controler$exp_preloaded[["exp_5"]] = input_misoda$data$exp_preloaded[["exp_5"]]
+          }
+          
+          
+          # Load exp_6
+          if (!is.null(input_misoda$data$exp_names[["exp_6"]])) {
+            main_output[["exp_6"]] = shiny::renderUI({
+              bs4Dash::bs4SidebarMenuItem(
+                text = input_misoda$data$exp_names[["exp_6"]],
+                tabName = "exp_6",
+                icon = shiny::icon("circle")
+              )
+            })
+            module_controler$slot_taken[["exp_6"]] = TRUE
+            module_controler$exp_names[["exp_6"]] = input_misoda$data$exp_names[["exp_6"]]
+            module_controler$exp_types[["exp_6"]] = input_misoda$data$exp_types[["exp_6"]]
+            module_controler$exp_r6[["exp_6"]] = input_misoda$data$exp_r6[["exp_6"]]
+            module_controler$exp_preloaded[["exp_6"]] = input_misoda$data$exp_preloaded[["exp_6"]]
+          }
+          
+          # MOFA data
+          module_controler$mofa_exp = input_misoda$data$mofa_exp
+          
+          # SNF data
+          module_controler$snf_exp = input_misoda$data$snf_exp
+          
+          if (sum(sapply(module_controler$slot_taken, base::isTRUE)) >= 6) {
+            shinyjs::disable("add_exp")
+          }
+          
+          waiter::waiter_hide(
+            id = "load_misoda_file"
+          )
+          print_tm(m = "Home", in_print = "Data loaded")
+          
+        },warning = function(w){
+          print_tmw("Home", paste0("Warning: " , w))
+        },error=function(e){
+          waiter::waiter_hide(
+            id = "load_misoda_file"
+          )
+          shinyjs::enable("load_misoda_file")
+          print_tme("Home", paste0("Error:" , e))
+        })
+        
+        
       })
       
       #### Deactivate the load miSODA file ----
