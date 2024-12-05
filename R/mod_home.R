@@ -98,11 +98,11 @@ home_ui = function(id){
         ),
         shiny::h3('Example datasets'),
         shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
-        shiny::h5('CellMiner multi-omics dataset'),
+        shiny::h5('NCI60 multi-omics dataset'),
         shiny::fluidRow(
           shiny::downloadButton(
-            outputId = ns("dl_cellminer_data"),
-            label = "CellMiner.zip",
+            outputId = ns("dl_nci60_data"),
+            label = "NCI60.zip",
             style = "width:100%;"
           )
         ),
@@ -112,6 +112,15 @@ home_ui = function(id){
           shiny::downloadButton(
             outputId = ns("dl_ltp_ko_data"),
             label = "LTP_KO.zip",
+            style = "width:100%;"
+          )
+        ),
+        shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
+        shiny::h5('Brain multi-omics dataset'),
+        shiny::fluidRow(
+          shiny::downloadButton(
+            outputId = ns("dl_brain_multiomics"),
+            label = "Brain_data.zip",
             style = "width:100%;"
           )
         )
@@ -576,11 +585,11 @@ home_server = function(id, main_input, main_output, main_session, module_control
         print_tm(m = "Global", in_print = "Copied to clipboard")
       })
 
-      # Download CellMiner data
-      output$dl_cellminer_data = downloadHandler(
-        filename = function(){"CellMiner.zip"},
+      # Download NCI60 data
+      output$dl_nci60_data = downloadHandler(
+        filename = function(){"NCI60.zip"},
         content = function(file) {
-          file.copy("./tests/datasets/CellMiner.zip", file)
+          file.copy("./tests/datasets/NCI60.zip", file)
         },
         contentType = "application/zip"
       )
@@ -589,6 +598,14 @@ home_server = function(id, main_input, main_output, main_session, module_control
         filename = function(){"LTP_KO.zip"},
         content = function(file) {
           file.copy("./tests/datasets/LTP_KO.zip", file)
+        },
+        contentType = "application/zip"
+      )
+      # Download Brain data 
+      output$dl_brain_multiomics = downloadHandler(
+        filename = function(){"Brain_data.zip"},
+        content = function(file) {
+          file.copy("./tests/datasets/Brain_data.zip", file)
         },
         contentType = "application/zip"
       )
