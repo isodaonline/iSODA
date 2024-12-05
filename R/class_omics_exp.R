@@ -3888,7 +3888,7 @@ Omics_exp = R6::R6Class(
       }
 
       sample_groups = meta_table[rownames(data_table),sample_groups_col]
-      da_groups = meta_table[rownames(data_table),sample_groups_col]
+      da_groups = meta_table[rownames(data_table),sample_groups_da]
 
       if (impute_median) {
         for (col in colnames(data_table)) {
