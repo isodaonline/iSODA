@@ -308,7 +308,7 @@ home_server = function(id, main_input, main_output, main_session, module_control
       #### .miSODA file input ----
       shiny::observeEvent(input$input_misoda_file, {
         
-        print_tm(m = "Global", in_print = "Previewing data")
+        print_tm(m = "Home", in_print = "Previewing data")
         shinyjs::disable("load_misoda_file")
         
         
@@ -384,7 +384,7 @@ home_server = function(id, main_input, main_output, main_session, module_control
       #### Load .miSODA file ----
       shiny::observeEvent(input$load_misoda_file, {
         
-        print_tm(m = "Global", in_print = "Loading data")
+        print_tm(m = "Home", in_print = "Loading data")
         shinyjs::disable("load_misoda_file")
         waiter::waiter_show(
           id = "load_misoda_file",
@@ -544,8 +544,9 @@ home_server = function(id, main_input, main_output, main_session, module_control
         },
         
         content = function(file) {
+          
           # User feedback start
-          print_tm(m = "Global", in_print = "Saving .misoda file locally")
+          print_tm(m = "Home", in_print = "Saving .misoda file locally")
           shinyjs::disable("misoda_file_download")
           waiter::waiter_show(
             id = ns("misoda_file_download"),
@@ -553,28 +554,40 @@ home_server = function(id, main_input, main_output, main_session, module_control
             color = "#00A86B"
           )
           
-          
-          module_controler$name = input$misoda_file_name
-          module_controler$user = input$misoda_file_owner
-          module_controler$comment = input$misoda_file_comment
-          content = module_controler
-          
-          base::saveRDS(object = content,
-                        file = file)
-          
-          # User feedback end
-          waiter::waiter_hide(
-            id = ns("misoda_file_download")
-          )
-          shinyjs::enable("misoda_file_download")
+          base::withCallingHandlers({
+            # Process
+            if (module_controler$slot_taken$exp_1 == F) {
+              base::stop("No data to store")
+            }
+            module_controler$name = input$misoda_file_name
+            module_controler$user = input$misoda_file_owner
+            module_controler$comment = input$misoda_file_comment
+            content = module_controler
+            
+            base::saveRDS(object = content,
+                          file = file)
+            
+            waiter::waiter_hide(
+              id = ns("misoda_file_download")
+            )
+            shinyjs::enable("misoda_file_download")
+            
+          },warning = function(w){
+            print_tmw("Home", paste0("Warning: " , w))
+          },error=function(e){
+            waiter::waiter_hide(
+              id = ns("misoda_file_download")
+            )
+            shinyjs::enable("misoda_file_download")
+            print_tme("Home", paste0("Error:" , e))
+          })
         }
       )
       
       #### Store miSODA UUID ----
       session$userData[[id]]$misoda_file_store = shiny::observeEvent(input$misoda_file_store, {
         
-        # User feedback start
-        print_tm(m = "Global", in_print = "Saving .misoda on the server")
+        print_tm(m = "Home", in_print = "Saving .misoda on the server")
         shinyjs::disable("misoda_file_store")
         waiter::waiter_show(
           id = ns("misoda_file_store"),
@@ -582,27 +595,37 @@ home_server = function(id, main_input, main_output, main_session, module_control
           color = "#00A86B"
         )
         
-        # Process
-        uuid_key = uuid::UUIDgenerate(output = "string")
-        file_name = paste0('./isoda_files/', uuid_key, '.misoda')
+        base::withCallingHandlers({
+          # Process
+          if (module_controler$slot_taken$exp_1 == F) {
+            base::stop("No data to store")
+          }
+          uuid_key = uuid::UUIDgenerate(output = "string")
+          file_name = paste0('./isoda_files/', uuid_key, '.misoda')
+          module_controler$name = input$misoda_file_name
+          module_controler$user = input$misoda_file_owner
+          module_controler$comment = input$misoda_file_comment
+          base::saveRDS(object = module_controler,
+                        file = file_name)
+          print_tm(m = "Home", in_print = paste0("File saved under UUID ", uuid_key))
+          output$misoda_uuid = shiny::renderText(
+            uuid_key
+          )
+          misoda_storage_uuid(uuid_key)
+          
+          # User feedback end
+          waiter::waiter_hide(id = ns("misoda_file_store"))
+          shinyjs::enable("misoda_file_store")
+          
+        },warning = function(w){
+          print_tmw("Home", paste0("Warning: " , w))
+        },error=function(e){
+          waiter::waiter_hide(id = ns("misoda_file_store"))
+          shinyjs::enable("misoda_file_store")
+          print_tme("Home", paste0("Error:" , e))
+        })
         
-        module_controler$name = input$misoda_file_name
-        module_controler$user = input$misoda_file_owner
-        module_controler$comment = input$misoda_file_comment
-        
-        base::saveRDS(object = module_controler,
-                      file = file_name)
-        print_tm(m = "Global", in_print = paste0("File saved under UUID ", uuid_key))
-        output$misoda_uuid = shiny::renderText(
-          uuid_key
-        )
-        misoda_storage_uuid(uuid_key)
-        
-        # User feedback end
-        waiter::waiter_hide(
-          id = ns("misoda_file_store")
-        )
-        shinyjs::enable("misoda_file_store")
+
         
       })
       
@@ -621,7 +644,7 @@ home_server = function(id, main_input, main_output, main_session, module_control
       
       # Feedback to the copy to clipboard
       session$userData[[id]]$misoda_uuid_clip_button = shiny::observeEvent(input$misoda_uuid_clip_button, {
-        print_tm(m = "Global", in_print = "Copied to clipboard")
+        print_tm(m = "Home", in_print = "Copied to clipboard")
       })
 
       # Download NCI60 data
