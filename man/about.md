@@ -1,0 +1,6 @@
+iSODA - integrated Simple Omics Data Analysis
+=======================
+Thanks to plummeting costs of continuously evolving omics analytical platforms, research centers collect multi-omics data more routinely. They are, however, confronted with the lack of a versatile software solution to harmoniously analyze single-omics data and interpret multi-omics data. We have developed iSODA, a modular web-based application for the analysis of single- as well as multi-omics data. The tool emphasizes intuitive, interactive visualizations designed for user-driven data exploration. Researchers can access a variety of functions ranging from simple data visualization like volcano plots and PCA, to advanced functional analyses like enrichment analysis for proteomics and saturation analysis for lipidomics. For integrated multi-omics, iSODA incorporates Multi-Omics Factor Analysis – MOFA, and Similarity Network Fusion – SNF. The ability to adapt data on-the-fly allows for tasks such as removal of outlier samples or failed features, imputation, or normalization. All results are presented in interactive plots and the modular design allows for extensions.
+    
+This work was supported by the Chan Zuckerberg Initiative. The preprint for iSODA can be found at https://doi.org/10.1101/2024.08.02.605811    
+

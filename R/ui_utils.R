@@ -1465,7 +1465,7 @@ render_feature_filtering = function(ns, r6) {
         bsplus::bs_embed_tooltip(
           shinyWidgets::materialSwitch(
             inputId = ns('head_feature_annotations'),
-            value = F,
+            value = T,
             label = "Partial display",
             status = "danger"
           ),

@@ -3,7 +3,7 @@
 about_ui = function(id){
   ns = shiny::NS(id)
   shiny::fluidRow(
-    shiny::includeMarkdown("./man/welcome.md")
+    shiny::includeMarkdown("./man/about.md")
   )
 }
 

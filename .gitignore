@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rbuildignore
+logs
+isoda_files
+./man/welcome_message.html

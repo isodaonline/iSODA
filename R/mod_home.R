@@ -123,6 +123,10 @@ home_ui = function(id){
             label = "Brain_data.zip",
             style = "width:100%;"
           )
+        ),
+        shiny::br(),
+        shiny::HTML(
+          base::ifelse(base::file.exists("./man/welcome_message.html"), shiny::includeHTML("./man/welcome_message.html"), "<span></span>")
         )
       )
     )
