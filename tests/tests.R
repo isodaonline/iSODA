@@ -350,9 +350,29 @@ self$tables$sparse_feat[[column_name]]$sparse_matrix
 terms_list = self$tables$sparse_feat[[column_name]]$terms_list
 terms_table = self$tables$sparse_feat[[column_name]]$terms_table
 
+#----------------------------------------------------- Tests by iSODA files ----
 
+self = base::readRDS('./test_data/250108_Carla_data/20250108-104431_lips_1.isoda')
 
+self$plot_fa_analysis()
 
+data_table = self$params$fa_analysis_plot$data_table
+feature_table = self$tables$raw_feat
+sample_meta = self$tables$raw_meta
+group_col = self$params$fa_analysis_plot$group_col
+selected_view = self$params$fa_analysis_plot$selected_view
+selected_lipidclass = "CE"
+selected_fa = self$params$fa_analysis_plot$selected_fa
+fa_norm = self$params$fa_analysis_plot$fa_norm
+color_palette = self$params$fa_analysis_plot$color_palette
+title_font_size = self$params$fa_analysis_plot$title_font_size
+y_label_font_size = self$params$fa_analysis_plot$y_label_font_size
+y_tick_font_size = self$params$fa_analysis_plot$y_tick_font_size
+x_label_font_size = self$params$fa_analysis_plot$x_label_font_size
+x_tick_font_size = self$params$fa_analysis_plot$x_tick_font_size
+legend_font_size = self$params$fa_analysis_plot$legend_font_size
+width = NULL
+height = NULL
 
 
 #------------------------------------------------------ MOFA TEST CELLMINER ----

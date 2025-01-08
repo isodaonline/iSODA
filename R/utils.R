@@ -7408,10 +7408,17 @@ fa_analysis_calc = function(data_table = NULL,
                             selected_lipidclass = NULL,
                             fa_norm = FALSE) {
   ## Features
+  feature_table = feature_table[colnames(data_table),]
   feature_table$lipid = rownames(feature_table)
 
   # fix TG's
   idx_tg = feature_table$lipid[feature_table[["Lipid class"]] == "TG"]
+  idx_tg = base::intersect(idx_tg, colnames(data_table))
+  
+  if (length(idx_tg) == 0) {
+    base::stop("No TGs found in data")
+  }
+  
   data_table[, idx_tg] = data_table[, idx_tg] / 3
 
   # get the species from the selected lipid classes
