@@ -397,10 +397,12 @@ render_sample_filtering = function(ns, r6) {
 
   # Get group column
   if (is.na(r6$indices$group_column)) {
-    group_col = grep(x = colnames(r6$tables$indexed_meta),
+    group_cols = grep(x = colnames(r6$tables$indexed_meta),
                      pattern = ".*(group|grp).*",
                      ignore.case = TRUE,
-                     value = TRUE)[1]
+                     value = TRUE)
+    group_col <- check_group_column(meta_table = r6$tables$raw_meta,
+                                    group_columns = group_cols)
   } else {
     group_col = r6$indices$group_column
   }

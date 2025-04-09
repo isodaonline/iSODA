@@ -570,6 +570,31 @@ annotate_go = function(feature_names,
 
 }
 
+#' @param meta_table data.frame with the raw meta data.
+#' @param group_columns character() containing the group column names to be checked.
+#' @detail Each group column will be checked if it contains more than 1 group. If 
+#'     multiple group columns contain more than 1 group, the first group column is 
+#'     returned. If no column is found it returns the first column back from `group_columns`.
+#' @returns character(1). 
+
+check_group_column <- function(meta_table = NULL,
+                               group_columns = NULL) {
+  keep_col <- c()
+  for(group_column in group_columns) {
+    num_groups <- length(unique(na.omit(meta_table[, group_column])))
+    if(num_groups > 1) {
+      keep_col <- c(keep_col, group_column)
+    }
+  }
+  
+  if(length(keep_col) == 0) {
+    base::warning("Could not find a group column with more than 1 group!",
+                  call. = FALSE)
+    return(group_columns[1])
+  } else {
+    return(keep_col[1])
+  }
+}
 
 #-------------------------------------------------------- General utilities ----
 
