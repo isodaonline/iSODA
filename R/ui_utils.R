@@ -296,7 +296,7 @@ render_upload_user_files = function(ns) {
             )
           ),
           shiny::fluidRow(
-            shiny::span("First column must be sample IDs")
+            shiny::span(shiny::icon("circle-info"), shiny::strong("First column must be sample IDs"))
           )
         )
       )
