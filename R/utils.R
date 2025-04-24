@@ -1110,6 +1110,13 @@ get_lipid_class_table = function(table){
   # Get a column vector to find easily which columns belong to each lipid group
   col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE)
   
+  is_tg_lipidyzer <- grepl(pattern = "^TG [0-9]{1,2}:[0-9]{1,2}-FA[0-9]{1,2}:[0-9]{1}$",
+                           x = colnames(table))
+  
+  if(sum(is_tg_lipidyzer) > 0) {
+    table[, col_vector == "TG"] = table[, col_vector == 'TG'] / 3
+  }
+  
   # table[, col_vector == "TG"] = table[, col_vector == 'TG'] / 3
 
   # Fill the table
@@ -1189,7 +1196,20 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
   }
 }
 
-get_feature_metadata = function(feature_table) {
+get_feature_metadata <- function(feature_table) {
+  is_tg_lipidyzer <- grepl(pattern = "^TG [0-9]{1,2}:[0-9]{1,2}-FA[0-9]{1,2}:[0-9]{1}$",
+                           x = rownames(feature_table))
+  
+  if(sum(is_tg_lipidyzer) > 0) {
+    results <- get_feature_metadata.lipidyzer(feature_table = feature_table)
+  } else {
+    # results <- get_feature_metadata.general(feature_table)
+  }
+  
+  return(results)
+}
+
+get_feature_metadata.lipidyzer = function(feature_table) {
   
   feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
                                                      uniques = FALSE)
