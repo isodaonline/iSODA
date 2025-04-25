@@ -1217,13 +1217,74 @@ get_feature_metadata <- function(feature_table,
   if(is_lipidyzer_data) {
     results <- get_feature_metadata.lipidyzer(feature_table = feature_table)
   } else {
-    # results <- get_feature_metadata.general(feature_table)
+    results <- get_feature_metadata.general(feature_table = feature_table)
   }
   
   return(results)
 }
 
 get_feature_metadata.lipidyzer = function(feature_table) {
+  
+  feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
+                                                     uniques = FALSE)
+  # Collect carbon and unsaturation counts
+  new_feature_table = list()
+  
+  for (c in unique(feature_table[, 'Lipid class'])) {
+    idx = rownames(feature_table)[feature_table[, 'Lipid class'] == c]
+    
+    if (c == "TG") {
+      # For triglycerides
+      truffles = stringr::str_split(string = idx, pattern = " |:|-FA")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
+    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) > 0) {
+      # For species with asyl groups ("/" or "_")
+      truffles = stringr::str_split(string = idx, pattern = " |:|_|/")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
+    } else {
+      # For the rest
+      truffles = paste0(idx, ':0:0')
+      truffles = stringr::str_split(string = truffles, pattern = " |:")
+      names(truffles) = idx
+      new_feature_table = c(new_feature_table, truffles)
+      
+    }
+  }
+  
+  new_feature_table = as.data.frame(t(data.frame(new_feature_table, check.names = F)), check.names = F)
+  new_feature_table[,2] = gsub("[^0-9]", "", new_feature_table[,2])
+  for (col in colnames(new_feature_table)[2:ncol(new_feature_table)]) {
+    new_feature_table[,col] = as.numeric(new_feature_table[,col])
+  }
+  new_feature_table[,6] = new_feature_table[,2] + new_feature_table[,4]
+  new_feature_table[,7] = new_feature_table[,3] + new_feature_table[,5]
+  
+  idx_tgs = which(new_feature_table[,1] == "TG")
+  if (length(idx_tgs) > 0) {
+    new_feature_table[idx_tgs,6] = new_feature_table[idx_tgs,2]
+    new_feature_table[idx_tgs,7] = new_feature_table[idx_tgs,3]
+  }
+  
+  colnames(new_feature_table) = c(
+    'Lipid class',
+    'Carbon count (chain 1)',
+    'Double bonds (chain 1)',
+    'Carbon count (chain 2)',
+    'Double bonds (chain 2)',
+    'Carbon count (sum)',
+    'Double bonds (sum)'
+  )
+  
+  new_feature_table = new_feature_table[rownames(feature_table),]
+  
+  return(new_feature_table)
+}
+
+get_feature_metadata.general = function(feature_table) {
   
   feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
                                                      uniques = FALSE)
