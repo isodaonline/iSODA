@@ -1052,6 +1052,26 @@ try_plot = function(prefix, r6, dimensions_obj, gen_function, spawn_function, im
 
 
 #----------------------------------------------------- Lipidomics functions ----
+#' @title Check if the imported lipidomics data is lipidyzer data
+#' 
+#' @description
+#' Check if the imported lipidomics data is lipidyzer data based on the naming
+#' of the TG's.
+#' 
+#' @param table data.frame where the column names are the lipid names.
+#' 
+#' @returns logical
+#' 
+check_is_lipidyzer <- function(table = NULL) {
+  is_tg_lipidyzer <- grepl(pattern = "^TG [0-9]{1,2}:[0-9]{1,2}-FA[0-9]{1,2}:[0-9]{1}$",
+                           x = colnames(table))
+  
+  if(any(is_tg_lipidyzer)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
 
 get_fa_tails = function(feature_table) {
   # get unique FA's, ignore PA
@@ -1102,7 +1122,8 @@ get_group_median_table = function(data_table,
   return(out_table)
 }
 
-get_lipid_class_table = function(table){
+get_lipid_class_table = function(table,
+                                 is_lipidyzer_data = FALSE){
 
   # Get unique lipid classes
   classes = get_lipid_classes(feature_list = colnames(table), uniques = TRUE)
@@ -1110,15 +1131,10 @@ get_lipid_class_table = function(table){
   # Get a column vector to find easily which columns belong to each lipid group
   col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE)
   
-  is_tg_lipidyzer <- grepl(pattern = "^TG [0-9]{1,2}:[0-9]{1,2}-FA[0-9]{1,2}:[0-9]{1}$",
-                           x = colnames(table))
-  
-  if(sum(is_tg_lipidyzer) > 0) {
+  if(is_lipidyzer_data) {
     table[, col_vector == "TG"] = table[, col_vector == 'TG'] / 3
   }
   
-  # table[, col_vector == "TG"] = table[, col_vector == 'TG'] / 3
-
   # Fill the table
   out_table = sapply(X = classes,
                      FUN = function(x) {
@@ -1196,11 +1212,9 @@ get_lipid_classes = function(feature_list, uniques = TRUE){
   }
 }
 
-get_feature_metadata <- function(feature_table) {
-  is_tg_lipidyzer <- grepl(pattern = "^TG [0-9]{1,2}:[0-9]{1,2}-FA[0-9]{1,2}:[0-9]{1}$",
-                           x = rownames(feature_table))
-  
-  if(sum(is_tg_lipidyzer) > 0) {
+get_feature_metadata <- function(feature_table,
+                                 is_lipidyzer_data = FALSE) {
+  if(is_lipidyzer_data) {
     results <- get_feature_metadata.lipidyzer(feature_table = feature_table)
   } else {
     # results <- get_feature_metadata.general(feature_table)
