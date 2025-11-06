@@ -296,7 +296,7 @@ render_upload_user_files = function(ns) {
             )
           ),
           shiny::fluidRow(
-            shiny::span("First column must be sample IDs")
+            shiny::span(shiny::icon("circle-info"), shiny::strong("First column must be sample IDs"))
           )
         )
       )
@@ -385,22 +385,31 @@ render_omics_uuid = function(ns) {
 render_sample_filtering = function(ns, r6) {
 
   # Get type column type_col
+  # if multiple columns match, the first match is used
   if (is.na(r6$indices$type_column)) {
-    type_col = colnames(r6$tables$indexed_meta)[1]
+    type_col = grep(x = colnames(r6$tables$indexed_meta),
+                    pattern = ".*(sampletype|type).*",
+                    ignore.case = TRUE,
+                    value = TRUE)[1]
   } else {
     type_col = r6$indices$type_column
   }
 
   # Get group column
   if (is.na(r6$indices$group_column)) {
-    group_col = colnames(r6$tables$indexed_meta)[2]
+    group_cols = grep(x = colnames(r6$tables$indexed_meta),
+                     pattern = ".*(group|grp).*",
+                     ignore.case = TRUE,
+                     value = TRUE)
+    group_col <- check_group_column(meta_table = r6$tables$raw_meta,
+                                    group_columns = group_cols)
   } else {
     group_col = r6$indices$group_column
   }
 
   # Get batch column
   if (is.na(r6$indices$batch_column)) {
-    batch_col = grep(pattern = "batch",
+    batch_col = grep(pattern = ".*batch.*",
                      x = colnames(r6$tables$indexed_meta),
                      ignore.case = TRUE)
     if (length(batch_col) == 0) {

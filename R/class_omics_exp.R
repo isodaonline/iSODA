@@ -1845,7 +1845,8 @@ Omics_exp = R6::R6Class(
       } else if ((length(shared_samples) != nrow(indexed_data)) | (length(shared_samples) != nrow(indexed_meta))) {
         missing_data_samples = base::setdiff(rownames(indexed_data), shared_samples)
         missing_meta_samples = base::setdiff(rownames(indexed_meta), shared_samples)
-        base::warning(paste0("Dropping ", length(missing_data_samples) + length(missing_meta_samples), " samples not shared between tables"))
+        base::warning(paste0("Dropping ", length(missing_data_samples) + length(missing_meta_samples), " samples not shared between tables"),
+                      call. = FALSE)
         indexed_data = indexed_data[shared_samples,]
         indexed_meta = indexed_meta[shared_samples,]
         self$tables$indexed_data = indexed_data
@@ -1855,7 +1856,8 @@ Omics_exp = R6::R6Class(
       # Check data - feat
       shared_features = base::intersect(colnames(indexed_data), rownames(indexed_feat))
       if (length(shared_features) < 3) {
-        base::stop("Less than three shared features between measurement data and feature annotations tables")
+        base::stop("Less than three shared features between measurement data and feature annotations tables",
+                   call. = FALSE)
       } else if (nrow(indexed_feat) != length(shared_features)) {
         indexed_feat = indexed_feat[colnames(indexed_data),]
         rownames(indexed_feat) = colnames(indexed_data)
@@ -1867,7 +1869,8 @@ Omics_exp = R6::R6Class(
                             excluded_samples = self$indices$excluded_samples){
 
       if (is.null(indexed_meta)) {
-        base::stop('Error while setting Raw meta: missing indexed meta')
+        base::stop('Error while setting Raw meta: missing indexed meta',
+                   call. = FALSE)
       }
 
       if (!is.null(excluded_samples)) {
@@ -2754,7 +2757,8 @@ Omics_exp = R6::R6Class(
       groups = sort(unique(input_table[,group_column]))
 
       # Check on groups
-      if (length(groups) < 2) {base::stop('Less than two groups in selected group column')}
+      if (length(groups) < 2) {base::stop('Less than two groups in selected group column',
+                                          call. = FALSE)}
 
       plot_df = list()
       for (batch in batches) {
