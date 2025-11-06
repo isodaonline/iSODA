@@ -509,13 +509,16 @@ render_sample_filtering = function(ns, r6) {
         shiny::column(
           width = 4,
           bsplus::bs_embed_tooltip(
-            shiny::selectizeInput(
-              inputId = ns("sample_annotations_type_col"),
-              label = "Type column",
-              choices = colnames(r6$tables$indexed_meta),
-              selected = type_col,
-              multiple = FALSE,
-              width = '100%'
+            shiny::tagAppendAttributes(
+              shiny::selectizeInput(
+                inputId = ns("sample_annotations_type_col"),
+                label = "Type column",
+                choices = colnames(r6$tables$indexed_meta),
+                selected = type_col,
+                multiple = FALSE,
+                width = '100%'
+              ),
+              style = htmltools::css(background.color = "lightgreen")
             ),
             title = tooltip_data$single_omics$sample_annotations_type_col,
             placement = "top")
@@ -523,13 +526,16 @@ render_sample_filtering = function(ns, r6) {
         shiny::column(
           width = 4,
           bsplus::bs_embed_tooltip(
-            shiny::selectizeInput(
-              inputId = ns("sample_annotations_group_col"),
-              label = "Group column",
-              choices = colnames(r6$tables$indexed_meta),
-              selected = group_col,
-              multiple = FALSE,
-              width = '100%'
+            shiny::tagAppendAttributes(
+              shiny::selectizeInput(
+                inputId = ns("sample_annotations_group_col"),
+                label = "Group column",
+                choices = colnames(r6$tables$indexed_meta),
+                selected = group_col,
+                multiple = FALSE,
+                width = '100%'
+              ),
+              style = htmltools::css(background.color = "lightblue")
             ),
             title = tooltip_data$single_omics$sample_annotations_group_col,
             placement = "top")
@@ -537,13 +543,16 @@ render_sample_filtering = function(ns, r6) {
         shiny::column(
           width = 4,
           bsplus::bs_embed_tooltip(
-            shiny::selectizeInput(
-              inputId = ns("sample_annotations_batch_col"),
-              label = "Batch column",
-              choices = c("None", colnames(r6$tables$indexed_meta)),
-              selected = batch_col,
-              multiple = FALSE,
-              width = '100%'
+            shiny::tagAppendAttributes(
+              shiny::selectizeInput(
+                inputId = ns("sample_annotations_batch_col"),
+                label = "Batch column",
+                choices = c("None", colnames(r6$tables$indexed_meta)),
+                selected = batch_col,
+                multiple = FALSE,
+                width = '100%'
+              ) ,
+              style = htmltools::css(background.color = "goldenrod")
             ),
             title = tooltip_data$single_omics$sample_annotations_batch_col,
             placement = "top")
@@ -741,10 +750,40 @@ events_sample_filtering = function(input, output, session, id, r6, reactive_trig
                                     1:min(c(ncol(preview_table), 100))]
     }
 
-    output$metadata_preview_table = renderDataTable({
-      DT::datatable(
+    output$metadata_preview_table = DT::renderDataTable({
+      shiny::req(input$sample_annotations_group_col,
+                 input$sample_annotations_type_col,
+                 input$sample_annotations_batch_col)
+      
+      sample_table <- DT::datatable(
         data = preview_table,
         options = list(paging = TRUE))
+      
+      if(r6$indices$type_column %in% colnames(r6$tables$raw_meta)) {
+        sample_table <- sample_table |> 
+          DT::formatStyle(
+            columns = r6$indices$type_column,
+            backgroundColor = "lightgreen"
+          )
+      }
+      
+      if(r6$indices$group_column %in% colnames(r6$tables$raw_meta)) {
+        sample_table <- sample_table |> 
+          DT::formatStyle(
+            columns = r6$indices$group_column,
+            backgroundColor = "lightblue"
+          )
+      }
+      
+      if(r6$indices$batch_column %in% colnames(r6$tables$raw_meta)) {
+        sample_table <- sample_table |> 
+          DT::formatStyle(
+            columns = r6$indices$batch_column,
+            backgroundColor = "goldenrod"
+          )
+      }
+      
+      return(sample_table)
     })
 
     # Update the progress bar
