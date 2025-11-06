@@ -3432,11 +3432,15 @@ Omics_exp = R6::R6Class(
         clusters = stats::cutree(tree = Colv, k = k_clusters_samples)
         clusters = paste0('k', clusters)
         meta_table[,'k_clusters_heatmap'] = clusters
+      } else {
+        meta_table[,'k_clusters_heatmap'] <- NA
       }
       if (!is.null(Rowv)) {
         clusters = stats::cutree(tree = Rowv, k = k_clusters_features)
         clusters = paste0('k', clusters)
         meta_table_features[,'k_clusters_heatmap'] = clusters
+      } else {
+        meta_table_features[,'k_clusters_heatmap'] <- NA
       }
 
       # Add multivalue annotations
