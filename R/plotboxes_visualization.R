@@ -655,7 +655,7 @@ class_comparison_server = function(r6, output, session) {
         width = "100%"),
       shiny::downloadButton(
         outputId = ns("download_class_comparison_table"),
-        label = "Download unavailable for now",
+        label = "Download associated table",
         style = "width:100%;"
       )
     )
@@ -730,13 +730,13 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
   })
 
 
-  # # Download associated table
-  # output$download_class_comparison_table = shiny::downloadHandler(
-  #   filename = function(){"class_comparison_table.csv"},
-  #   content = function(file_name){
-  #     write.csv(r6$tables$class_distribution_table, file_name)
-  #   }
-  # )
+  # Download associated table
+  output$download_class_comparison_table = shiny::downloadHandler(
+    filename = function(){"class_comparison_table.csv"},
+    content = function(file_name){
+      write.csv(r6$tables$class_comparison_table, file_name)
+    }
+  )
 
 
   # Expanded boxes

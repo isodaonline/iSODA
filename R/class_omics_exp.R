@@ -740,6 +740,7 @@ Omics_exp = R6::R6Class(
       # Plot tables
       dendrogram = NULL,
       class_distribution_table = NULL,
+      class_comparison_table = NULL,
       volcano_table = NULL,
       heatmap = NULL,
       samples_correlation = NULL,
@@ -2968,7 +2969,7 @@ Omics_exp = R6::R6Class(
 
       # Get table
       table = self$table_check_convert(table)
-
+      
       # Process fonts
       xtick_show = base::ifelse(x_tick_font_size > 0, T, F)
       ytick_show = base::ifelse(y_tick_font_size > 0, T, F)
@@ -3065,6 +3066,25 @@ Omics_exp = R6::R6Class(
                                      height = NULL){
       # Get table
       data_table = self$table_check_convert(data_table)
+      
+      # make the download table
+      class_list <- colnames(data_table)
+      group_list <- as.character(sort(unique(meta_table[, group_col])))
+      
+      export_table <- data.frame(matrix(data = 0.0,
+                                        nrow = length(class_list),
+                                        ncol = length(group_list)))
+      rownames(export_table) <- class_list
+      colnames(export_table) <- group_list
+      
+      for (c in class_list) {
+        for (g in group_list){
+          s <- rownames(meta_table)[meta_table[, group_col] == g]
+          m <- mean(as.matrix(data_table[s, c]))
+          export_table[c, g] <- m
+        }
+      }
+      self$tables$class_comparison_table <- export_table
 
       # Process fonts
       xtick_show = base::ifelse(x_tick_font_size > 0, T, F)
