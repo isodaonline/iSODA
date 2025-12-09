@@ -1978,7 +1978,7 @@ samples_correlation_events = function(r6, dimensions_obj, color_palette, input, 
   output$download_samples_correlation_table = shiny::downloadHandler(
     filename = function(){timestamped_name("samples_correlation_table.csv")},
     content = function(file_name){
-      write.csv(r6$tables$samples_correlation_table, file_name)
+      write.csv(r6$tables$samples_correlation, file_name)
     }
   )
 
