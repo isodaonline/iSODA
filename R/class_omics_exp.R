@@ -750,6 +750,7 @@ Omics_exp = R6::R6Class(
       pca_scores_table = NULL,
       pca_loadings_table = NULL,
       dbplot_table = NULL,
+      fa_analysis_table = NULL,
 
       # GSEA & over representation
       ea_feature_table = NULL,
@@ -4219,7 +4220,6 @@ Omics_exp = R6::R6Class(
                                   y = rowSums(hm_left_data))
       avg_unsat_left = weighted.mean(x = as.numeric(as.character(bar_left_data$x)),
                                       w = bar_left_data$y)
-
 
       ## right side
       # heatmap
