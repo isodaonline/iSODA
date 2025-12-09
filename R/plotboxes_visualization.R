@@ -2384,7 +2384,7 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
   output$download_feature_correlation_table = shiny::downloadHandler(
     filename = function(){timestamped_name("feature_correlation_table.csv")},
     content = function(file_name){
-      write.csv(r6$tables$feature_correlation_table, file_name)
+      write.csv(r6$tables$feature_correlation, file_name)
     }
   )
 
