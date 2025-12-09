@@ -3122,7 +3122,7 @@ fa_analysis_plot_events = function(r6, dimensions_obj, color_palette, input, out
   output$download_fa_analysis_plot_table = shiny::downloadHandler(
     filename = function(){timestamped_name("fa_analysis_plot_table.csv")},
     content = function(file_name){
-      write.csv(r6$tables$fa_analysis_plot_table, file_name)
+      write.csv(r6$tables$fa_analysis_table, file_name)
     }
   )
 
