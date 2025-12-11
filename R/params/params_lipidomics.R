@@ -13,7 +13,8 @@ list(params = list(
         datasets = list(
           'Z-scored table',
           'Z-scored total normalized table',
-          'Class table z-scored'
+          'Class table z-scored',
+          'Class table z-scored total normalized'
         )
       ),
       pca = list(

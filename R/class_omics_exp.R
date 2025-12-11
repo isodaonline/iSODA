@@ -604,6 +604,7 @@ Omics_exp = R6::R6Class(
           'Z-scored table',
           'Z-scored total normalized table',
           'Class table z-scored',
+          # Check param files
           'Class table z-scored total normalized'
         )
       ),
