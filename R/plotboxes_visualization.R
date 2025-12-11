@@ -655,7 +655,7 @@ class_comparison_server = function(r6, output, session) {
         width = "100%"),
       shiny::downloadButton(
         outputId = ns("download_class_comparison_table"),
-        label = "Download unavailable for now",
+        label = "Download associated table",
         style = "width:100%;"
       )
     )
@@ -730,13 +730,13 @@ class_comparison_events = function(r6, dimensions_obj, color_palette, input, out
   })
 
 
-  # # Download associated table
-  # output$download_class_comparison_table = shiny::downloadHandler(
-  #   filename = function(){"class_comparison_table.csv"},
-  #   content = function(file_name){
-  #     write.csv(r6$tables$class_distribution_table, file_name)
-  #   }
-  # )
+  # Download associated table
+  output$download_class_comparison_table = shiny::downloadHandler(
+    filename = function(){"class_comparison_table.csv"},
+    content = function(file_name){
+      write.csv(r6$tables$class_comparison_table, file_name)
+    }
+  )
 
 
   # Expanded boxes
@@ -1978,7 +1978,7 @@ samples_correlation_events = function(r6, dimensions_obj, color_palette, input, 
   output$download_samples_correlation_table = shiny::downloadHandler(
     filename = function(){timestamped_name("samples_correlation_table.csv")},
     content = function(file_name){
-      write.csv(r6$tables$samples_correlation_table, file_name)
+      write.csv(r6$tables$samples_correlation, file_name)
     }
   )
 
@@ -2384,7 +2384,7 @@ feature_correlation_events = function(r6, dimensions_obj, color_palette, input, 
   output$download_feature_correlation_table = shiny::downloadHandler(
     filename = function(){timestamped_name("feature_correlation_table.csv")},
     content = function(file_name){
-      write.csv(r6$tables$feature_correlation_table, file_name)
+      write.csv(r6$tables$feature_correlation, file_name)
     }
   )
 
@@ -3122,7 +3122,7 @@ fa_analysis_plot_events = function(r6, dimensions_obj, color_palette, input, out
   output$download_fa_analysis_plot_table = shiny::downloadHandler(
     filename = function(){timestamped_name("fa_analysis_plot_table.csv")},
     content = function(file_name){
-      write.csv(r6$tables$fa_analysis_plot_table, file_name)
+      write.csv(r6$tables$fa_analysis_table, file_name)
     }
   )
 
@@ -3439,9 +3439,31 @@ fa_comp_plot_events = function(r6, dimensions_obj, color_palette, input, output,
 
   # Download associated table
   output$download_fa_comp_plot_table = shiny::downloadHandler(
-    filename = function(){timestamped_name("fa_composition_table.csv")},
+    filename = function(){timestamped_name("fa_composition_table.zip")},
     content = function(file_name){
-      write.csv(r6$tables$fa_comp_table, file_name)
+      # write files to temp folder in order to zip them
+      tmp <- tempfile()
+      dir.create(tmp)
+      print(tmp)
+      right_hm_file <- file.path(tmp, "right_hm.csv")
+      right_top_bar_file <- file.path(tmp, "right_top_bar.csv")
+      right_bar_file <- file.path(tmp, "right_bar.csv")
+      left_hm_file <- file.path(tmp, "left_hm.csv")
+      left_top_bar_file <- file.path(tmp, "left_top_bar.csv")
+      left_bar_file <- file.path(tmp, "left_bar.csv")
+      write.csv(x = r6$tables$fa_comp_right_hm, file = right_hm_file)
+      write.csv(x = r6$tables$fa_comp_right_top_bar, file = right_top_bar_file, row.names = FALSE)
+      write.csv(x = r6$tables$fa_comp_right_bar, file = right_bar_file, row.names = FALSE)
+      write.csv(x = r6$tables$fa_comp_left_hm, file = left_hm_file)
+      write.csv(x = r6$tables$fa_comp_left_top_bar, file = left_top_bar_file, row.names = FALSE)
+      write.csv(x = r6$tables$fa_comp_left_bar, file = left_bar_file, row.names = FALSE)
+      
+      utils::zip(
+        zipfile = file_name,
+        files = c(right_hm_file, right_top_bar_file, right_bar_file,
+                  left_hm_file, left_top_bar_file, left_bar_file),
+        flags = "-r9Xj"
+      )
     }
   )
 
