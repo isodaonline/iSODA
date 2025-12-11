@@ -603,7 +603,9 @@ Omics_exp = R6::R6Class(
         datasets = list(
           'Z-scored table',
           'Z-scored total normalized table',
-          'Class table z-scored'
+          'Class table z-scored',
+          # Check param files
+          'Class table z-scored total normalized'
         )
       ),
       samples_correlation = list(
