@@ -1733,6 +1733,13 @@ samples_correlation_server = function(r6, output, session) {
         choices = colnames(r6$tables$raw_meta),
         selected = r6$params$samples_correlation$col_annotations
       ),
+      shiny::selectizeInput(
+        inputId = ns("samples_correlation_color_palette"),
+        label = "Color palette",
+        multiple = TRUE,
+        choices = r6$hardcoded_settings$color_palette,
+        selected = r6$params$samples_correlation$color_palette_annotations
+      ),
       ## Data settings
       shiny::hr(style = "border-top: 1px solid #7d7d7d;"),
       shiny::selectInput(
@@ -1793,13 +1800,7 @@ samples_correlation_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns('samples_correlation_colors_palette'),
         label = 'Color palette',
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                    'plotly_1', 'plotly_2', 'ggplot2'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$samples_correlation$color_palette,
         width = '100%'
       ),
@@ -1907,6 +1908,7 @@ samples_correlation_events = function(r6, dimensions_obj, color_palette, input, 
       input$samples_correlation_center,
       input$samples_correlation_map_rows,
       input$samples_correlation_map_cols,
+      input$samples_correlation_color_palette,
       input$samples_correlation_colors_palette,
       input$samples_correlation_reverse_palette,
       input$samples_correlation_title_font_size,
@@ -1929,6 +1931,7 @@ samples_correlation_events = function(r6, dimensions_obj, color_palette, input, 
                                    center = input$samples_correlation_center,
                                    row_annotations = input$samples_correlation_map_rows,
                                    col_annotations = input$samples_correlation_map_cols,
+                                   color_palette_annotations = input$samples_correlation_color_palette,
                                    color_palette = input$samples_correlation_colors_palette,
                                    reverse_palette = input$samples_correlation_reverse_palette,
                                    title_font_size = input$samples_correlation_title_font_size,

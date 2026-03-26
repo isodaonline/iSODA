@@ -190,6 +190,7 @@ Omics_exp = R6::R6Class(
         center = F,
         row_annotations = 'Group_type',
         col_annotations = 'Group_type',
+        color_palette_annotations = 'Set1',
         color_palette = 'RdYlBu',
         reverse_palette = T,
         title_font_size = 0,
@@ -1013,7 +1014,7 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_samples_correlation = function(auto_refresh, dataset, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
+    param_samples_correlation = function(auto_refresh, dataset, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, color_palette_annotations, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
       self$params$samples_correlation$auto_refresh = auto_refresh
       self$params$samples_correlation$dataset = dataset
       self$params$samples_correlation$correlation_method = correlation_method
@@ -1025,6 +1026,7 @@ Omics_exp = R6::R6Class(
       self$params$samples_correlation$center = center
       self$params$samples_correlation$row_annotations = row_annotations
       self$params$samples_correlation$col_annotations = col_annotations
+      self$params$samples_correlation$color_palette_annotations = color_palette_annotations
       self$params$samples_correlation$color_palette = color_palette
       self$params$samples_correlation$reverse_palette = reverse_palette
       self$params$samples_correlation$title_font_size = title_font_size
@@ -2363,6 +2365,7 @@ Omics_exp = R6::R6Class(
                                      center = F,
                                      row_annotations = self$indices$group_column,
                                      col_annotations = NULL,
+                                     color_palette_annotations = "Set1",
                                      color_palette = 'RdYlBu',
                                      reverse_palette = T,
                                      title_font_size = 0,
@@ -3564,6 +3567,7 @@ Omics_exp = R6::R6Class(
                                         center = self$params$samples_correlation$center,
                                         row_annotations = self$params$samples_correlation$row_annotations,
                                         col_annotations = self$params$samples_correlation$col_annotations,
+                                        color_palette_annotations = self$params$samples_correlation$color_palette_annotations,
                                         color_palette = self$params$samples_correlation$color_palette,
                                         reverse_palette = self$params$samples_correlation$reverse_palette,
                                         title_font_size = self$params$samples_correlation$title_font_size,
@@ -3651,26 +3655,52 @@ Omics_exp = R6::R6Class(
       # Annotations
       if (!is.null(row_annotations)) {
         if (length(row_annotations) > 1) {
-          row_annotations = meta_table[, row_annotations]
-          colnames(row_annotations) = stringr::str_replace_all(colnames(row_annotations), "_", " ")
+          row_annotations_df = meta_table[, row_annotations]
+          colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
+          row_colors <- c()
+          for(a in 1:length(row_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations[a]])),
+                                     color_palette = color_palette_annotations,
+                                     reverse_color_palette = TRUE)
+            row_colors <- c(row_colors, tmp)
+          }
         } else {
           row_names = row_annotations
-          row_annotations = as.data.frame(meta_table[, row_annotations],
-                                          row.names = rownames(meta_table))
-          colnames(row_annotations) = stringr::str_replace_all(row_names, "_", " ")
+          row_annotations_df = as.data.frame(meta_table[, row_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(row_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+          row_colors <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations])),
+                                          color_palette = color_palette_annotations,
+                                          reverse_color_palette = TRUE)
         }
+      } else {
+        row_annotations_df <- NULL
+        row_colors <- NULL
       }
 
       if (!is.null(col_annotations)) {
         if (length(col_annotations) > 1) {
-          col_annotations = meta_table[, col_annotations]
-          colnames(col_annotations) = stringr::str_replace_all(colnames(col_annotations), "_", " ")
+          col_annotations_df = meta_table[, col_annotations]
+          colnames(col_annotations_df) = stringr::str_replace_all(colnames(col_annotations_df), "_", " ")
+          col_colors <- c()
+          for(a in 1:length(col_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(col_annotations_df[, col_annotations[a]])),
+                                     color_palette = color_palette_annotations,
+                                     reverse_color_palette = TRUE)
+            col_colors <- c(col_colors, tmp)
+          }
         } else {
           row_names = col_annotations
-          col_annotations = as.data.frame(meta_table[, col_annotations],
-                                          row.names = rownames(meta_table))
-          colnames(col_annotations) = stringr::str_replace_all(row_names, "_", " ")
+          col_annotations_df = as.data.frame(meta_table[, col_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(col_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+          col_colors <- get_color_palette(groups = sort(unique(col_annotations_df[, col_annotations])),
+                                          color_palette = color_palette_annotations,
+                                          reverse_color_palette = TRUE)
         }
+      } else {
+        col_annotations_df <- NULL
+        col_colors <- NULL
       }
 
       # Save table as heatmap table
@@ -3696,8 +3726,10 @@ Omics_exp = R6::R6Class(
                                   # Aesthetics
                                   width = width,
                                   height = height,
-                                  col_side_colors = row_annotations,
-                                  row_side_colors = col_annotations,
+                                  col_side_colors = row_annotations_df,
+                                  col_side_palette = row_colors,
+                                  row_side_colors = col_annotations_df,
+                                  row_side_palette = col_colors,
                                   xlab = x_axis_title,
                                   ylab = y_axis_title,
                                   main = title,
