@@ -4048,7 +4048,7 @@ Omics_exp = R6::R6Class(
       self$tables$fa_analysis_table = plot_table
 
       # group_list = sort(unique(plot_table$group))
-      colors = get_color_palette(groups = plot_table$group,
+      colors = get_color_palette(groups = sort(unique(plot_table$group)),
                                   color_palette = color_palette,
                                   reverse_color_palette = T)
 
@@ -4105,7 +4105,7 @@ Omics_exp = R6::R6Class(
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
                             x = ~names,
                             y = ~avg,
-                            color = colors[grp],
+                            color = ~as.factor(group),
                             type = "bar",
                             name = grp,
                             text = ~stdev,
