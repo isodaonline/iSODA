@@ -157,6 +157,7 @@ Omics_exp = R6::R6Class(
         apply_clustering = T,
         k_clusters_samples = 1,
         k_clusters_features = 1,
+        sample_color_palette = "Set1",
         map_sample_data = NULL,
         map_feature_data = NULL,
         sparse_features = NULL,
@@ -189,6 +190,7 @@ Omics_exp = R6::R6Class(
         center = F,
         row_annotations = 'Group_type',
         col_annotations = 'Group_type',
+        color_palette_annotations = 'Set1',
         color_palette = 'RdYlBu',
         reverse_palette = T,
         title_font_size = 0,
@@ -585,6 +587,13 @@ Omics_exp = R6::R6Class(
     ),
 
     hardcoded_settings = list(
+      color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
+                        "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",
+                        "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
+                        "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
+                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3",
+                        "Magma", "Inferno", "Plasma", "Viridis", "Cividis", "Rocket",
+                        "Mako", "Turbo", "plotly_1", "plotly_2", "ggplot2"),
 
       dendrogram = list(
         datasets = list(
@@ -967,7 +976,7 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_median, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
+    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_median, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, sample_color_palette, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
       self$params$heatmap$auto_refresh = auto_refresh
       self$params$heatmap$dataset = dataset
       self$params$heatmap$distance_method = distance_method
@@ -978,6 +987,7 @@ Omics_exp = R6::R6Class(
       self$params$heatmap$k_clusters_samples = k_clusters_samples
       self$params$heatmap$k_clusters_features = k_clusters_features
       self$params$heatmap$map_sample_data = map_sample_data
+      self$params$heatmap$sample_color_palette = sample_color_palette
       self$params$heatmap$map_feature_data = map_feature_data
       self$params$heatmap$sparse_table = sparse_table
       self$params$heatmap$sparse_features = sparse_features
@@ -1004,7 +1014,7 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_samples_correlation = function(auto_refresh, dataset, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
+    param_samples_correlation = function(auto_refresh, dataset, correlation_method, use, distance_method, clustering_method, k_clusters, apply_clustering, center, row_annotations, col_annotations, color_palette_annotations, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, y_tick_font_size, x_tick_font_size, img_format) {
       self$params$samples_correlation$auto_refresh = auto_refresh
       self$params$samples_correlation$dataset = dataset
       self$params$samples_correlation$correlation_method = correlation_method
@@ -1016,6 +1026,7 @@ Omics_exp = R6::R6Class(
       self$params$samples_correlation$center = center
       self$params$samples_correlation$row_annotations = row_annotations
       self$params$samples_correlation$col_annotations = col_annotations
+      self$params$samples_correlation$color_palette_annotations = color_palette_annotations
       self$params$samples_correlation$color_palette = color_palette
       self$params$samples_correlation$reverse_palette = reverse_palette
       self$params$samples_correlation$title_font_size = title_font_size
@@ -2325,6 +2336,7 @@ Omics_exp = R6::R6Class(
                          k_clusters_samples = 1,
                          k_clusters_features = 1,
                          map_sample_data = NULL,
+                         sample_color_palette = "Set1",
                          map_feature_data = NULL,
                          sparse_features = NULL,
                          sparse_table = "None",
@@ -2353,6 +2365,7 @@ Omics_exp = R6::R6Class(
                                      center = F,
                                      row_annotations = self$indices$group_column,
                                      col_annotations = NULL,
+                                     color_palette_annotations = "Set1",
                                      color_palette = 'RdYlBu',
                                      reverse_palette = T,
                                      title_font_size = 0,
@@ -3013,49 +3026,44 @@ Omics_exp = R6::R6Class(
       self$tables$class_distribution_table = plot_table
 
       # Colors
-      color_palette = get_colors(color_count = colors_switch(color_palette), color_palette = color_palette)
-      # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      color_palette = colorRampPalette(color_palette)(length(group_list))
-      color_palette = setNames(color_palette, group_list)
-
+      colors <- get_color_palette(groups = group_list,
+                                  color_palette = color_palette,
+                                  reverse_color_palette = TRUE)
+      
       # Produce the plot
-      fig = plotly::plot_ly(colors = unname(color_palette), width = width, height = height)
-      for (col in colnames(plot_table)) {
-
-        fig = plotly::add_trace(p = fig,
-                                x = rownames(plot_table),
-                                y = plot_table[,col],
-                                name = col,
-                                color = color_palette[col],
-                                showlegend = legend_show,
-                                type  = "bar")
-      }
-
-      fig = plotly::layout(p = fig,
-
-                           title = list(text = title,
-                                        # xref = "paper",
-                                        font = list(size = title_font_size)),
-
-                           xaxis = list(title = list(text = x_axis_title,
-                                                     font = list(size = x_label_font_size)),
-                                        showticklabels = xtick_show,
-                                        tickfont = list(size = x_tick_font_size)
-                                        ),
-
-                           yaxis = list(title = list(text = y_axis_title,
-                                                     font = list(size = y_label_font_size)),
-                                        showticklabels = ytick_show,
-                                        tickfont = list(size = y_tick_font_size)
-                           ),
-
-                           legend = list(orientation = 'h',
-                                         xanchor = "center",
-                                         x = 0.5,
-                                         font = list(size = legend_font_size)),
-                           plot_bgcolor='rgba(0,0,0,0)',
-                           paper_bgcolor='rgba(0,0,0,0)'
-                           )
+      plot_table$lipid_class <- rownames(plot_table)
+      plot_table_long <- tidyr::pivot_longer(
+        data = plot_table,
+        cols = tidyr::all_of(group_list),
+        names_to = "groups",
+        values_to = "value"
+      )
+      
+      # make sure that the bars and legend colors are in the same order
+      plot_table_long$groups <- factor(x = plot_table_long$groups,
+                                       levels = sort(unique(plot_table_long$groups)),
+                                       labels = sort(unique(plot_table_long$groups)))
+      
+      fig <- plot_table_long %>%
+        plotly::plot_ly(
+          type = "bar",
+          x = ~lipid_class,
+          y = ~value,
+          color = ~groups,
+          colors = unname(colors),
+          hovertext = ~groups,
+          hovertemplate = paste("Lipid class: %{x}<br>",
+                                "Value: %{y:.3g}%<br>",
+                                paste0("Group: %{hovertext}"),
+                                "<extra></extra>")
+        )
+      
+      fig <-  fig %>%
+        plotly::layout(legend = list(orientation = 'h',
+                                     xanchor = "center", x = 0.5),
+                       yaxis = list(title = "%",
+                                    tickformat = "digits"),
+                       xaxis = list(title = list(text = "")))
 
       self$plots$class_distribution = fig
     },
@@ -3075,52 +3083,61 @@ Omics_exp = R6::R6Class(
       # Get table
       data_table = self$table_check_convert(data_table)
       
-      # make the download table
-      class_list <- colnames(data_table)
-      group_list <- as.character(sort(unique(meta_table[, group_col])))
+      export_table <- merge(
+        x = meta_table[, group_col, drop = FALSE],
+        y = as.data.frame(data_table),
+        by = 0
+      )
+      colnames(export_table)[1:2] <- c("sampleName", "group")
+      self$tables$class_distribution_all_table <- export_table
       
-      export_table <- data.frame(matrix(data = 0.0,
-                                        nrow = length(class_list),
-                                        ncol = length(group_list)))
-      rownames(export_table) <- class_list
-      colnames(export_table) <- group_list
-      
-      for (c in class_list) {
-        for (g in group_list){
-          s <- rownames(meta_table)[meta_table[, group_col] == g]
-          m <- mean(as.matrix(data_table[s, c]))
-          export_table[c, g] <- m
-        }
-      }
-      self$tables$class_comparison_table <- export_table
-
-      # Process fonts
-      xtick_show = base::ifelse(x_tick_font_size > 0, T, F)
-      ytick_show = base::ifelse(y_tick_font_size > 0, T, F)
-      legend_show = base::ifelse(legend_font_size > 0, T, F)
-      y_axis_title = base::ifelse(y_label_font_size > 0, "Concentration", "")
-      title = base::ifelse(title_font_size > 0, "Class comparison", "")
-
       # Get sample groups and the list of classes
-      meta_table = meta_table[!is.na(meta_table[,group_col]),]
-      groups = as.character(sort(unique(meta_table[,group_col])))
-      meta_table[,group_col] = as.character(meta_table[,group_col])
+      groups = sort(unique(meta_table[, group_col]))
       class_list = colnames(data_table)
-
-      plot_dims = calculate_subplot_grid_dimensions(length(class_list))
-      x_dim = plot_dims$cols
-      y_dim = plot_dims$rows
-
-      # Colors
-      colors = get_color_palette(groups = groups,
-                                 color_palette = color_palette)
-
+      
+      x_dim = ceiling(sqrt(length(class_list)))
+      y_dim = floor(sqrt(length(class_list)))
+      
+      
+      x_step = 1/x_dim
+      y_step = 1/y_dim
+      
+      x = x_step / 2
+      y = 0.97 - y_step
+      i = 1
+      
+      annotations = c()
+      for (c in class_list) {
+        tmp_ann = list(
+          x = x,
+          y = y,
+          text = c,
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE)
+        annotations[[i]] = tmp_ann
+        i = i + 1
+        x = x + x_step
+        if (x >= 1) {
+          x = x_step/2
+          y = y - y_step}
+      }
+      annotations[[i]] = list(x = -0.045, y = 0.5, text = "%",
+                              font = list(size = 12),
+                              textangle = 270, showarrow = FALSE, xref='paper',
+                              yref='paper')
+      
+      colors <- get_color_palette(groups = groups,
+                                  color_palette = color_palette,
+                                  reverse_color_palette = TRUE)
+      
       # Plot list will be the list of subplots
       plot_list = c()
-
-      # Cleared groups is created for the legends
-      cleared_groups = c()
+      
       j = 1
+      meta_table$sampleId <- row.names(meta_table)
       for (c in class_list) {
         subplot = plot_ly(colors = unname(colors),
                           width = width,
@@ -3128,49 +3145,49 @@ Omics_exp = R6::R6Class(
                           hovertemplate = paste("Group: %{x}<br>",
                                                 "Value: %{y:.3g}%",
                                                 "<extra></extra>"))
-        for (g in groups){
-          if (g %in% cleared_groups) {
-            first_bool = FALSE
-          }else{
-            first_bool = legend_show
-            cleared_groups = c(cleared_groups, g)
-          }
-
-          # For each class, each group
-          s = rownames(meta_table)[meta_table[, group_col] == g] # Get the samples for the current group
-          d = data_table[s, c] # Get the concentrations for all s samples in the current class c
-          m = mean(d) # Get the mean concentration for samples s for class c
-
-          # Subplot for the bar chart displaying the mean concentration
-          subplot = plotly::add_trace(p = subplot,
-                                      x = g,
-                                      y = m,
-                                      type  = "bar",
-                                      name = g,
-                                      color = colors[g],
-                                      alpha = 1,
-                                      legendgroup=g,
-                                      showlegend = first_bool)
-
-          # Subplot for boxplots displaying the median and all datapoints
-          subplot = plotly::add_trace(p = subplot,
-                                      x = g,
-                                      y = d,
-                                      type  = "box",
-                                      boxpoints = "all",
-                                      pointpos = 0,
-                                      name = g,
-                                      color = colors[g],
-                                      line = list(color = 'rgb(100,100,100)'),
-                                      marker = list(color = 'rgb(100,100,100)'),
-                                      alpha = 1,
-                                      legendgroup=g,
-                                      showlegend = FALSE,
-                                      text = s,
-                                      hoverinfo = "text")
-
-          subplot = plotly::add_annotations(
-            p = subplot,
+        # get the data for the lipid class
+        # boxplot data
+        d <- as.data.frame(data_table[, c, drop = FALSE])
+        d$sampleId <- rownames(d)
+        d <- merge(
+          x = d,
+          y = meta_table[, c(self$indices$id_col_meta, group_col)],
+          by.x = "sampleId",
+          by.y = self$indices$id_col_meta,
+          all.x = TRUE
+        )
+        colnames(d)[2:3] <- c("value", "groups")
+        # make sure that the bars and legend colors are in the same order
+        d$groups <- factor(x = d$groups,
+                           levels = sort(unique(d$groups)),
+                           labels = sort(unique(d$groups)))
+        
+        # bar data
+        m <- as.data.frame(aggregate(d$value, by = list(d$groups), FUN = mean, na.rm = TRUE))
+        colnames(m) <- c("groups", "value")
+        
+        subplot <- subplot |>
+          plotly::add_trace(data = m,
+                            type = "bar",
+                            x = ~groups,
+                            y = ~value,
+                            color = ~groups,
+                            showlegend = ifelse(j == 1, TRUE, FALSE)) |>
+          plotly::add_trace(data = d,
+                            type = "box",
+                            x = ~groups,
+                            y = ~value,
+                            color = ~groups,
+                            boxpoints = "all",
+                            pointpos = 0,
+                            line = list(color = "rgb(100, 100, 100)"),
+                            marker = list(color = "rgb(100, 100, 100)"),
+                            alpha = 1,
+                            showlegend = FALSE)
+        
+        # add the title to the plot
+        subplot = subplot |>
+          plotly::add_annotations(
             text = paste0("<b>", c, "</b>"),
             x = 0.5,
             y = 1,
@@ -3179,57 +3196,38 @@ Omics_exp = R6::R6Class(
             xanchor = "center",
             yanchor = "bottom",
             showarrow = FALSE,
-            font = list(size = x_tick_font_size)
-          )
-
-        }
-
-        subplot = plotly::layout(
-          p = subplot,
-          xaxis= list(showticklabels = FALSE),
-          yaxis = list(showticklabels = xtick_show,
-                       tickfont = list(size = y_tick_font_size)
-          ),
-          shapes = list(
-            list(
-              type = "rect",
-              x0 = 0,
-              x1 = 1,
-              y0 = 1.,
-              y1 = 1.2,
-              yref = "paper",
-              xref = "paper",
-              fillcolor = "#0255e9",
-              opacity = 0.4,
-              line = list(color = "#0255e9",
-                          width = 1,
-                          opacity = 0.4)
-            )
-          )
-        )
-
-        plot_list[[j]] = plotly_build(subplot)
+            font = list(size = 11)) |>
+          plotly::layout(
+            xaxis = list(showticklabels = FALSE),
+            yaxis = list(tickfont = list(size = 8),
+                         tickformat = "digits"),
+            shapes = list(
+              list(
+                type = "rect",
+                x0 = 0,
+                x1 = 1,
+                y0 = 1.,
+                y1 = 1.2,
+                yref = "paper",
+                xref = "paper",
+                fillcolor = "#0255e9",
+                opacity = 0.4,
+                line = list(color = "#0255e9",
+                            width = 1,
+                            opacity = 0.4)
+              )
+            ))
+        plot_list[[j]] = subplot
         j = j + 1
       }
-
-      fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
-
-      fig = plotly::layout(p = fig,
-
-                           # title = list(text = title,
-                           #              font = list(size = title_font_size)),
-
-                           legend = list(orientation = 'h',
-                                         xanchor = "center",
-                                         x = 0.5,
-                                         font = list(size = legend_font_size)),
-                           plot_bgcolor='rgba(0,0,0,0)',
-                           paper_bgcolor='rgba(0,0,0,0)'
-      )
-
-
-
-
+      
+      fig = plotly::subplot(plot_list,
+                            nrows = y_dim,
+                            margin = 0.035) |>
+        plotly::layout(legend = list(orientation = 'h',
+                                     xanchor = "center",
+                                     x = 0.5))
+      
       self$plots$class_comparison = fig
     },
 
@@ -3367,6 +3365,7 @@ Omics_exp = R6::R6Class(
                             apply_clustering = self$params$heatmap$apply_clustering,
                             k_clusters_samples = self$params$heatmap$k_clusters_samples,
                             k_clusters_features = self$params$heatmap$k_clusters_features,
+                            sample_color_palette = self$params$heatmap$sample_color_palette,
                             row_annotations = self$params$heatmap$map_sample_data,
                             col_annotations = self$params$heatmap$map_feature_data,
                             sparse_features = self$params$heatmap$sparse_features,
@@ -3445,7 +3444,33 @@ Omics_exp = R6::R6Class(
 
       # Annotations
       if (!is.null(row_annotations)) {
-        row_annotations = meta_table[, row_annotations, drop = FALSE]
+        meta_table <- meta_table[rownames(data_table), ]
+        if (length(row_annotations) > 1) {
+          # multiple annotations
+          row_annotations_df = meta_table[, row_annotations]
+          colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
+          
+          sample_colors <- c()
+          for(a in 1:length(row_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations[a]])),
+                                     color_palette = sample_color_palette,
+                                     reverse_color_palette = TRUE)
+            sample_colors <- c(sample_colors, tmp)
+          }
+        } else {
+          # 1 annotation
+          row_names = row_annotations
+          row_annotations_df = as.data.frame(meta_table[, row_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(row_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+          
+          sample_colors <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations])),
+                                             color_palette = sample_color_palette,
+                                             reverse_color_palette = TRUE)
+        }
+      } else {
+        row_annotations_df <- NULL
+        sample_colors <- NULL
       }
 
       # Reorder the feature metadata according to the data_table order
@@ -3503,7 +3528,8 @@ Omics_exp = R6::R6Class(
                                   Rowv = Rowv,
                                   width = width,
                                   height = height,
-                                  col_side_colors = row_annotations,
+                                  col_side_colors = row_annotations_df,
+                                  col_side_palette = sample_colors,
                                   row_side_colors = col_annotations,
                                   xlab = x_axis_title,
                                   ylab = y_axis_title,
@@ -3544,6 +3570,7 @@ Omics_exp = R6::R6Class(
                                         center = self$params$samples_correlation$center,
                                         row_annotations = self$params$samples_correlation$row_annotations,
                                         col_annotations = self$params$samples_correlation$col_annotations,
+                                        color_palette_annotations = self$params$samples_correlation$color_palette_annotations,
                                         color_palette = self$params$samples_correlation$color_palette,
                                         reverse_palette = self$params$samples_correlation$reverse_palette,
                                         title_font_size = self$params$samples_correlation$title_font_size,
@@ -3631,26 +3658,52 @@ Omics_exp = R6::R6Class(
       # Annotations
       if (!is.null(row_annotations)) {
         if (length(row_annotations) > 1) {
-          row_annotations = meta_table[, row_annotations]
-          colnames(row_annotations) = stringr::str_replace_all(colnames(row_annotations), "_", " ")
+          row_annotations_df = meta_table[, row_annotations]
+          colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
+          row_colors <- c()
+          for(a in 1:length(row_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations[a]])),
+                                     color_palette = color_palette_annotations,
+                                     reverse_color_palette = TRUE)
+            row_colors <- c(row_colors, tmp)
+          }
         } else {
           row_names = row_annotations
-          row_annotations = as.data.frame(meta_table[, row_annotations],
-                                          row.names = rownames(meta_table))
-          colnames(row_annotations) = stringr::str_replace_all(row_names, "_", " ")
+          row_annotations_df = as.data.frame(meta_table[, row_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(row_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+          row_colors <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations])),
+                                          color_palette = color_palette_annotations,
+                                          reverse_color_palette = TRUE)
         }
+      } else {
+        row_annotations_df <- NULL
+        row_colors <- NULL
       }
 
       if (!is.null(col_annotations)) {
         if (length(col_annotations) > 1) {
-          col_annotations = meta_table[, col_annotations]
-          colnames(col_annotations) = stringr::str_replace_all(colnames(col_annotations), "_", " ")
+          col_annotations_df = meta_table[, col_annotations]
+          colnames(col_annotations_df) = stringr::str_replace_all(colnames(col_annotations_df), "_", " ")
+          col_colors <- c()
+          for(a in 1:length(col_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(col_annotations_df[, col_annotations[a]])),
+                                     color_palette = color_palette_annotations,
+                                     reverse_color_palette = TRUE)
+            col_colors <- c(col_colors, tmp)
+          }
         } else {
           row_names = col_annotations
-          col_annotations = as.data.frame(meta_table[, col_annotations],
-                                          row.names = rownames(meta_table))
-          colnames(col_annotations) = stringr::str_replace_all(row_names, "_", " ")
+          col_annotations_df = as.data.frame(meta_table[, col_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(col_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+          col_colors <- get_color_palette(groups = sort(unique(col_annotations_df[, col_annotations])),
+                                          color_palette = color_palette_annotations,
+                                          reverse_color_palette = TRUE)
         }
+      } else {
+        col_annotations_df <- NULL
+        col_colors <- NULL
       }
 
       # Save table as heatmap table
@@ -3676,8 +3729,10 @@ Omics_exp = R6::R6Class(
                                   # Aesthetics
                                   width = width,
                                   height = height,
-                                  col_side_colors = row_annotations,
-                                  row_side_colors = col_annotations,
+                                  col_side_colors = row_annotations_df,
+                                  col_side_palette = row_colors,
+                                  row_side_colors = col_annotations_df,
+                                  row_side_palette = col_colors,
                                   xlab = x_axis_title,
                                   ylab = y_axis_title,
                                   main = title,
@@ -4063,7 +4118,7 @@ Omics_exp = R6::R6Class(
       self$tables$fa_analysis_table = plot_table
 
       # group_list = sort(unique(plot_table$group))
-      colors = get_color_palette(groups = plot_table$group,
+      colors = get_color_palette(groups = sort(unique(plot_table$group)),
                                   color_palette = color_palette,
                                   reverse_color_palette = T)
 
@@ -4120,7 +4175,7 @@ Omics_exp = R6::R6Class(
           plotly::add_trace(data = plot_table[plot_table$group == grp, ],
                             x = ~names,
                             y = ~avg,
-                            color = colors[grp],
+                            color = ~as.factor(group),
                             type = "bar",
                             name = grp,
                             text = ~stdev,

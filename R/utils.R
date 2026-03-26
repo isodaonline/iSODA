@@ -4069,7 +4069,7 @@ plot_dendrogram = function(data_table, meta_table, annotations, distance_method 
 
     color_palette_i = get_color_palette(groups = meta_table[,annotations_i],
                                         color_palette = color_palette[i],
-                                        reverse_color_palette = F)
+                                        reverse_color_palette = TRUE)
 
     # Assign numeric values according to groups
     groups_numeric = 1:length(groups)
@@ -7339,6 +7339,11 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     conf_ellipse = ellipse::ellipse(x = stats::cov(cbind(data_table$x, data_table$y)),
                                     centre = c(mean(data_table$x), mean(data_table$y)),
                                     level = 0.95)
+    
+    # Color score plot
+    colors <- get_color_palette(groups = groups,
+                                color_palette = colors,
+                                reverse_color_palette = TRUE)
 
     plot = plotly::plot_ly(data = data_table, width = width, height = height)
 
@@ -7794,7 +7799,7 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
     groups = base::as.numeric(groups)
 
     # Is data continuous or discrete
-    if (((length(unique_groups) > 25) | force_scale) & !force_list) {
+    if (((length(unique_groups) > 40) | force_scale) & !force_list) {
       # If continuous, export a color scale (for plotly)
       out_colors = create_color_scale(color_palette)
     } else {
