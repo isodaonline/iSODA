@@ -7339,6 +7339,11 @@ plot_pca = function(x, y, label_1, label_2, weight_1, weight_2, names, type, gro
     conf_ellipse = ellipse::ellipse(x = stats::cov(cbind(data_table$x, data_table$y)),
                                     centre = c(mean(data_table$x), mean(data_table$y)),
                                     level = 0.95)
+    
+    # Color score plot
+    colors <- get_color_palette(groups = groups,
+                                color_palette = colors,
+                                reverse_color_palette = TRUE)
 
     plot = plotly::plot_ly(data = data_table, width = width, height = height)
 
