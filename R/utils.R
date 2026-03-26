@@ -4001,7 +4001,7 @@ plot_fa_emap_plot = function(x,
 }
 #-------------------------------------------------------- PLOTLY DENDROGRAM ----
 # Define function
-plot_dendrogram = function(data_table, meta_table, annotations, distance_method = "euclidian", p = 2, clustering_method = "ward.D2", k_clusters = NULL, color_palette = 'Spectral', rotate = FALSE, x_tick_font_size, y_label_font_size, y_tick_font_size, width = NULL, height = NULL) {
+plot_dendrogram_main = function(data_table, meta_table, annotations, distance_method = "euclidian", p = 2, clustering_method = "ward.D2", k_clusters = NULL, color_palette = 'Spectral', rotate = FALSE, x_tick_font_size, y_label_font_size, y_tick_font_size, width = NULL, height = NULL) {
 
   # Fonts
   xtick_show = base::ifelse(x_tick_font_size > 0, T, F)
@@ -4010,15 +4010,17 @@ plot_dendrogram = function(data_table, meta_table, annotations, distance_method 
 
   # Save and reset rownames
   original_rownames = rownames(data_table)
+  original_rownames_meta <- rownames(meta_table)
   rownames(data_table) = NULL
   rownames(meta_table) = NULL
 
   # Filter the metadata table
   meta_table = as.data.frame(meta_table[, annotations])
-  colnames(meta_table) = annotations
+  colnames(meta_table) <- annotations
+  rownames(meta_table) <- original_rownames_meta
 
   # Create the dendrogram
-  hc = stats::hclust(stats::dist(data_table,
+  hc = stats::hclust(stats::dist(x = data_table,
                                  method = distance_method,
                                  p = p),
                      method = clustering_method)
@@ -4044,39 +4046,38 @@ plot_dendrogram = function(data_table, meta_table, annotations, distance_method 
     color_palette = c(color_palette, all_colors[1:additional_palettes])
   }
 
-  p = ggdendro::ggdendrogram(hc, rotate = rotate, size = 2)
+  p = ggdendro::ggdendrogram(data = hc, 
+                             rotate = rotate, 
+                             size = 2)
 
   plotly_dendro = plotly::ggplotly(p)
   plotly_dendro = plotly::layout(p = plotly_dendro,
                                  yaxis = list(showticklabels = ytick_show,
                                               tickfont = list(size = y_tick_font_size)))
 
-
-
   # Reorder the rownames according to clustering
   original_rownames = original_rownames[hc$order]
-  meta_table = as.data.frame(meta_table[hc$order, annotations])
+  meta_table = meta_table[hc$order, annotations, drop = FALSE]
   colnames(meta_table) = annotations
-
 
   # Dealing with colors
   heatmaps_list = list(
     dendro = plotly_dendro
   )
+  
   for (i in 1:length(annotations)) {
     annotations_i = annotations[i]
-    groups = sort(unique(meta_table[,annotations_i]))
+    groups = sort(unique(meta_table[, annotations_i]))
 
-    color_palette_i = get_color_palette(groups = meta_table[,annotations_i],
+    color_palette_i = get_color_palette(groups = groups,
                                         color_palette = color_palette[i],
                                         reverse_color_palette = TRUE)
 
     # Assign numeric values according to groups
     groups_numeric = 1:length(groups)
     names(groups_numeric) = as.character(groups)
-    groups_numeric = unname(groups_numeric[as.character(meta_table[,annotations_i])])
-    hover_text = paste(original_rownames, meta_table[,annotations_i], sep = '\n')
-
+    groups_numeric = unname(groups_numeric[as.character(meta_table[, annotations_i])])
+    hover_text = paste(original_rownames, meta_table[original_rownames, annotations_i], sep = '\n')
 
     # Produce the side color heatmap
     rownames(meta_table) = NULL

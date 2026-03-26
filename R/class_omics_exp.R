@@ -1766,6 +1766,7 @@ Omics_exp = R6::R6Class(
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
+      
       self$tables$imp_meta = imp_meta
     },
 
@@ -2941,7 +2942,6 @@ Omics_exp = R6::R6Class(
                                y_tick_font_size = self$params$dendrogram$y_tick_font_size,
                                width = NULL,
                                height = NULL){
-
       # Checks
       data_table = self$table_check_convert(dataset)
 
@@ -2956,19 +2956,21 @@ Omics_exp = R6::R6Class(
       }
 
 
-      output = plot_dendrogram(data_table = data_table,
-                               meta_table = meta_table,
-                               annotations = annotations,
-                               distance_method = distance_method,
-                               p = p,
-                               clustering_method = clustering_method,
-                               k_clusters = k_clusters,
-                               color_palette = color_palette,
-                               y_label_font_size = y_label_font_size,
-                               y_tick_font_size = y_tick_font_size,
-                               x_tick_font_size = x_tick_font_size,
-                               width = width,
-                               height = height)
+      output = plot_dendrogram_main(
+        data_table = data_table,
+        meta_table = meta_table,
+        annotations = annotations,
+        distance_method = distance_method,
+        p = p,
+        clustering_method = clustering_method,
+        k_clusters = k_clusters,
+        color_palette = color_palette,
+        y_label_font_size = y_label_font_size,
+        y_tick_font_size = y_tick_font_size,
+        x_tick_font_size = x_tick_font_size,
+        width = width,
+        height = height
+      )
 
       self$plots$dendrogram = output$plot
       self$tables$dendrogram = output$data_table
