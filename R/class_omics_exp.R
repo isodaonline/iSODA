@@ -157,6 +157,7 @@ Omics_exp = R6::R6Class(
         apply_clustering = T,
         k_clusters_samples = 1,
         k_clusters_features = 1,
+        sample_color_palette = "Set1",
         map_sample_data = NULL,
         map_feature_data = NULL,
         sparse_features = NULL,
@@ -585,6 +586,13 @@ Omics_exp = R6::R6Class(
     ),
 
     hardcoded_settings = list(
+      color_palette = c("Blues", "BuGn", "BuPu", "GnBu", "Greens", "Greys", "Oranges",
+                        "OrRd", "PuBu", "PuBuGn", "PuRd", "Purples", "RdPu", "Reds",
+                        "YlGn", "YlGnBu", "YlOrBr", "YlOrRd", "BrBG", "PiYG", "PRGn",
+                        "PuOr", "RdBu", "RdGy", "RdYlBu", "RdYlGn", "Spectral", "Accent",
+                        "Dark2", "Paired", "Pastel1", "Pastel2", "Set1", "Set2", "Set3",
+                        "Magma", "Inferno", "Plasma", "Viridis", "Cividis", "Rocket",
+                        "Mako", "Turbo", "plotly_1", "plotly_2", "ggplot2"),
 
       dendrogram = list(
         datasets = list(
@@ -967,7 +975,7 @@ Omics_exp = R6::R6Class(
       }
     },
 
-    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_median, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
+    param_heatmap = function(auto_refresh, dataset, distance_method, clustering_method, impute_median, center, apply_clustering, k_clusters_samples, k_clusters_features, map_sample_data, sample_color_palette, map_feature_data, sparse_table, sparse_features, group_column_da, apply_da, alpha_da, seed_da, color_palette, reverse_palette, title_font_size, y_label_font_size, x_label_font_size, x_tick_font_size, y_tick_font_size, img_format) {
       self$params$heatmap$auto_refresh = auto_refresh
       self$params$heatmap$dataset = dataset
       self$params$heatmap$distance_method = distance_method
@@ -978,6 +986,7 @@ Omics_exp = R6::R6Class(
       self$params$heatmap$k_clusters_samples = k_clusters_samples
       self$params$heatmap$k_clusters_features = k_clusters_features
       self$params$heatmap$map_sample_data = map_sample_data
+      self$params$heatmap$sample_color_palette = sample_color_palette
       self$params$heatmap$map_feature_data = map_feature_data
       self$params$heatmap$sparse_table = sparse_table
       self$params$heatmap$sparse_features = sparse_features
@@ -2325,6 +2334,7 @@ Omics_exp = R6::R6Class(
                          k_clusters_samples = 1,
                          k_clusters_features = 1,
                          map_sample_data = NULL,
+                         sample_color_palette = "Set1",
                          map_feature_data = NULL,
                          sparse_features = NULL,
                          sparse_table = "None",
@@ -3352,6 +3362,7 @@ Omics_exp = R6::R6Class(
                             apply_clustering = self$params$heatmap$apply_clustering,
                             k_clusters_samples = self$params$heatmap$k_clusters_samples,
                             k_clusters_features = self$params$heatmap$k_clusters_features,
+                            sample_color_palette = self$params$heatmap$sample_color_palette,
                             row_annotations = self$params$heatmap$map_sample_data,
                             col_annotations = self$params$heatmap$map_feature_data,
                             sparse_features = self$params$heatmap$sparse_features,
@@ -3430,7 +3441,30 @@ Omics_exp = R6::R6Class(
 
       # Annotations
       if (!is.null(row_annotations)) {
-        row_annotations = meta_table[, row_annotations, drop = FALSE]
+        meta_table <- meta_table[rownames(data_table), ]
+        if (length(row_annotations) > 1) {
+          # multiple annotations
+          row_annotations_df = meta_table[, row_annotations]
+          colnames(row_annotations_df) = stringr::str_replace_all(colnames(row_annotations_df), "_", " ")
+          
+          sample_colors <- c()
+          for(a in 1:length(row_annotations)) {
+            tmp <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations[a]])),
+                                     color_palette = sample_color_palette,
+                                     reverse_color_palette = TRUE)
+            sample_colors <- c(sample_colors, tmp)
+          }
+        } else {
+          # 1 annotation
+          row_names = row_annotations
+          row_annotations_df = as.data.frame(meta_table[, row_annotations],
+                                             row.names = rownames(meta_table))
+          colnames(row_annotations_df) = stringr::str_replace_all(row_names, "_", " ")
+          
+          sample_colors <- get_color_palette(groups = sort(unique(row_annotations_df[, row_annotations])),
+                                             color_palette = sample_color_palette,
+                                             reverse_color_palette = TRUE)
+        }
       }
 
       # Reorder the feature metadata according to the data_table order
@@ -3488,7 +3522,8 @@ Omics_exp = R6::R6Class(
                                   Rowv = Rowv,
                                   width = width,
                                   height = height,
-                                  col_side_colors = row_annotations,
+                                  col_side_colors = row_annotations_df,
+                                  col_side_palette = sample_colors,
                                   row_side_colors = col_annotations,
                                   xlab = x_axis_title,
                                   ylab = y_axis_title,

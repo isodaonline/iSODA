@@ -105,13 +105,7 @@ dendrogram_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('dendrogram_color_palette'),
         label = "Color palette(s)",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                    'plotly_1', 'plotly_2', 'ggplot2'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$dendrogram$color_palette,
         multiple = TRUE,
         width = '100%'
@@ -351,13 +345,7 @@ class_distribution_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('class_distribution_color_palette'),
         label = "Color palette",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                    'plotly_1', 'plotly_2', 'ggplot2'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$class_distribution$color_palette,
         multiple = FALSE
       ),
@@ -595,13 +583,7 @@ class_comparison_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('class_comparison_color_palette'),
         label = "Color palette",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                    'plotly_1', 'plotly_2', 'ggplot2'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$class_comparison$color_palette,
         multiple = FALSE
       ),
@@ -1259,13 +1241,30 @@ heatmap_server = function(r6, output, session) {
         choices = r6$hardcoded_settings$heatmap$datasets,
         selected = r6$params$heatmap$dataset
       ),
-      shiny::selectizeInput(
-        inputId = ns("heatmap_map_rows"),
-        label = "Map sample data",
-        multiple = TRUE,
-        choices = colnames(r6$tables$raw_meta),
-        selected = r6$params$heatmap$map_sample_data
+      
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          shiny::selectizeInput(
+            inputId = ns("heatmap_map_rows"),
+            label = "Map sample data",
+            multiple = TRUE,
+            choices = colnames(r6$tables$raw_meta),
+            selected = r6$params$heatmap$map_sample_data
+          )
+        ),
+        shiny::column(
+          width = 6,
+          shiny::selectizeInput(
+            inputId = ns("heatmap_sample_colors"),
+            label = "Color palette samples",
+            choices = r6$hardcoded_settings$color_palette,
+            selected = r6$params$heatmap$sample_color_palette,
+            multiple = FALSE
+          )
+        )
       ),
+      
       shiny::selectizeInput(
         inputId = ns("heatmap_map_cols"),
         label = "Map feature data",
@@ -1403,13 +1402,7 @@ heatmap_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns('heatmap_colors_palette'),
         label = 'Color palette',
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                    'plotly_1', 'plotly_2', 'ggplot2'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$heatmap$color_palette,
         width = '100%'
       ),
@@ -1540,6 +1533,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
       input$heatmap_k_clusters_features,
       input$heatmap_map_rows,
       input$heatmap_map_cols,
+      input$heatmap_sample_colors,
       input$heatmap_sparse_feat,
       input$heatmap_group_col_da,
       input$heatmap_apply_da,
@@ -1574,6 +1568,7 @@ heatmap_events = function(r6, dimensions_obj, color_palette, input, output, sess
                        k_clusters_samples = input$heatmap_k_clusters_samples,
                        k_clusters_features = input$heatmap_k_clusters_features,
                        map_sample_data = input$heatmap_map_rows,
+                       sample_color_palette = input$heatmap_sample_colors,
                        map_feature_data = input$heatmap_map_cols,
                        sparse_features = sparse_features,
                        sparse_table = input$heatmap_sparse_table,
@@ -2583,11 +2578,7 @@ pca_server = function(r6, output, session) {
       shiny::selectInput(
         inputId = ns('pca_colors_palette'),
         label = 'Color palette',
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$pca$colors_palette,
         width = '100%'
       ),
@@ -2961,13 +2952,7 @@ fa_analysis_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns('fa_analysis_plot_color_palette'),
         label = "Color palette",
-        choices = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                    'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                    'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                    'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                    'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                    'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                    'plotly_1', 'plotly_2', 'ggplot2'),
+        choices = r6$hardcoded_settings$color_palette,
         selected = r6$params$fa_analysis_plot$color_palette,
         multiple = FALSE
       ),
