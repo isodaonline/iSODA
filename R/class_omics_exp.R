@@ -3013,49 +3013,44 @@ Omics_exp = R6::R6Class(
       self$tables$class_distribution_table = plot_table
 
       # Colors
-      color_palette = get_colors(color_count = colors_switch(color_palette), color_palette = color_palette)
-      # color_palette = RColorBrewer::brewer.pal(color_count, color_palette)
-      color_palette = colorRampPalette(color_palette)(length(group_list))
-      color_palette = setNames(color_palette, group_list)
-
+      colors <- get_color_palette(groups = group_list,
+                                  color_palette = color_palette,
+                                  reverse_color_palette = TRUE)
+      
       # Produce the plot
-      fig = plotly::plot_ly(colors = unname(color_palette), width = width, height = height)
-      for (col in colnames(plot_table)) {
-
-        fig = plotly::add_trace(p = fig,
-                                x = rownames(plot_table),
-                                y = plot_table[,col],
-                                name = col,
-                                color = color_palette[col],
-                                showlegend = legend_show,
-                                type  = "bar")
-      }
-
-      fig = plotly::layout(p = fig,
-
-                           title = list(text = title,
-                                        # xref = "paper",
-                                        font = list(size = title_font_size)),
-
-                           xaxis = list(title = list(text = x_axis_title,
-                                                     font = list(size = x_label_font_size)),
-                                        showticklabels = xtick_show,
-                                        tickfont = list(size = x_tick_font_size)
-                                        ),
-
-                           yaxis = list(title = list(text = y_axis_title,
-                                                     font = list(size = y_label_font_size)),
-                                        showticklabels = ytick_show,
-                                        tickfont = list(size = y_tick_font_size)
-                           ),
-
-                           legend = list(orientation = 'h',
-                                         xanchor = "center",
-                                         x = 0.5,
-                                         font = list(size = legend_font_size)),
-                           plot_bgcolor='rgba(0,0,0,0)',
-                           paper_bgcolor='rgba(0,0,0,0)'
-                           )
+      plot_table$lipid_class <- rownames(plot_table)
+      plot_table_long <- tidyr::pivot_longer(
+        data = plot_table,
+        cols = tidyr::all_of(group_list),
+        names_to = "groups",
+        values_to = "value"
+      )
+      
+      # make sure that the bars and legend colors are in the same order
+      plot_table_long$groups <- factor(x = plot_table_long$groups,
+                                       levels = sort(unique(plot_table_long$groups)),
+                                       labels = sort(unique(plot_table_long$groups)))
+      
+      fig <- plot_table_long %>%
+        plotly::plot_ly(
+          type = "bar",
+          x = ~lipid_class,
+          y = ~value,
+          color = ~groups,
+          colors = unname(colors),
+          hovertext = ~groups,
+          hovertemplate = paste("Lipid class: %{x}<br>",
+                                "Value: %{y:.3g}%<br>",
+                                paste0("Group: %{hovertext}"),
+                                "<extra></extra>")
+        )
+      
+      fig <-  fig %>%
+        plotly::layout(legend = list(orientation = 'h',
+                                     xanchor = "center", x = 0.5),
+                       yaxis = list(title = "%",
+                                    tickformat = "digits"),
+                       xaxis = list(title = list(text = "")))
 
       self$plots$class_distribution = fig
     },
@@ -3075,52 +3070,61 @@ Omics_exp = R6::R6Class(
       # Get table
       data_table = self$table_check_convert(data_table)
       
-      # make the download table
-      class_list <- colnames(data_table)
-      group_list <- as.character(sort(unique(meta_table[, group_col])))
+      export_table <- merge(
+        x = meta_table[, group_col, drop = FALSE],
+        y = as.data.frame(data_table),
+        by = 0
+      )
+      colnames(export_table)[1:2] <- c("sampleName", "group")
+      self$tables$class_distribution_all_table <- export_table
       
-      export_table <- data.frame(matrix(data = 0.0,
-                                        nrow = length(class_list),
-                                        ncol = length(group_list)))
-      rownames(export_table) <- class_list
-      colnames(export_table) <- group_list
-      
-      for (c in class_list) {
-        for (g in group_list){
-          s <- rownames(meta_table)[meta_table[, group_col] == g]
-          m <- mean(as.matrix(data_table[s, c]))
-          export_table[c, g] <- m
-        }
-      }
-      self$tables$class_comparison_table <- export_table
-
-      # Process fonts
-      xtick_show = base::ifelse(x_tick_font_size > 0, T, F)
-      ytick_show = base::ifelse(y_tick_font_size > 0, T, F)
-      legend_show = base::ifelse(legend_font_size > 0, T, F)
-      y_axis_title = base::ifelse(y_label_font_size > 0, "Concentration", "")
-      title = base::ifelse(title_font_size > 0, "Class comparison", "")
-
       # Get sample groups and the list of classes
-      meta_table = meta_table[!is.na(meta_table[,group_col]),]
-      groups = as.character(sort(unique(meta_table[,group_col])))
-      meta_table[,group_col] = as.character(meta_table[,group_col])
+      groups = sort(unique(meta_table[, group_col]))
       class_list = colnames(data_table)
-
-      plot_dims = calculate_subplot_grid_dimensions(length(class_list))
-      x_dim = plot_dims$cols
-      y_dim = plot_dims$rows
-
-      # Colors
-      colors = get_color_palette(groups = groups,
-                                 color_palette = color_palette)
-
+      
+      x_dim = ceiling(sqrt(length(class_list)))
+      y_dim = floor(sqrt(length(class_list)))
+      
+      
+      x_step = 1/x_dim
+      y_step = 1/y_dim
+      
+      x = x_step / 2
+      y = 0.97 - y_step
+      i = 1
+      
+      annotations = c()
+      for (c in class_list) {
+        tmp_ann = list(
+          x = x,
+          y = y,
+          text = c,
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "bottom",
+          showarrow = FALSE)
+        annotations[[i]] = tmp_ann
+        i = i + 1
+        x = x + x_step
+        if (x >= 1) {
+          x = x_step/2
+          y = y - y_step}
+      }
+      annotations[[i]] = list(x = -0.045, y = 0.5, text = "%",
+                              font = list(size = 12),
+                              textangle = 270, showarrow = FALSE, xref='paper',
+                              yref='paper')
+      
+      colors <- get_color_palette(groups = groups,
+                                  color_palette = color_palette,
+                                  reverse_color_palette = TRUE)
+      
       # Plot list will be the list of subplots
       plot_list = c()
-
-      # Cleared groups is created for the legends
-      cleared_groups = c()
+      
       j = 1
+      meta_table$sampleId <- row.names(meta_table)
       for (c in class_list) {
         subplot = plot_ly(colors = unname(colors),
                           width = width,
@@ -3128,49 +3132,49 @@ Omics_exp = R6::R6Class(
                           hovertemplate = paste("Group: %{x}<br>",
                                                 "Value: %{y:.3g}%",
                                                 "<extra></extra>"))
-        for (g in groups){
-          if (g %in% cleared_groups) {
-            first_bool = FALSE
-          }else{
-            first_bool = legend_show
-            cleared_groups = c(cleared_groups, g)
-          }
-
-          # For each class, each group
-          s = rownames(meta_table)[meta_table[, group_col] == g] # Get the samples for the current group
-          d = data_table[s, c] # Get the concentrations for all s samples in the current class c
-          m = mean(d) # Get the mean concentration for samples s for class c
-
-          # Subplot for the bar chart displaying the mean concentration
-          subplot = plotly::add_trace(p = subplot,
-                                      x = g,
-                                      y = m,
-                                      type  = "bar",
-                                      name = g,
-                                      color = colors[g],
-                                      alpha = 1,
-                                      legendgroup=g,
-                                      showlegend = first_bool)
-
-          # Subplot for boxplots displaying the median and all datapoints
-          subplot = plotly::add_trace(p = subplot,
-                                      x = g,
-                                      y = d,
-                                      type  = "box",
-                                      boxpoints = "all",
-                                      pointpos = 0,
-                                      name = g,
-                                      color = colors[g],
-                                      line = list(color = 'rgb(100,100,100)'),
-                                      marker = list(color = 'rgb(100,100,100)'),
-                                      alpha = 1,
-                                      legendgroup=g,
-                                      showlegend = FALSE,
-                                      text = s,
-                                      hoverinfo = "text")
-
-          subplot = plotly::add_annotations(
-            p = subplot,
+        # get the data for the lipid class
+        # boxplot data
+        d <- as.data.frame(data_table[, c, drop = FALSE])
+        d$sampleId <- rownames(d)
+        d <- merge(
+          x = d,
+          y = meta_table[, c(self$indices$id_col_meta, group_col)],
+          by.x = "sampleId",
+          by.y = self$indices$id_col_meta,
+          all.x = TRUE
+        )
+        colnames(d)[2:3] <- c("value", "groups")
+        # make sure that the bars and legend colors are in the same order
+        d$groups <- factor(x = d$groups,
+                           levels = sort(unique(d$groups)),
+                           labels = sort(unique(d$groups)))
+        
+        # bar data
+        m <- as.data.frame(aggregate(d$value, by = list(d$groups), FUN = mean, na.rm = TRUE))
+        colnames(m) <- c("groups", "value")
+        
+        subplot <- subplot |>
+          plotly::add_trace(data = m,
+                            type = "bar",
+                            x = ~groups,
+                            y = ~value,
+                            color = ~groups,
+                            showlegend = ifelse(j == 1, TRUE, FALSE)) |>
+          plotly::add_trace(data = d,
+                            type = "box",
+                            x = ~groups,
+                            y = ~value,
+                            color = ~groups,
+                            boxpoints = "all",
+                            pointpos = 0,
+                            line = list(color = "rgb(100, 100, 100)"),
+                            marker = list(color = "rgb(100, 100, 100)"),
+                            alpha = 1,
+                            showlegend = FALSE)
+        
+        # add the title to the plot
+        subplot = subplot |>
+          plotly::add_annotations(
             text = paste0("<b>", c, "</b>"),
             x = 0.5,
             y = 1,
@@ -3179,57 +3183,38 @@ Omics_exp = R6::R6Class(
             xanchor = "center",
             yanchor = "bottom",
             showarrow = FALSE,
-            font = list(size = x_tick_font_size)
-          )
-
-        }
-
-        subplot = plotly::layout(
-          p = subplot,
-          xaxis= list(showticklabels = FALSE),
-          yaxis = list(showticklabels = xtick_show,
-                       tickfont = list(size = y_tick_font_size)
-          ),
-          shapes = list(
-            list(
-              type = "rect",
-              x0 = 0,
-              x1 = 1,
-              y0 = 1.,
-              y1 = 1.2,
-              yref = "paper",
-              xref = "paper",
-              fillcolor = "#0255e9",
-              opacity = 0.4,
-              line = list(color = "#0255e9",
-                          width = 1,
-                          opacity = 0.4)
-            )
-          )
-        )
-
-        plot_list[[j]] = plotly_build(subplot)
+            font = list(size = 11)) |>
+          plotly::layout(
+            xaxis = list(showticklabels = FALSE),
+            yaxis = list(tickfont = list(size = 8),
+                         tickformat = "digits"),
+            shapes = list(
+              list(
+                type = "rect",
+                x0 = 0,
+                x1 = 1,
+                y0 = 1.,
+                y1 = 1.2,
+                yref = "paper",
+                xref = "paper",
+                fillcolor = "#0255e9",
+                opacity = 0.4,
+                line = list(color = "#0255e9",
+                            width = 1,
+                            opacity = 0.4)
+              )
+            ))
+        plot_list[[j]] = subplot
         j = j + 1
       }
-
-      fig = subplot(plot_list, nrows = y_dim, margin = 0.035, titleX = TRUE)
-
-      fig = plotly::layout(p = fig,
-
-                           # title = list(text = title,
-                           #              font = list(size = title_font_size)),
-
-                           legend = list(orientation = 'h',
-                                         xanchor = "center",
-                                         x = 0.5,
-                                         font = list(size = legend_font_size)),
-                           plot_bgcolor='rgba(0,0,0,0)',
-                           paper_bgcolor='rgba(0,0,0,0)'
-      )
-
-
-
-
+      
+      fig = plotly::subplot(plot_list,
+                            nrows = y_dim,
+                            margin = 0.035) |>
+        plotly::layout(legend = list(orientation = 'h',
+                                     xanchor = "center",
+                                     x = 0.5))
+      
       self$plots$class_comparison = fig
     },
 

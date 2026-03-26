@@ -4069,7 +4069,7 @@ plot_dendrogram = function(data_table, meta_table, annotations, distance_method 
 
     color_palette_i = get_color_palette(groups = meta_table[,annotations_i],
                                         color_palette = color_palette[i],
-                                        reverse_color_palette = F)
+                                        reverse_color_palette = TRUE)
 
     # Assign numeric values according to groups
     groups_numeric = 1:length(groups)
@@ -7794,7 +7794,7 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
     groups = base::as.numeric(groups)
 
     # Is data continuous or discrete
-    if (((length(unique_groups) > 25) | force_scale) & !force_list) {
+    if (((length(unique_groups) > 40) | force_scale) & !force_list) {
       # If continuous, export a color scale (for plotly)
       out_colors = create_color_scale(color_palette)
     } else {
