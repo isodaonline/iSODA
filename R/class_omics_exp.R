@@ -3468,6 +3468,9 @@ Omics_exp = R6::R6Class(
                                              color_palette = sample_color_palette,
                                              reverse_color_palette = TRUE)
         }
+      } else {
+        row_annotations_df <- NULL
+        sample_colors <- NULL
       }
 
       # Reorder the feature metadata according to the data_table order
