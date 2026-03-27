@@ -4035,6 +4035,7 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
     clusters = stats::cutree(tree = hc, k = k_clusters)
     meta_table[, 'k_clusters'] = clusters[hc$order]
     annotations = c(annotations, 'k_clusters')
+    color_palette <- c(color_palette, "ggplot2")
   }
 
   # Deal with colors

@@ -3412,19 +3412,36 @@ Omics_exp = R6::R6Class(
         meta_table_features = meta_table_features[colnames(data_table), , drop = F]
 
       }
-
+      
       # Set the clustering
       if (apply_clustering) {
         dendrogram = "both"
-        Colv= stats::hclust(d = stats::dist(x = data_table,
-                                            method = distance_method),
-                            method = clustering_method)
+        Colv = stats::hclust(d = stats::dist(x = data_table,
+                                             method = distance_method),
+                             method = clustering_method)
+        if(k_clusters_samples == 1) {
+          sample_dend_colors <- "black"
+        } else {
+          sample_dend_colors <- get_color_palette(
+            groups = 1:k_clusters_samples,
+            color_palette = "ggplot2",
+            reverse_color_palette = TRUE
+          )
+        }
+        
+        Colv_col <- dendextend::color_branches(
+          dend = stats::as.dendrogram(Colv),
+          k = k_clusters_samples,
+          col = sample_dend_colors
+        )
+        
         Rowv = stats::hclust(d = stats::dist(x = t(data_table),
                                              method = distance_method),
                              method = clustering_method)
       } else {
         dendrogram = "none"
-        Colv= NULL
+        Colv = NULL
+        Colv_col <- NULL
         Rowv = NULL
       }
 
@@ -3514,7 +3531,6 @@ Omics_exp = R6::R6Class(
                                  reverse_color_palette = reverse_palette,
                                  force_scale = F,
                                  force_list = F)
-
       # Plot the data
       plot = heatmaply::heatmaply(x = t(data_table),
                                   colors = colors,
@@ -3524,10 +3540,10 @@ Omics_exp = R6::R6Class(
                                   # colorbar_xpos = 1.15,
                                   # colorbar_ypos = 0.7,
                                   # subplot_widths = c(0.7, 0.05, 0.1),
-                                  k_col = k_clusters_samples,
+                                  # k_col = k_clusters_samples,
                                   k_row = k_clusters_features,
                                   limits = c(zmin, zmax),
-                                  Colv= Colv,
+                                  Colv = Colv_col,
                                   Rowv = Rowv,
                                   width = width,
                                   height = height,
