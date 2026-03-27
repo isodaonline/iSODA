@@ -4034,23 +4034,30 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
   if (k_clusters > 1) {
     clusters = stats::cutree(tree = hc, k = k_clusters)
     meta_table[, 'k_clusters'] = clusters[hc$order]
-    annotations = c(annotations, 'k_clusters')
-    color_palette <- c(color_palette, "ggplot2")
+    annotations <- c('k_clusters', rev(annotations))
+    color_palette_full <- c("ggplot2", color_palette)
+  } else {
+    annotations <- rev(annotations)
+    color_palette_full <- color_palette
   }
 
   # Deal with colors
-  if (length(annotations) > length(color_palette)) {
-    all_colors = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                   'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                   'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                   'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                   'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                   'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                   'plotly_1', 'plotly_2')
-    all_colors = all_colors[!all_colors %in% c(color_palette)]
-    additional_palettes = length(annotations) - length(color_palette)
-    color_palette = c(color_palette, all_colors[1:additional_palettes])
+  if (length(annotations) > length(color_palette_full)) {
+    # all_colors = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+    #                'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+    #                'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+    #                'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+    #                'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
+    #                'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
+    #                'plotly_1', 'plotly_2')
+    # all_colors = all_colors[!all_colors %in% c(color_palette)]
+    additional_palettes <- length(annotations) - length(color_palette_full)
+    # color_palette = c(color_palette, all_colors[1:additional_palettes])
+    color_palette_full <- c(color_palette_full, rep(color_palette, additional_palettes))
   }
+  
+  annotations <- rev(annotations)
+  color_palette_full <- rev(color_palette_full)
 
   p = ggdendro::ggdendrogram(data = hc, 
                              rotate = rotate, 
@@ -4071,7 +4078,7 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
     groups = sort(unique(meta_table[, annotations_i]))
 
     color_palette_i = get_color_palette(groups = groups,
-                                        color_palette = color_palette[i],
+                                        color_palette = color_palette_full[i],
                                         reverse_color_palette = TRUE)
 
     # Assign numeric values according to groups
