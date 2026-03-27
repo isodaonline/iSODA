@@ -3425,7 +3425,7 @@ Omics_exp = R6::R6Class(
           sample_dend_colors <- get_color_palette(
             groups = 1:k_clusters_samples,
             color_palette = "ggplot2",
-            reverse_color_palette = TRUE
+            reverse_color_palette = FALSE
           )
         }
         
