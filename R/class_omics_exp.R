@@ -3031,6 +3031,7 @@ Omics_exp = R6::R6Class(
       colors <- get_color_palette(groups = group_list,
                                   color_palette = color_palette,
                                   reverse_color_palette = TRUE)
+      print(colors)
       
       # Produce the plot
       plot_table$lipid_class <- rownames(plot_table)

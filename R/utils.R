@@ -4024,11 +4024,16 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
                                  method = distance_method,
                                  p = p),
                      method = clustering_method)
+  
+  # Reorder the rownames according to clustering
+  original_rownames = original_rownames[hc$order]
+  meta_table = meta_table[original_rownames, annotations, drop = FALSE]
+  colnames(meta_table) = annotations
 
   # Get clusters if specified
   if (!is.null(k_clusters)) {
     clusters = stats::cutree(tree = hc, k = k_clusters)
-    meta_table[,'k_clusters'] = clusters
+    meta_table[, 'k_clusters'] = clusters[hc$order]
     annotations = c(annotations, 'k_clusters')
   }
 
@@ -4055,11 +4060,6 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
                                  yaxis = list(showticklabels = ytick_show,
                                               tickfont = list(size = y_tick_font_size)))
 
-  # Reorder the rownames according to clustering
-  original_rownames = original_rownames[hc$order]
-  meta_table = meta_table[hc$order, annotations, drop = FALSE]
-  colnames(meta_table) = annotations
-
   # Dealing with colors
   heatmaps_list = list(
     dendro = plotly_dendro
@@ -4077,19 +4077,19 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
     groups_numeric = 1:length(groups)
     names(groups_numeric) = as.character(groups)
     groups_numeric = unname(groups_numeric[as.character(meta_table[, annotations_i])])
-    hover_text = paste(original_rownames, meta_table[original_rownames, annotations_i], sep = '\n')
+    hover_text = paste(original_rownames, meta_table[, annotations_i], sep = '\n')
 
     # Produce the side color heatmap
     rownames(meta_table) = NULL
     x_values = factor(as.numeric(rownames(meta_table)), ordered = T, levels = unique(as.numeric(rownames(meta_table))))
     if (typeof(color_palette_i) == 'list') {
       plotly_heatmap = plotly::plot_ly(x = x_values,
-                                       y = rep(annotations_i,nrow(meta_table)),
+                                       y = rep(annotations_i, nrow(meta_table)),
                                        z = groups_numeric,
                                        type = "heatmap",
-                                       colorscale = color_palette_i,
+                                       # colorscale = color_palette_i,
                                        # colorbar = list(title = "Colorbar Title"),
-                                       # colors = color_palette_i,
+                                       colors = color_palette_i,
                                        xgap = 1,
                                        ygap = NULL,
                                        text = hover_text,
@@ -4097,7 +4097,7 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
                                        showscale = F)
     } else if (typeof(color_palette_i) == 'character') {
       plotly_heatmap = plotly::plot_ly(x = x_values,
-                                       y = rep(annotations_i,nrow(meta_table)),
+                                       y = rep(annotations_i, nrow(meta_table)),
                                        z = groups_numeric,
                                        type = "heatmap",
                                        colors = color_palette_i,
