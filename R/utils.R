@@ -4031,7 +4031,7 @@ plot_dendrogram_main = function(data_table, meta_table, annotations, distance_me
   colnames(meta_table) = annotations
 
   # Get clusters if specified
-  if (!is.null(k_clusters)) {
+  if (k_clusters > 1) {
     clusters = stats::cutree(tree = hc, k = k_clusters)
     meta_table[, 'k_clusters'] = clusters[hc$order]
     annotations = c(annotations, 'k_clusters')
