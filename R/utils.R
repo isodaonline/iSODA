@@ -4001,7 +4001,7 @@ plot_fa_emap_plot = function(x,
 }
 #-------------------------------------------------------- PLOTLY DENDROGRAM ----
 # Define function
-plot_dendrogram = function(data_table, meta_table, annotations, distance_method = "euclidian", p = 2, clustering_method = "ward.D2", k_clusters = NULL, color_palette = 'Spectral', rotate = FALSE, x_tick_font_size, y_label_font_size, y_tick_font_size, width = NULL, height = NULL) {
+plot_dendrogram_main = function(data_table, meta_table, annotations, distance_method = "euclidian", p = 2, clustering_method = "ward.D2", k_clusters = NULL, color_palette = 'Spectral', rotate = FALSE, x_tick_font_size, y_label_font_size, y_tick_font_size, width = NULL, height = NULL) {
 
   # Fonts
   xtick_show = base::ifelse(x_tick_font_size > 0, T, F)
@@ -4010,85 +4010,94 @@ plot_dendrogram = function(data_table, meta_table, annotations, distance_method 
 
   # Save and reset rownames
   original_rownames = rownames(data_table)
+  original_rownames_meta <- rownames(meta_table)
   rownames(data_table) = NULL
   rownames(meta_table) = NULL
 
   # Filter the metadata table
   meta_table = as.data.frame(meta_table[, annotations])
-  colnames(meta_table) = annotations
+  colnames(meta_table) <- annotations
+  rownames(meta_table) <- original_rownames_meta
 
   # Create the dendrogram
-  hc = stats::hclust(stats::dist(data_table,
+  hc = stats::hclust(stats::dist(x = data_table,
                                  method = distance_method,
                                  p = p),
                      method = clustering_method)
+  
+  # Reorder the rownames according to clustering
+  original_rownames = original_rownames[hc$order]
+  meta_table = meta_table[original_rownames, annotations, drop = FALSE]
+  colnames(meta_table) = annotations
 
   # Get clusters if specified
-  if (!is.null(k_clusters)) {
+  if (k_clusters > 1) {
     clusters = stats::cutree(tree = hc, k = k_clusters)
-    meta_table[,'k_clusters'] = clusters
-    annotations = c(annotations, 'k_clusters')
+    meta_table[, 'k_clusters'] = clusters[hc$order]
+    annotations <- c('k_clusters', rev(annotations))
+    color_palette_full <- c("ggplot2", color_palette)
+  } else {
+    annotations <- rev(annotations)
+    color_palette_full <- color_palette
   }
 
   # Deal with colors
-  if (length(annotations) > length(color_palette)) {
-    all_colors = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
-                   'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
-                   'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
-                   'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
-                   'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
-                   'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
-                   'plotly_1', 'plotly_2')
-    all_colors = all_colors[!all_colors %in% c(color_palette)]
-    additional_palettes = length(annotations) - length(color_palette)
-    color_palette = c(color_palette, all_colors[1:additional_palettes])
+  if (length(annotations) > length(color_palette_full)) {
+    # all_colors = c('Blues', 'BuGn', 'BuPu', 'GnBu', 'Greens', 'Greys', 'Oranges',
+    #                'OrRd', 'PuBu', 'PuBuGn', 'PuRd', 'Purples', 'RdPu', 'Reds',
+    #                'YlGn', 'YlGnBu', 'YlOrBr', 'YlOrRd', 'BrBG', 'PiYG', 'PRGn',
+    #                'PuOr', 'RdBu', 'RdGy', 'RdYlBu', 'RdYlGn', 'Spectral', 'Accent',
+    #                'Dark2', 'Paired', 'Pastel1', 'Pastel2', 'Set1', 'Set2', 'Set3',
+    #                'Viridis', 'Magma', 'Inferno', 'Plasma', 'Cividis', 'Rocket', 'Mako', 'Turbo',
+    #                'plotly_1', 'plotly_2')
+    # all_colors = all_colors[!all_colors %in% c(color_palette)]
+    additional_palettes <- length(annotations) - length(color_palette_full)
+    # color_palette = c(color_palette, all_colors[1:additional_palettes])
+    color_palette_full <- c(color_palette_full, rep(color_palette, additional_palettes))
   }
+  
+  annotations <- rev(annotations)
+  color_palette_full <- rev(color_palette_full)
 
-  p = ggdendro::ggdendrogram(hc, rotate = rotate, size = 2)
+  p = ggdendro::ggdendrogram(data = hc, 
+                             rotate = rotate, 
+                             size = 2)
 
   plotly_dendro = plotly::ggplotly(p)
   plotly_dendro = plotly::layout(p = plotly_dendro,
                                  yaxis = list(showticklabels = ytick_show,
                                               tickfont = list(size = y_tick_font_size)))
 
-
-
-  # Reorder the rownames according to clustering
-  original_rownames = original_rownames[hc$order]
-  meta_table = as.data.frame(meta_table[hc$order, annotations])
-  colnames(meta_table) = annotations
-
-
   # Dealing with colors
   heatmaps_list = list(
     dendro = plotly_dendro
   )
+  
   for (i in 1:length(annotations)) {
     annotations_i = annotations[i]
-    groups = sort(unique(meta_table[,annotations_i]))
+    groups = sort(unique(meta_table[, annotations_i]))
 
-    color_palette_i = get_color_palette(groups = meta_table[,annotations_i],
-                                        color_palette = color_palette[i],
+    color_palette_i = get_color_palette(groups = groups,
+                                        color_palette = color_palette_full[i],
                                         reverse_color_palette = TRUE)
 
     # Assign numeric values according to groups
     groups_numeric = 1:length(groups)
     names(groups_numeric) = as.character(groups)
-    groups_numeric = unname(groups_numeric[as.character(meta_table[,annotations_i])])
-    hover_text = paste(original_rownames, meta_table[,annotations_i], sep = '\n')
-
+    groups_numeric = unname(groups_numeric[as.character(meta_table[, annotations_i])])
+    hover_text = paste(original_rownames, meta_table[, annotations_i], sep = '\n')
 
     # Produce the side color heatmap
     rownames(meta_table) = NULL
     x_values = factor(as.numeric(rownames(meta_table)), ordered = T, levels = unique(as.numeric(rownames(meta_table))))
     if (typeof(color_palette_i) == 'list') {
       plotly_heatmap = plotly::plot_ly(x = x_values,
-                                       y = rep(annotations_i,nrow(meta_table)),
+                                       y = rep(annotations_i, nrow(meta_table)),
                                        z = groups_numeric,
                                        type = "heatmap",
-                                       colorscale = color_palette_i,
+                                       # colorscale = color_palette_i,
                                        # colorbar = list(title = "Colorbar Title"),
-                                       # colors = color_palette_i,
+                                       colors = color_palette_i,
                                        xgap = 1,
                                        ygap = NULL,
                                        text = hover_text,
@@ -4096,7 +4105,7 @@ plot_dendrogram = function(data_table, meta_table, annotations, distance_method 
                                        showscale = F)
     } else if (typeof(color_palette_i) == 'character') {
       plotly_heatmap = plotly::plot_ly(x = x_values,
-                                       y = rep(annotations_i,nrow(meta_table)),
+                                       y = rep(annotations_i, nrow(meta_table)),
                                        z = groups_numeric,
                                        type = "heatmap",
                                        colors = color_palette_i,

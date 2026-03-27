@@ -1766,6 +1766,7 @@ Omics_exp = R6::R6Class(
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
+      
       self$tables$imp_meta = imp_meta
     },
 
@@ -2206,7 +2207,7 @@ Omics_exp = R6::R6Class(
                             distance_method = "euclidean",
                             p = 2,
                             clustering_method = "ward.D2",
-                            k_clusters = NULL,
+                            k_clusters = 1,
                             color_palette = "Set1",
                             x_tick_font_size = 0,
                             y_label_font_size = 12,
@@ -2941,7 +2942,6 @@ Omics_exp = R6::R6Class(
                                y_tick_font_size = self$params$dendrogram$y_tick_font_size,
                                width = NULL,
                                height = NULL){
-
       # Checks
       data_table = self$table_check_convert(dataset)
 
@@ -2956,19 +2956,21 @@ Omics_exp = R6::R6Class(
       }
 
 
-      output = plot_dendrogram(data_table = data_table,
-                               meta_table = meta_table,
-                               annotations = annotations,
-                               distance_method = distance_method,
-                               p = p,
-                               clustering_method = clustering_method,
-                               k_clusters = k_clusters,
-                               color_palette = color_palette,
-                               y_label_font_size = y_label_font_size,
-                               y_tick_font_size = y_tick_font_size,
-                               x_tick_font_size = x_tick_font_size,
-                               width = width,
-                               height = height)
+      output = plot_dendrogram_main(
+        data_table = data_table,
+        meta_table = meta_table,
+        annotations = annotations,
+        distance_method = distance_method,
+        p = p,
+        clustering_method = clustering_method,
+        k_clusters = k_clusters,
+        color_palette = color_palette,
+        y_label_font_size = y_label_font_size,
+        y_tick_font_size = y_tick_font_size,
+        x_tick_font_size = x_tick_font_size,
+        width = width,
+        height = height
+      )
 
       self$plots$dendrogram = output$plot
       self$tables$dendrogram = output$data_table
@@ -3029,6 +3031,7 @@ Omics_exp = R6::R6Class(
       colors <- get_color_palette(groups = group_list,
                                   color_palette = color_palette,
                                   reverse_color_palette = TRUE)
+      print(colors)
       
       # Produce the plot
       plot_table$lipid_class <- rownames(plot_table)
@@ -3409,19 +3412,36 @@ Omics_exp = R6::R6Class(
         meta_table_features = meta_table_features[colnames(data_table), , drop = F]
 
       }
-
+      
       # Set the clustering
       if (apply_clustering) {
         dendrogram = "both"
-        Colv= stats::hclust(d = stats::dist(x = data_table,
-                                            method = distance_method),
-                            method = clustering_method)
+        Colv = stats::hclust(d = stats::dist(x = data_table,
+                                             method = distance_method),
+                             method = clustering_method)
+        if(k_clusters_samples == 1) {
+          sample_dend_colors <- "black"
+        } else {
+          sample_dend_colors <- get_color_palette(
+            groups = 1:k_clusters_samples,
+            color_palette = "ggplot2",
+            reverse_color_palette = FALSE
+          )
+        }
+        
+        Colv_col <- dendextend::color_branches(
+          dend = stats::as.dendrogram(Colv),
+          k = k_clusters_samples,
+          col = sample_dend_colors
+        )
+        
         Rowv = stats::hclust(d = stats::dist(x = t(data_table),
                                              method = distance_method),
                              method = clustering_method)
       } else {
         dendrogram = "none"
-        Colv= NULL
+        Colv = NULL
+        Colv_col <- NULL
         Rowv = NULL
       }
 
@@ -3511,7 +3531,6 @@ Omics_exp = R6::R6Class(
                                  reverse_color_palette = reverse_palette,
                                  force_scale = F,
                                  force_list = F)
-
       # Plot the data
       plot = heatmaply::heatmaply(x = t(data_table),
                                   colors = colors,
@@ -3521,10 +3540,10 @@ Omics_exp = R6::R6Class(
                                   # colorbar_xpos = 1.15,
                                   # colorbar_ypos = 0.7,
                                   # subplot_widths = c(0.7, 0.05, 0.1),
-                                  k_col = k_clusters_samples,
+                                  # k_col = k_clusters_samples,
                                   k_row = k_clusters_features,
                                   limits = c(zmin, zmax),
-                                  Colv= Colv,
+                                  Colv = Colv_col,
                                   Rowv = Rowv,
                                   width = width,
                                   height = height,

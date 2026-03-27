@@ -98,6 +98,8 @@ dendrogram_server = function(r6, output, session) {
         inputId = ns('dendrogram_k_clusters'),
         label = "K clusters",
         value = r6$params$dendrogram$k_clusters,
+        min = 1,
+        max = NA,
         width = '100%'
       ),
       ## Aesthetic settings
