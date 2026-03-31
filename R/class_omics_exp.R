@@ -3031,7 +3031,6 @@ Omics_exp = R6::R6Class(
       colors <- get_color_palette(groups = group_list,
                                   color_palette = color_palette,
                                   reverse_color_palette = TRUE)
-      print(colors)
       
       # Produce the plot
       plot_table$lipid_class <- rownames(plot_table)
@@ -3140,7 +3139,7 @@ Omics_exp = R6::R6Class(
       plot_list = c()
       
       j = 1
-      meta_table$sampleId <- row.names(meta_table)
+      meta_table[[self$indices$id_col_meta]] <- row.names(meta_table)
       for (c in class_list) {
         subplot = plot_ly(colors = unname(colors),
                           width = width,
