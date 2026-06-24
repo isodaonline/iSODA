@@ -4139,6 +4139,17 @@ Omics_exp = R6::R6Class(
       # Store the plot_table
       self$tables$fa_analysis_table = plot_table
 
+      # Order the x-axis categories. For the FA-chain view, sort numerically by
+      # carbon count first and double bonds second (e.g. 8:0, 9:1, 10:0, ...,
+      # 18:0, 18:1, 18:2) instead of lexicographically. For the lipid-class view
+      # the categories are class names and keep their existing order.
+      x_categories = unique(plot_table$names)
+      if (selected_view == "lipidclass") {
+        chain_parts = do.call(rbind, strsplit(x_categories, ":", fixed = TRUE))
+        x_categories = x_categories[order(as.numeric(chain_parts[, 1]),
+                                          as.numeric(chain_parts[, 2]))]
+      }
+
       # group_list = sort(unique(plot_table$group))
       colors = get_color_palette(groups = sort(unique(plot_table$group)),
                                   color_palette = color_palette,
@@ -4238,6 +4249,8 @@ Omics_exp = R6::R6Class(
                            text = fd$x_label,
                            font = list(size = fd$x_label_font_size)
                              ),
+                         categoryorder = "array",
+                         categoryarray = x_categories,
                          showticklabels = fd$x_tick_show,
                          tickfont = list(size = fd$x_tick_font_size)
                          ),
