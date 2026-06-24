@@ -2933,7 +2933,7 @@ fa_analysis_plot_server = function(r6, output, session) {
           shiny::selectizeInput(
             inputId = ns("fa_analysis_plot_selected_fa"),
             label = "Select fatty acid (B)",
-            choices = get_fa_tails(r6$tables$raw_feat),
+            choices = get_fa_tails(r6$tables$raw_feat, is_lipidyzer_data = r6$params$is_lipidyzer_data),
             selected = r6$params$fa_analysis_plot$selected_fa,
             multiple = TRUE,
             width = "98%"
@@ -3562,7 +3562,7 @@ double_bonds_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("double_bonds_plot_selected_carbon_chain"),
         label = "Carbon count",
-        choices = c('Carbon count (chain 1)', 'Carbon count (chain 2)', 'Carbon count (sum)'),
+        choices = c('Carbon count (chain 1)', 'Carbon count (chain 2)', 'Carbon count (chain 3)', 'Carbon count (sum)'),
         selected = r6$params$double_bonds_plot$selected_carbon_chain,
         multiple = FALSE,
         width = '100%'
@@ -3570,7 +3570,7 @@ double_bonds_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("double_bonds_plot_selected_unsat"),
         label = "Double bonds count",
-        choices = c('Double bonds (chain 1)', 'Double bonds (chain 2)', 'Double bonds (sum)'),
+        choices = c('Double bonds (chain 1)', 'Double bonds (chain 2)', 'Double bonds (chain 3)', 'Double bonds (sum)'),
         selected = r6$params$double_bonds_plot$selected_unsat,
         multiple = FALSE,
         width = '100%'

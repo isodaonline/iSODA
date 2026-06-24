@@ -1762,11 +1762,12 @@ Omics_exp = R6::R6Class(
       if (is.null(path)) {base::stop("Sample annotations file not provided")}
       if (!base::file.exists(path)) {base::stop("Sample annotations file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
+      print("Rico - start reading meta data")
       imp_meta = soda_read_table(file_path = path,
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
-      
+      print("Rico - finished reading meta data")
       self$tables$imp_meta = imp_meta
     },
 
@@ -1774,11 +1775,12 @@ Omics_exp = R6::R6Class(
       if (is.null(path)) {base::stop("Measurement data file not provided")}
       if (!base::file.exists(path)) {base::stop("Measurement data file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
+      print("Rico - start reading exp data")
       imp_data = soda_read_table(file_path = path,
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
-      
+      print("Rico - finished reading exp data")
       if(self$type == "Lipidomics") {
         self$params$is_lipidyzer_data <- check_is_lipidyzer(table = imp_data)
       } 
@@ -4100,14 +4102,16 @@ Omics_exp = R6::R6Class(
                                feature_table = feature_table,
                                sample_meta = sample_meta,
                                selected_lipidclass = selected_lipidclass,
-                               fa_norm = fa_norm)
+                               fa_norm = fa_norm,
+                               is_lipidyzer_data = self$params$is_lipidyzer_data)
         # column names are fa tail names, rownames sample names
       } else if(selected_view == "fa") {
         res = fa_analysis_rev_calc(data_table = data_table,
                                    feature_table = feature_table,
                                    sample_meta = sample_meta,
                                    selected_fa = selected_fa,
-                                   fa_norm = fa_norm)
+                                   fa_norm = fa_norm,
+                                   is_lipidyzer_data = self$params$is_lipidyzer_data)
       }
 
       # Produce the class x group table
@@ -4285,7 +4289,8 @@ Omics_exp = R6::R6Class(
                                       feature_table = feature_table,
                                       group_col = group_col,
                                       selected_group = group_1,
-                                      selected_lipidclass = selected_lipidclass)
+                                      selected_lipidclass = selected_lipidclass,
+                                      is_lipidyzer_data = self$params$is_lipidyzer_data)
       # bar left top
       bar_top_left_data = data.frame(x = factor(colnames(hm_left_data),
                                                  levels = sort(as.numeric(colnames(hm_left_data))),
@@ -4309,7 +4314,8 @@ Omics_exp = R6::R6Class(
                                        feature_table = feature_table,
                                        group_col = group_col,
                                        selected_group = group_2,
-                                       selected_lipidclass = selected_lipidclass)
+                                       selected_lipidclass = selected_lipidclass,
+                                       is_lipidyzer_data = self$params$is_lipidyzer_data)
       # bar right top
       bar_top_right_data = data.frame(x = factor(colnames(hm_right_data),
                                                   levels = sort(as.numeric(colnames(hm_right_data))),

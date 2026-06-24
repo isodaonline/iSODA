@@ -50,6 +50,8 @@ feature_table_cols_switch = function(col) {
          'Carbon count (chain 1)' = 'carbons_1',
          'Double bonds (chain 2)' = 'unsat_2',
          'Carbon count (chain 2)' = 'carbons_2',
+         'Double bonds (chain 3)' = 'unsat_3',
+         'Carbon count (chain 3)' = 'carbons_3',
          'Double bonds (sum)' = 'unsat_sum',
          'Carbon count (sum)' = 'carbons_sum'
   )
@@ -1098,13 +1100,59 @@ check_is_lipidyzer <- function(table = NULL) {
   }
 }
 
-get_fa_tails = function(feature_table) {
+# Return the chain indices (1, 2, 3, ...) for which both the carbon and
+# double-bond columns are present in the feature table.
+get_present_chain_indices = function(feature_table) {
+  idx = c()
+  i = 1
+  repeat {
+    carbon_col = paste0("Carbon count (chain ", i, ")")
+    unsat_col = paste0("Double bonds (chain ", i, ")")
+    if (carbon_col %in% colnames(feature_table) && unsat_col %in% colnames(feature_table)) {
+      idx = c(idx, i)
+      i = i + 1
+    } else {
+      break
+    }
+  }
+  return(idx)
+}
+
+# For each feature, count how many of its chains (across the supplied chain
+# indices) match the given carbon / double-bond pair. Returns an integer vector
+# aligned with the rows of feature_table. This generalises the lipidyzer
+# "count once, plus once more if the tail is present in both chains" logic to an
+# arbitrary number of chains: a tail occurring in N chains contributes N times.
+count_matching_chains = function(feature_table, carbon, unsat, chain_indices) {
+  counts = integer(nrow(feature_table))
+  for (i in chain_indices) {
+    carbon_col = paste0("Carbon count (chain ", i, ")")
+    unsat_col = paste0("Double bonds (chain ", i, ")")
+    counts = counts + (feature_table[[carbon_col]] == carbon &
+                         feature_table[[unsat_col]] == unsat)
+  }
+  return(counts)
+}
+
+get_fa_tails = function(feature_table, is_lipidyzer_data = FALSE) {
   # get unique FA's, ignore PA
   feature_table = feature_table[feature_table[['Lipid class']] != "PA", ]
-  fa_tails = c(
-    paste0(feature_table[['Carbon count (chain 1)']][feature_table[['Lipid class']] != "TG"], ":", feature_table[['Double bonds (chain 1)']][feature_table[['Lipid class']] != "TG"]),
-    paste0(feature_table[['Carbon count (chain 2)']], ":", feature_table[['Double bonds (chain 2)']])
-  )
+
+  if (is_lipidyzer_data) {
+    # Lipidyzer: chain 1 of a TG is the whole-molecule total, not a fatty acid,
+    # so it is excluded; chain 2 holds the resolved fatty acid.
+    fa_tails = c(
+      paste0(feature_table[['Carbon count (chain 1)']][feature_table[['Lipid class']] != "TG"], ":", feature_table[['Double bonds (chain 1)']][feature_table[['Lipid class']] != "TG"]),
+      paste0(feature_table[['Carbon count (chain 2)']], ":", feature_table[['Double bonds (chain 2)']])
+    )
+  } else {
+    # General: every chain (1, 2, 3, ...) is an individual fatty acid.
+    chain_indices = get_present_chain_indices(feature_table)
+    fa_tails = unlist(lapply(chain_indices, function(i) {
+      paste0(feature_table[[paste0("Carbon count (chain ", i, ")")]], ":",
+             feature_table[[paste0("Double bonds (chain ", i, ")")]])
+    }))
+  }
 
   fa_tails = unique(fa_tails)
   fa_tails = sort(fa_tails[fa_tails != "0:0"])
@@ -1249,7 +1297,6 @@ get_feature_metadata <- function(feature_table,
 }
 
 get_feature_metadata.lipidyzer = function(feature_table) {
-  
   feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
                                                      uniques = FALSE)
   # Collect carbon and unsaturation counts
@@ -1305,68 +1352,124 @@ get_feature_metadata.lipidyzer = function(feature_table) {
   )
   
   new_feature_table = new_feature_table[rownames(feature_table),]
+  
+  print("Rico - write feature file (lipidyzer)")
+  write.csv(x = new_feature_table,
+            file = "lipidyzer_feature_table.csv")
   
   return(new_feature_table)
 }
 
 get_feature_metadata.general = function(feature_table) {
-  
-  feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
-                                                     uniques = FALSE)
-  # Collect carbon and unsaturation counts
-  new_feature_table = list()
-  
-  for (c in unique(feature_table[, 'Lipid class'])) {
-    idx = rownames(feature_table)[feature_table[, 'Lipid class'] == c]
-    
-    if (c == "TG") {
-      # For triglycerides
-      truffles = stringr::str_split(string = idx, pattern = " |:|-FA")
-      names(truffles) = idx
-      new_feature_table = c(new_feature_table, truffles)
-      
-    } else if (sum(stringr::str_detect(string = idx, pattern = "/|_")) > 0) {
-      # For species with asyl groups ("/" or "_")
-      truffles = stringr::str_split(string = idx, pattern = " |:|_|/")
-      names(truffles) = idx
-      new_feature_table = c(new_feature_table, truffles)
-      
-    } else {
-      # For the rest
-      truffles = paste0(idx, ':0:0')
-      truffles = stringr::str_split(string = truffles, pattern = " |:")
-      names(truffles) = idx
-      new_feature_table = c(new_feature_table, truffles)
-      
-    }
-  }
-  
-  new_feature_table = as.data.frame(t(data.frame(new_feature_table, check.names = F)), check.names = F)
-  new_feature_table[,2] = gsub("[^0-9]", "", new_feature_table[,2])
-  for (col in colnames(new_feature_table)[2:ncol(new_feature_table)]) {
-    new_feature_table[,col] = as.numeric(new_feature_table[,col])
-  }
-  new_feature_table[,6] = new_feature_table[,2] + new_feature_table[,4]
-  new_feature_table[,7] = new_feature_table[,3] + new_feature_table[,5]
-  
-  idx_tgs = which(new_feature_table[,1] == "TG")
-  if (length(idx_tgs) > 0) {
-    new_feature_table[idx_tgs,6] = new_feature_table[idx_tgs,2]
-    new_feature_table[idx_tgs,7] = new_feature_table[idx_tgs,3]
-  }
-  
-  colnames(new_feature_table) = c(
-    'Lipid class',
-    'Carbon count (chain 1)',
-    'Double bonds (chain 1)',
-    'Carbon count (chain 2)',
-    'Double bonds (chain 2)',
-    'Carbon count (sum)',
-    'Double bonds (sum)'
+  # Parse generic lipidomics shorthand names (LIPID MAPS / MS-DIAL style) into a
+  # feature metadata table. Handles modifiers that are not part of a chain
+  # carbon:double-bond descriptor, such as:
+  #   - parenthetical modifiers, e.g. "(2OH)"
+  #   - oxidation / headgroup states after ';', e.g. ";O", ";O2", ";O3", ";O;S"
+  #   - ether / plasmalogen prefixes, e.g. "O-", "P-"
+  #   - sphingoid base letters, e.g. the "d" in "d18:1" (as in lipidyzer)
+  # Chains are separated by "_" or "/" and individual chains by ":".
+  # Species with up to three chains are supported (e.g. triglycerides); the
+  # 'sum' columns hold the totals across all detected chains. Single-value
+  # whole-molecule sum compositions (ether/sphingoid/sterol species that are
+  # not resolved into individual chains) populate only the 'sum' columns.
+
+  # Identify the lipid class for each feature
+  lipid_classes = get_lipid_classes(feature_list = rownames(feature_table),
+                                    uniques = FALSE)
+
+  # Initialise the output table with the fixed schema and default (0) values
+  n_feat = nrow(feature_table)
+  new_feature_table = data.frame(
+    `Lipid class`            = lipid_classes,
+    `Carbon count (chain 1)` = integer(n_feat),
+    `Double bonds (chain 1)` = integer(n_feat),
+    `Carbon count (chain 2)` = integer(n_feat),
+    `Double bonds (chain 2)` = integer(n_feat),
+    `Carbon count (chain 3)` = integer(n_feat),
+    `Double bonds (chain 3)` = integer(n_feat),
+    `Carbon count (sum)`     = integer(n_feat),
+    `Double bonds (sum)`     = integer(n_feat),
+    row.names = rownames(feature_table),
+    check.names = FALSE,
+    stringsAsFactors = FALSE
   )
+
+  for (i in seq_len(n_feat)) {
+    feature = rownames(feature_table)[i]
+    lipid_class = lipid_classes[i]
+
+    # Drop the leading class prefix to keep only the chain description
+    chain_desc = sub(paste0("^\\Q", lipid_class, "\\E\\s+"), "", feature)
+
+    # Remove modifiers that are not part of a chain carbon:double-bond descriptor
+    chain_desc = gsub("\\([^)]*\\)", "", chain_desc)  # parentheticals, e.g. (2OH)
+    chain_desc = gsub(";[^_/]*", "", chain_desc)       # ;O, ;O2, ;O3, ;O;S, ...
+    chain_desc = gsub("[OP]-", "", chain_desc)         # ether / plasmalogen prefix
+    chain_desc = gsub("[^0-9:_/]", "", chain_desc)     # leftover letters (e.g. sphingoid 'd')
+
+    # Split into chains, then parse each chain as carbons:double-bonds
+    chains = unlist(strsplit(chain_desc, "[_/]"))
+    chains = chains[chains != ""]
+
+    carbons = integer(0)
+    double_bonds = integer(0)
+    for (chain in chains) {
+      parts = unlist(strsplit(chain, ":", fixed = TRUE))
+      if (length(parts) >= 2) {
+        carbon = suppressWarnings(as.integer(parts[1]))
+        db = suppressWarnings(as.integer(parts[2]))
+        if (!is.na(carbon) && !is.na(db)) {
+          carbons = c(carbons, carbon)
+          double_bonds = c(double_bonds, db)
+        }
+      }
+    }
+
+    n_chains = length(carbons)
+    if (n_chains == 0) {
+      next
+    }
+
+    # A single detected value can be either a genuine single fatty-acyl chain
+    # (e.g. "FA 20:0", "CE 18:1", "LPC 18:0") or a whole-molecule sum
+    # composition that is not resolved into individual chains. The latter is
+    # signalled in the original name by an ether / plasmalogen prefix ("O-" /
+    # "P-", e.g. "PC O-32:0") or a ";O..." annotation (sphingolipids / sterols,
+    # e.g. "SM 32:1;O2", "Cer 44:0;O3", "ST 27:1;O"). For those, the value
+    # belongs only in the 'sum' columns, leaving the chain slots at 0.
+    is_sum_composition = grepl(";O", feature, fixed = TRUE) ||
+      grepl("\\s[OP]-", feature)
+
+    if (n_chains == 1 && is_sum_composition) {
+      new_feature_table[i, 'Carbon count (sum)'] = carbons[1]
+      new_feature_table[i, 'Double bonds (sum)'] = double_bonds[1]
+      next
+    }
+
+    # Assign up to three chains into the fixed slots (missing chains stay 0)
+    if (n_chains >= 1) {
+      new_feature_table[i, 'Carbon count (chain 1)'] = carbons[1]
+      new_feature_table[i, 'Double bonds (chain 1)'] = double_bonds[1]
+    }
+    if (n_chains >= 2) {
+      new_feature_table[i, 'Carbon count (chain 2)'] = carbons[2]
+      new_feature_table[i, 'Double bonds (chain 2)'] = double_bonds[2]
+    }
+    if (n_chains >= 3) {
+      new_feature_table[i, 'Carbon count (chain 3)'] = carbons[3]
+      new_feature_table[i, 'Double bonds (chain 3)'] = double_bonds[3]
+    }
+
+    # Totals across all detected chains
+    new_feature_table[i, 'Carbon count (sum)'] = sum(carbons)
+    new_feature_table[i, 'Double bonds (sum)'] = sum(double_bonds)
+  }
   
-  new_feature_table = new_feature_table[rownames(feature_table),]
-  
+  print("Rico - write feature file (general)")
+  write.csv(x = new_feature_table,
+            file = "general_feature_table.csv")   
+ 
   return(new_feature_table)
 }
 
@@ -1717,7 +1820,8 @@ fa_comp_hm_calc = function(data_table = NULL,
                            group_col = NULL,
                            selected_group = NULL,
                            sample_meta = NULL,
-                           selected_lipidclass = NULL) {
+                           selected_lipidclass = NULL,
+                           is_lipidyzer_data = FALSE) {
 
   res = switch(
     composition,
@@ -1726,7 +1830,8 @@ fa_comp_hm_calc = function(data_table = NULL,
                                    group_col = group_col,
                                    selected_group = selected_group,
                                    sample_meta = sample_meta,
-                                   selected_lipidclass = selected_lipidclass),
+                                   selected_lipidclass = selected_lipidclass,
+                                   is_lipidyzer_data = is_lipidyzer_data),
     "total_lipid" = fa_comp_hm_calc.total(data_table = data_table,
                                           feature_table = feature_table,
                                           group_col = group_col,
@@ -1744,7 +1849,8 @@ fa_comp_hm_calc.fa = function(data_table = NULL,
                               group_col = NULL,
                               selected_group = NULL,
                               sample_meta = NULL,
-                              selected_lipidclass = NULL) {
+                              selected_lipidclass = NULL,
+                              is_lipidyzer_data = FALSE) {
   ## samples
   idx_samples = rownames(sample_meta)[sample_meta[, group_col] == selected_group]
   hm_data = data_table[idx_samples, , drop = FALSE]
@@ -1757,65 +1863,107 @@ fa_comp_hm_calc.fa = function(data_table = NULL,
   } else {
     selected_features = feature_table[feature_table[["Lipid class"]] == selected_lipidclass, ]
   }
-  # get the unique chain lengths and unsaturation
-  # special lipid classes
-  tail1_only = c("CE", "FA", "LPC", "LPE")
-  tail2_only = c("Cer", "HexCER", "LacCER", "SM", "TG")
 
-  if(selected_lipidclass == "All") {
-    uniq_carbon = c(min(c(selected_features[["Carbon count (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
-                          selected_features[["Carbon count (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
-                          selected_features[["Carbon count (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])),
-                    max(c(selected_features[["Carbon count (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
-                          selected_features[["Carbon count (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
-                          selected_features[["Carbon count (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])))
-    uniq_unsat = c(min(c(selected_features[["Double bonds (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
-                         selected_features[["Double bonds (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
-                         selected_features[["Double bonds (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])),
-                   max(c(selected_features[["Double bonds (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
-                         selected_features[["Double bonds (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
-                         selected_features[["Double bonds (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])))
-  } else {
-    if(selected_lipidclass %in% tail2_only) {
-      uniq_carbon = c(min(selected_features[["Carbon count (chain 2)"]]),
-                      max(selected_features[["Carbon count (chain 2)"]]))
-      uniq_unsat = c(min(selected_features[["Double bonds (chain 2)"]]),
-                     max(selected_features[["Double bonds (chain 2)"]]))
+  if (is_lipidyzer_data) {
+    # get the unique chain lengths and unsaturation
+    # special lipid classes
+    tail1_only = c("CE", "FA", "LPC", "LPE")
+    tail2_only = c("Cer", "HexCER", "LacCER", "SM", "TG")
+
+    if(selected_lipidclass == "All") {
+      uniq_carbon = c(min(c(selected_features[["Carbon count (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                            selected_features[["Carbon count (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                            selected_features[["Carbon count (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])),
+                      max(c(selected_features[["Carbon count (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                            selected_features[["Carbon count (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                            selected_features[["Carbon count (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])))
+      uniq_unsat = c(min(c(selected_features[["Double bonds (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                           selected_features[["Double bonds (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                           selected_features[["Double bonds (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])),
+                     max(c(selected_features[["Double bonds (chain 2)"]][selected_features[["Lipid class"]] %in% tail2_only],
+                           selected_features[["Double bonds (chain 1)"]][!(selected_features[["Lipid class"]] %in% tail2_only)],
+                           selected_features[["Double bonds (chain 2)"]][!(selected_features[["Lipid class"]] %in% c(tail1_only, tail2_only))])))
     } else {
-      uniq_carbon = c(min(c(selected_features[["Carbon count (chain 1)"]], selected_features[["Carbon count (chain 2)"]][selected_features[["Carbon count (chain 2)"]] != 0])),
-                      max(c(selected_features[["Carbon count (chain 1)"]], selected_features[["Carbon count (chain 2)"]])))
-      uniq_unsat = c(min(c(selected_features[["Double bonds (chain 1)"]], selected_features[["Double bonds (chain 2)"]])),
-                     max(c(selected_features[["Double bonds (chain 1)"]], selected_features[["Double bonds (chain 2)"]])))
-    }
-  }
-
-  ## calculations
-  # initialize result matrix
-  res = matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
-               nrow = length(uniq_unsat[1]:uniq_unsat[2]))
-  colnames(res) = uniq_carbon[1]:uniq_carbon[2]
-  rownames(res) = uniq_unsat[1]:uniq_unsat[2]
-
-  for(a in rownames(res)) { # unsaturation
-    for(b in colnames(res)) { # carbons
-      idx_lipids = selected_features$lipid[(selected_features[["Carbon count (chain 1)"]] == b &
-                                              selected_features[["Double bonds (chain 1)"]] == a) |
-                                             (selected_features[["Carbon count (chain 2)"]] == b &
-                                                selected_features[["Double bonds (chain 2)"]] == a)]
-
-      idx_lipids_double = selected_features$lipid[(selected_features[["Carbon count (chain 1)"]] == b &
-                                                     selected_features[["Double bonds (chain 1)"]] == a) &
-                                                    (selected_features[["Carbon count (chain 2)"]] == b &
-                                                       selected_features[["Double bonds (chain 2)"]] == a)]
-      if(length(idx_lipids) > 0) {
-        res[a, b] = sum(hm_data[, idx_lipids], na.rm = TRUE)
+      if(selected_lipidclass %in% tail2_only) {
+        uniq_carbon = c(min(selected_features[["Carbon count (chain 2)"]]),
+                        max(selected_features[["Carbon count (chain 2)"]]))
+        uniq_unsat = c(min(selected_features[["Double bonds (chain 2)"]]),
+                       max(selected_features[["Double bonds (chain 2)"]]))
       } else {
-        res[a, b] = 0
+        uniq_carbon = c(min(c(selected_features[["Carbon count (chain 1)"]], selected_features[["Carbon count (chain 2)"]][selected_features[["Carbon count (chain 2)"]] != 0])),
+                        max(c(selected_features[["Carbon count (chain 1)"]], selected_features[["Carbon count (chain 2)"]])))
+        uniq_unsat = c(min(c(selected_features[["Double bonds (chain 1)"]], selected_features[["Double bonds (chain 2)"]])),
+                       max(c(selected_features[["Double bonds (chain 1)"]], selected_features[["Double bonds (chain 2)"]])))
       }
+    }
 
-      # compensate for if a specific tails appears twice in a lipid, sum again
-      if(length(idx_lipids_double) > 0) {
-        res[a, b] = sum(res[a, b], hm_data[, idx_lipids_double], na.rm = TRUE)
+    ## calculations
+    # initialize result matrix
+    res = matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+                 nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+    colnames(res) = uniq_carbon[1]:uniq_carbon[2]
+    rownames(res) = uniq_unsat[1]:uniq_unsat[2]
+
+    for(a in rownames(res)) { # unsaturation
+      for(b in colnames(res)) { # carbons
+        idx_lipids = selected_features$lipid[(selected_features[["Carbon count (chain 1)"]] == b &
+                                                selected_features[["Double bonds (chain 1)"]] == a) |
+                                               (selected_features[["Carbon count (chain 2)"]] == b &
+                                                  selected_features[["Double bonds (chain 2)"]] == a)]
+
+        idx_lipids_double = selected_features$lipid[(selected_features[["Carbon count (chain 1)"]] == b &
+                                                       selected_features[["Double bonds (chain 1)"]] == a) &
+                                                      (selected_features[["Carbon count (chain 2)"]] == b &
+                                                         selected_features[["Double bonds (chain 2)"]] == a)]
+        if(length(idx_lipids) > 0) {
+          res[a, b] = sum(hm_data[, idx_lipids], na.rm = TRUE)
+        } else {
+          res[a, b] = 0
+        }
+
+        # compensate for if a specific tails appears twice in a lipid, sum again
+        if(length(idx_lipids_double) > 0) {
+          res[a, b] = sum(res[a, b], hm_data[, idx_lipids_double], na.rm = TRUE)
+        }
+      }
+    }
+  } else {
+    # General: every chain (1, 2, 3, ...) is an individual fatty acid. The axis
+    # range spans all non-zero carbon / double-bond values across every chain,
+    # and a lipid that contains a tail in multiple chains contributes its
+    # abundance once per occurrence.
+    chain_indices = get_present_chain_indices(selected_features)
+
+    all_carbons = unlist(lapply(chain_indices, function(i) selected_features[[paste0("Carbon count (chain ", i, ")")]]))
+    all_unsat = unlist(lapply(chain_indices, function(i) selected_features[[paste0("Double bonds (chain ", i, ")")]]))
+
+    # ignore the 0 placeholders used for absent chains
+    valid = all_carbons != 0
+    uniq_carbon = c(min(all_carbons[valid]), max(all_carbons[valid]))
+    uniq_unsat = c(min(all_unsat[valid]), max(all_unsat[valid]))
+
+    ## calculations
+    # initialize result matrix
+    res = matrix(ncol = length(uniq_carbon[1]:uniq_carbon[2]),
+                 nrow = length(uniq_unsat[1]:uniq_unsat[2]))
+    colnames(res) = uniq_carbon[1]:uniq_carbon[2]
+    rownames(res) = uniq_unsat[1]:uniq_unsat[2]
+
+    for(a in rownames(res)) { # unsaturation
+      for(b in colnames(res)) { # carbons
+        match_counts = count_matching_chains(feature_table = selected_features,
+                                             carbon = as.numeric(b),
+                                             unsat = as.numeric(a),
+                                             chain_indices = chain_indices)
+        matched = match_counts > 0
+        if(any(matched)) {
+          # weight each lipid's abundance by the number of chains that match
+          weighted = base::sweep(hm_data[, selected_features$lipid[matched], drop = FALSE],
+                                 2, match_counts[matched], "*")
+          res[a, b] = sum(weighted, na.rm = TRUE)
+        } else {
+          res[a, b] = 0
+        }
       }
     }
   }
@@ -1906,6 +2054,16 @@ fa_comp_heatmap = function(data = NULL,
 
   colors = unname(colors)
 
+  # Build the colorbar tick font conditionally: when no legend font size is
+  # supplied (NULL), omit the 'size' field entirely so plotly uses its own
+  # default. Passing list(size = NULL) triggers a plotly internal error
+  # ("attempt to set an attribute on NULL") during plot building.
+  colorbar_tickfont = if (is_none(legend_label_font_size)) {
+    list()
+  } else {
+    list(size = legend_label_font_size)
+  }
+
   # make heatmap
   fig = plotly::plot_ly(data = data_df,
                         x = ~col,
@@ -1921,7 +2079,7 @@ fa_comp_heatmap = function(data = NULL,
                         )) |>
     plotly::colorbar(limits = color_limits,
                      title = "Proportion",
-                     tickfont = list(size = legend_label_font_size)) |>
+                     tickfont = colorbar_tickfont) |>
 
     plotly::style(xgap = 3,
                   ygap = 3)
@@ -7540,20 +7698,24 @@ fa_analysis_calc = function(data_table = NULL,
                             feature_table = NULL,
                             sample_meta = NULL,
                             selected_lipidclass = NULL,
-                            fa_norm = FALSE) {
+                            fa_norm = FALSE,
+                            is_lipidyzer_data = FALSE) {
   ## Features
   feature_table = feature_table[colnames(data_table),]
   feature_table$lipid = rownames(feature_table)
 
-  # fix TG's
-  idx_tg = feature_table$lipid[feature_table[["Lipid class"]] == "TG"]
-  idx_tg = base::intersect(idx_tg, colnames(data_table))
-  
-  if (length(idx_tg) == 0) {
-    base::stop("No TGs found in data")
+  if (is_lipidyzer_data) {
+    # fix TG's: lipidyzer counts a TG once per resolved fatty acid, so the
+    # abundance is divided by 3.
+    idx_tg = feature_table$lipid[feature_table[["Lipid class"]] == "TG"]
+    idx_tg = base::intersect(idx_tg, colnames(data_table))
+
+    if (length(idx_tg) == 0) {
+      base::stop("No TGs found in data")
+    }
+
+    data_table[, idx_tg] = data_table[, idx_tg] / 3
   }
-  
-  data_table[, idx_tg] = data_table[, idx_tg] / 3
 
   # get the species from the selected lipid classes
   if(selected_lipidclass == "All") {
@@ -7571,38 +7733,80 @@ fa_analysis_calc = function(data_table = NULL,
   # select the correct data
   sel_data_table = data_table[, sel_feat_idx, drop = F]
 
-  # get the unique chain lengths and unsaturation
-  uniq_carbon = sort(union(unique(sel_feature_table[["Carbon count (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
-                           unique(sel_feature_table[["Carbon count (chain 2)"]])))
-  uniq_carbon = uniq_carbon[uniq_carbon != 0]
-  uniq_unsat = sort(union(unique(sel_feature_table[["Double bonds (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
-                          unique(sel_feature_table[["Double bonds (chain 2)"]])))
+  if (is_lipidyzer_data) {
+    # get the unique chain lengths and unsaturation (chain 1 of a TG is the
+    # whole-molecule total, not a fatty acid)
+    uniq_carbon = sort(union(unique(sel_feature_table[["Carbon count (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
+                             unique(sel_feature_table[["Carbon count (chain 2)"]])))
+    uniq_carbon = uniq_carbon[uniq_carbon != 0]
+    uniq_unsat = sort(union(unique(sel_feature_table[["Double bonds (chain 1)"]][sel_feature_table[["Lipid class"]] != "TG"]),
+                            unique(sel_feature_table[["Double bonds (chain 2)"]])))
 
-  # Initialize results data.frame
-  fa_chains = expand.grid(uniq_unsat, uniq_carbon)
-  fa_chains = paste(fa_chains[, 2], fa_chains[, 1], sep = ":")
-  res = as.data.frame(matrix(ncol = length(fa_chains),
-                             nrow = nrow(sel_data_table)))
-  colnames(res) = fa_chains
-  rownames(res) = rownames(sel_data_table)
+    # Initialize results data.frame
+    fa_chains = expand.grid(uniq_unsat, uniq_carbon)
+    fa_chains = paste(fa_chains[, 2], fa_chains[, 1], sep = ":")
+    res = as.data.frame(matrix(ncol = length(fa_chains),
+                               nrow = nrow(sel_data_table)))
+    colnames(res) = fa_chains
+    rownames(res) = rownames(sel_data_table)
 
-  # do the calculations
-  for(a in uniq_carbon) {
-    for(b in uniq_unsat) {
-      sel_fa_chain = paste(a, b, sep = ":")
-      sel_lipids = sel_feature_table$lipid[(sel_feature_table[["Carbon count (chain 1)"]] == a &
-                                              sel_feature_table[["Double bonds (chain 1)"]] == b) |
-                                             (sel_feature_table[["Carbon count (chain 2)"]] == a &
-                                                sel_feature_table[["Double bonds (chain 2)"]] == b)]
-      sel_lipids_double = sel_feature_table$lipid[(sel_feature_table[["Carbon count (chain 1)"]] == a &
-                                                     sel_feature_table[["Double bonds (chain 1)"]] == b) &
-                                                    (sel_feature_table[["Carbon count (chain 2)"]] == a &
-                                                       sel_feature_table[["Double bonds (chain 2)"]] == b)]
+    # do the calculations
+    for(a in uniq_carbon) {
+      for(b in uniq_unsat) {
+        sel_fa_chain = paste(a, b, sep = ":")
+        sel_lipids = sel_feature_table$lipid[(sel_feature_table[["Carbon count (chain 1)"]] == a &
+                                                sel_feature_table[["Double bonds (chain 1)"]] == b) |
+                                               (sel_feature_table[["Carbon count (chain 2)"]] == a &
+                                                  sel_feature_table[["Double bonds (chain 2)"]] == b)]
+        sel_lipids_double = sel_feature_table$lipid[(sel_feature_table[["Carbon count (chain 1)"]] == a &
+                                                       sel_feature_table[["Double bonds (chain 1)"]] == b) &
+                                                      (sel_feature_table[["Carbon count (chain 2)"]] == a &
+                                                         sel_feature_table[["Double bonds (chain 2)"]] == b)]
 
-      res[, sel_fa_chain] = `+`(
-        rowSums(sel_data_table[, sel_lipids, drop = FALSE], na.rm = TRUE),
-        rowSums(sel_data_table[, sel_lipids_double, drop = FALSE], na.rm = TRUE)
-      )
+        res[, sel_fa_chain] = `+`(
+          rowSums(sel_data_table[, sel_lipids, drop = FALSE], na.rm = TRUE),
+          rowSums(sel_data_table[, sel_lipids_double, drop = FALSE], na.rm = TRUE)
+        )
+      }
+    }
+  } else {
+    # General: every chain (1, 2, 3, ...) is an individual fatty acid; a lipid
+    # containing a tail in multiple chains contributes its abundance once per
+    # occurrence (no division).
+    chain_indices = get_present_chain_indices(sel_feature_table)
+
+    all_carbons = unlist(lapply(chain_indices, function(i) sel_feature_table[[paste0("Carbon count (chain ", i, ")")]]))
+    all_unsat = unlist(lapply(chain_indices, function(i) sel_feature_table[[paste0("Double bonds (chain ", i, ")")]]))
+    valid = all_carbons != 0
+    uniq_carbon = sort(unique(all_carbons[valid]))
+    uniq_unsat = sort(unique(all_unsat[valid]))
+
+    # Initialize results data.frame
+    fa_chains = expand.grid(uniq_unsat, uniq_carbon)
+    fa_chains = paste(fa_chains[, 2], fa_chains[, 1], sep = ":")
+    res = as.data.frame(matrix(ncol = length(fa_chains),
+                               nrow = nrow(sel_data_table)))
+    colnames(res) = fa_chains
+    rownames(res) = rownames(sel_data_table)
+
+    # do the calculations
+    for(a in uniq_carbon) {
+      for(b in uniq_unsat) {
+        sel_fa_chain = paste(a, b, sep = ":")
+        match_counts = count_matching_chains(feature_table = sel_feature_table,
+                                             carbon = a,
+                                             unsat = b,
+                                             chain_indices = chain_indices)
+        matched = match_counts > 0
+        if(any(matched)) {
+          # weight each lipid's abundance by the number of chains that match
+          weighted = base::sweep(sel_data_table[, sel_feature_table$lipid[matched], drop = FALSE],
+                                 2, match_counts[matched], "*")
+          res[, sel_fa_chain] = rowSums(weighted, na.rm = TRUE)
+        } else {
+          res[, sel_fa_chain] = 0
+        }
+      }
     }
   }
 
@@ -7625,7 +7829,8 @@ fa_analysis_rev_calc = function(data_table = NULL,
                                 feature_table = NULL,
                                 sample_meta = NULL,
                                 selected_fa = NULL,
-                                fa_norm = FALSE) {
+                                fa_norm = FALSE,
+                                is_lipidyzer_data = FALSE) {
   uniq_lipid_classes = unique(feature_table[["Lipid class"]][!(feature_table[["Lipid class"]] %in% c("PA"))])
 
   ## Features
@@ -7644,30 +7849,60 @@ fa_analysis_rev_calc = function(data_table = NULL,
   colnames(res) = uniq_lipid_classes
   rownames(res) = rownames(sel_data_table)
 
-  # do the calculations
-  fa_norm_tot = 0
-  for(lipid_class in uniq_lipid_classes) {
-    for(fa_tail in selected_fa) {
-      split_fa = as.numeric(unlist(strsplit(fa_tail,
-                                            split = ":",
-                                            fixed = TRUE)))
-      sel_lipids = sel_feature_table$lipid[sel_feature_table[["Lipid class"]] == lipid_class &
-                                             ((sel_feature_table[["Carbon count (chain 1)"]] == split_fa[1] &
-                                                 sel_feature_table[["Double bonds (chain 1)"]] == split_fa[2]) |
-                                                (sel_feature_table[["Carbon count (chain 2)"]] == split_fa[1] &
-                                                   sel_feature_table[["Double bonds (chain 2)"]] == split_fa[2]))]
-      sel_lipids_double = sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
-                                                    (sel_feature_table[["Carbon count (chain 1)"]] == split_fa[1] &
-                                                       sel_feature_table[["Double bonds (chain 1)"]] == split_fa[2]) &
-                                                    (sel_feature_table[["Carbon count (chain 2)"]] == split_fa[1] &
-                                                       sel_feature_table[["Double bonds (chain 2)"]] == split_fa[2])]
+  if (is_lipidyzer_data) {
+    # do the calculations
+    fa_norm_tot = 0
+    for(lipid_class in uniq_lipid_classes) {
+      for(fa_tail in selected_fa) {
+        split_fa = as.numeric(unlist(strsplit(fa_tail,
+                                              split = ":",
+                                              fixed = TRUE)))
+        sel_lipids = sel_feature_table$lipid[sel_feature_table[["Lipid class"]] == lipid_class &
+                                               ((sel_feature_table[["Carbon count (chain 1)"]] == split_fa[1] &
+                                                   sel_feature_table[["Double bonds (chain 1)"]] == split_fa[2]) |
+                                                  (sel_feature_table[["Carbon count (chain 2)"]] == split_fa[1] &
+                                                     sel_feature_table[["Double bonds (chain 2)"]] == split_fa[2]))]
+        sel_lipids_double = sel_feature_table$lipid[sel_feature_table$lipid == lipid_class &
+                                                      (sel_feature_table[["Carbon count (chain 1)"]] == split_fa[1] &
+                                                         sel_feature_table[["Double bonds (chain 1)"]] == split_fa[2]) &
+                                                      (sel_feature_table[["Carbon count (chain 2)"]] == split_fa[1] &
+                                                         sel_feature_table[["Double bonds (chain 2)"]] == split_fa[2])]
 
-      res[, lipid_class] = rowSums(sel_data_table[, c(sel_lipids, sel_lipids_double), drop = FALSE], na.rm = TRUE)
-    } # end selected_fa
-  } # end lipid_class
+        res[, lipid_class] = rowSums(sel_data_table[, c(sel_lipids, sel_lipids_double), drop = FALSE], na.rm = TRUE)
+      } # end selected_fa
+    } # end lipid_class
 
-  # fix the TG's
-  res[, "TG"] = res[, "TG"] / 3
+    # fix the TG's
+    res[, "TG"] = res[, "TG"] / 3
+  } else {
+    # General: every chain (1, 2, 3, ...) is an individual fatty acid; a lipid
+    # containing the selected tail in multiple chains contributes its abundance
+    # once per occurrence (no division). Contributions of the selected tails are
+    # summed per lipid class.
+    chain_indices = get_present_chain_indices(sel_feature_table)
+
+    for(lipid_class in uniq_lipid_classes) {
+      class_mask = sel_feature_table[["Lipid class"]] == lipid_class
+      class_total = numeric(nrow(sel_data_table))
+      for(fa_tail in selected_fa) {
+        split_fa = as.numeric(unlist(strsplit(fa_tail,
+                                              split = ":",
+                                              fixed = TRUE)))
+        match_counts = count_matching_chains(feature_table = sel_feature_table,
+                                             carbon = split_fa[1],
+                                             unsat = split_fa[2],
+                                             chain_indices = chain_indices)
+        match_counts = match_counts * class_mask
+        matched = match_counts > 0
+        if(any(matched)) {
+          weighted = base::sweep(sel_data_table[, sel_feature_table$lipid[matched], drop = FALSE],
+                                 2, match_counts[matched], "*")
+          class_total = class_total + rowSums(weighted, na.rm = TRUE)
+        }
+      } # end selected_fa
+      res[, lipid_class] = class_total
+    } # end lipid_class
+  }
 
   # remove empty columns
   empty_idx = apply(res, 2, function(x) {
