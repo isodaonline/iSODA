@@ -1762,12 +1762,10 @@ Omics_exp = R6::R6Class(
       if (is.null(path)) {base::stop("Sample annotations file not provided")}
       if (!base::file.exists(path)) {base::stop("Sample annotations file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
-      print("Rico - start reading meta data")
       imp_meta = soda_read_table(file_path = path,
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
-      print("Rico - finished reading meta data")
       self$tables$imp_meta = imp_meta
     },
 
@@ -1775,12 +1773,10 @@ Omics_exp = R6::R6Class(
       if (is.null(path)) {base::stop("Measurement data file not provided")}
       if (!base::file.exists(path)) {base::stop("Measurement data file not found")}
       transpose = base::ifelse(input_format == "Long", T, F)
-      print("Rico - start reading exp data")
       imp_data = soda_read_table(file_path = path,
                                  sep = NA,
                                  first_column_as_index = F,
                                  transpose = transpose)
-      print("Rico - finished reading exp data")
       if(self$type == "Lipidomics") {
         self$params$is_lipidyzer_data <- check_is_lipidyzer(table = imp_data)
       } 

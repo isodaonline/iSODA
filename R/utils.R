@@ -1353,10 +1353,6 @@ get_feature_metadata.lipidyzer = function(feature_table) {
   
   new_feature_table = new_feature_table[rownames(feature_table),]
   
-  print("Rico - write feature file (lipidyzer)")
-  write.csv(x = new_feature_table,
-            file = "lipidyzer_feature_table.csv")
-  
   return(new_feature_table)
 }
 
@@ -1466,10 +1462,6 @@ get_feature_metadata.general = function(feature_table) {
     new_feature_table[i, 'Double bonds (sum)'] = sum(double_bonds)
   }
   
-  print("Rico - write feature file (general)")
-  write.csv(x = new_feature_table,
-            file = "general_feature_table.csv")   
- 
   return(new_feature_table)
 }
 
