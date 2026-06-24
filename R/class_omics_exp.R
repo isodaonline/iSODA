@@ -2285,7 +2285,7 @@ Omics_exp = R6::R6Class(
         group_col = self$indices$group_column,
         group_1 = unique(self$tables$raw_meta[, self$indices$group_column])[1],
         group_2 = unique(self$tables$raw_meta[, self$indices$group_column])[2],
-        selected_lipidclass = self$params$fa_comp_plot$selected_lipidclass,
+        selected_lipidclass = sort(unique(self$tables$raw_feat[["Lipid class"]]))[1],
         color_palette = "Blues",
         reverse_palette = F,
         title_font_size = NULL,
@@ -4286,6 +4286,42 @@ Omics_exp = R6::R6Class(
 
       data_table = self$table_check_convert(data_table)
 
+      # If only 0 or 1 lipid species are present for the selected class after
+      # filtering, the heatmap cannot be rendered meaningfully: a single-species
+      # heatmap produces a degenerate matrix that causes downstream errors.
+      # Applies to all data types and both composition views.
+      if (selected_lipidclass != "All") {
+        n_class_species = sum(feature_table[["Lipid class"]] == selected_lipidclass)
+        if (n_class_species <= 1) {
+          self$plots$fa_comp_plot = create_blank_plot(
+            label = paste0("Only ", n_class_species, " lipid species found for class '",
+                           selected_lipidclass,
+                           "'. At least 2 are required to generate this plot."))
+          return()
+        }
+      }
+
+      # For general lipidomics data in the fatty-acid-tail view, the heatmap can
+      # only use lipid species with resolved individual chains. If the selected
+      # lipid class has no such species (all are sum-compositions), there is
+      # nothing to plot, so show an informative message instead of erroring.
+      if (!self$params$is_lipidyzer_data && composition == "fa_tail") {
+        if (selected_lipidclass == "All") {
+          sel_feat = feature_table[feature_table[["Lipid class"]] != "PA", ]
+        } else {
+          sel_feat = feature_table[feature_table[["Lipid class"]] == selected_lipidclass, ]
+        }
+        n_resolved = sum(!(sel_feat[["Carbon count (chain 1)"]] == 0 &
+                             sel_feat[["Carbon count (chain 2)"]] == 0 &
+                             sel_feat[["Carbon count (chain 3)"]] == 0))
+        if (n_resolved == 0) {
+          self$plots$fa_comp_plot = create_blank_plot(
+            label = paste0("No fatty acid chain information available for lipid class: ",
+                           selected_lipidclass))
+          return()
+        }
+      }
+
       # Get the color palette
       # color_palette = get_color_palette(groups = c(group_1, group_2),
       #                                    color_palette = color_palette)
@@ -4307,6 +4343,7 @@ Omics_exp = R6::R6Class(
                                       y = colSums(hm_left_data))
       avg_carbon_left = weighted.mean(x = as.numeric(as.character(bar_top_left_data$x)),
                                        w = bar_top_left_data$y)
+      if (is.nan(avg_carbon_left)) avg_carbon_left = mean(as.numeric(as.character(bar_top_left_data$x)))
       # bar left
       bar_left_data = data.frame(x = factor(rownames(hm_left_data),
                                              levels = sort(as.numeric(rownames(hm_left_data)), decreasing = TRUE),
@@ -4314,6 +4351,7 @@ Omics_exp = R6::R6Class(
                                   y = rowSums(hm_left_data))
       avg_unsat_left = weighted.mean(x = as.numeric(as.character(bar_left_data$x)),
                                       w = bar_left_data$y)
+      if (is.nan(avg_unsat_left)) avg_unsat_left = mean(as.numeric(as.character(bar_left_data$x)))
 
       ## right side
       # heatmap
@@ -4332,6 +4370,7 @@ Omics_exp = R6::R6Class(
                                        y = colSums(hm_right_data))
       avg_carbon_right = weighted.mean(x = as.numeric(as.character(bar_top_right_data$x)),
                                         w = bar_top_right_data$y)
+      if (is.nan(avg_carbon_right)) avg_carbon_right = mean(as.numeric(as.character(bar_top_right_data$x)))
       # bar right
       bar_right_data = data.frame(x = factor(rownames(hm_right_data),
                                               levels = sort(as.numeric(rownames(hm_right_data)), decreasing = TRUE),
@@ -4339,6 +4378,7 @@ Omics_exp = R6::R6Class(
                                    y = rowSums(hm_right_data))
       avg_unsat_right = weighted.mean(x = as.numeric(as.character(bar_right_data$x)),
                                        w = bar_right_data$y)
+      if (is.nan(avg_unsat_right)) avg_unsat_right = mean(as.numeric(as.character(bar_right_data$x)))
 
 
       # get the min and max value for the heatmap colorbar
@@ -4346,8 +4386,9 @@ Omics_exp = R6::R6Class(
       max_value = max(c(max(hm_left_data), max(hm_right_data)))
 
       # Get font data
+      all_suffix = if (self$params$is_lipidyzer_data) " (excl. PA)" else ""
       fd = get_plot_font_data(title = base::ifelse(selected_lipidclass == "All",
-                                             paste0("<b>Lipid class: ", selected_lipidclass, " (excl. PA)</b>"),
+                                             paste0("<b>Lipid class: All", all_suffix, "</b>"),
                                              paste0("<b>Lipid class: ", selected_lipidclass, "</b>")),
                               title_font_size = title_font_size,
                               x_label = "Number of carbon atoms",
@@ -4561,6 +4602,41 @@ Omics_exp = R6::R6Class(
           showarrow = FALSE
         )
       )
+
+      # For general lipidomics data, the FA-tail composition can only use lipid
+      # species with resolved individual chains. Add a note reporting how many of
+      # the selected lipids are actually used (the rest are sum-compositions for
+      # which the individual fatty acid chains are unknown).
+      if (!self$params$is_lipidyzer_data && composition == "fa_tail") {
+        if (selected_lipidclass == "All") {
+          note_features = feature_table[feature_table[["Lipid class"]] != "PA", ]
+        } else {
+          note_features = feature_table[feature_table[["Lipid class"]] == selected_lipidclass, ]
+        }
+        n_total = nrow(note_features)
+        n_unresolved = sum(note_features[["Carbon count (chain 1)"]] == 0 &
+                             note_features[["Carbon count (chain 2)"]] == 0 &
+                             note_features[["Carbon count (chain 3)"]] == 0)
+        n_used = n_total - n_unresolved
+        note_text = paste0("<i>", n_used, " of ", n_total, " lipids used for this plot",
+                           if (n_unresolved > 0) {
+                             paste0(" (", n_unresolved, " sum-composition species excluded)")
+                           } else {
+                             ""
+                           },
+                           "</i>")
+        annotations = c(annotations, list(list(
+          x = 0.5,
+          y = -0.04,
+          text = note_text,
+          font = list(size = 10, color = "gray"),
+          xref = "paper",
+          yref = "paper",
+          xanchor = "center",
+          yanchor = "top",
+          showarrow = FALSE
+        )))
+      }
 
       # combine plots
       fig_top = plotly::subplot(list(blank, fig_bar_top_left, fig_bar_top_right, blank),

@@ -3220,8 +3220,14 @@ fa_comp_plot_server = function(r6, output, session) {
       shiny::selectizeInput(
         inputId = ns("fa_comp_plot_selected_lipidclass"),
         label = "Select lipid class",
-        choices = c("All (excl. PA)" = "All", unique(r6$tables$raw_feat[["Lipid class"]])),
-        selected = r6$params$fa_comp_plot$selected_lipidclass,
+        choices = c(stats::setNames("All", if (r6$params$is_lipidyzer_data) "All (excl. PA)" else "All"),
+                    unique(r6$tables$raw_feat[["Lipid class"]])),
+        selected = if (is.null(r6$params$fa_comp_plot$selected_lipidclass) ||
+                       r6$params$fa_comp_plot$selected_lipidclass == "All") {
+                     sort(unique(r6$tables$raw_feat[["Lipid class"]]))[1]
+                   } else {
+                     r6$params$fa_comp_plot$selected_lipidclass
+                   },
         multiple = FALSE
       ),
       # Aesthetic settings
@@ -3316,13 +3322,14 @@ fa_comp_plot_events = function(r6, dimensions_obj, color_palette, input, output,
   # auto-update the lipid classes
   shiny::observeEvent(input$fa_comp_plot_composition, {
     if(input$fa_comp_plot_composition == "fa_tail") {
-      lipidclass_choices = c("All (excl. PA)" = "All", unique(r6$tables$raw_feat[["Lipid class"]]))
+      lipidclass_choices = c(stats::setNames("All", if (r6$params$is_lipidyzer_data) "All (excl. PA)" else "All"),
+                             unique(r6$tables$raw_feat[["Lipid class"]]))
     } else {
       lipidclass_choices = unique(r6$tables$raw_feat[["Lipid class"]])
     }
 
     if(r6$params$fa_comp_plot$selected_lipidclass == "All") {
-      selected_lipidclass = "CE"
+      selected_lipidclass = sort(unique(r6$tables$raw_feat[["Lipid class"]]))[1]
     } else {
       selected_lipidclass = r6$params$fa_comp_plot$selected_lipidclass
     }

@@ -1960,8 +1960,11 @@ fa_comp_hm_calc.fa = function(data_table = NULL,
     }
   }
 
-  # calculate the proportion
-  res = res / sum(res)
+  # calculate the proportion; guard against all-zero/NA data (e.g. a group with
+  # no measurements for the selected class after filtering) which would produce
+  # NaN via 0/0 and break downstream colour-scale computation.
+  res_sum = sum(res, na.rm = TRUE)
+  if (res_sum > 0) res = res / res_sum
 
   return(res)
 }
@@ -2002,8 +2005,11 @@ fa_comp_hm_calc.total = function(data_table = NULL,
     }
   }
 
-  # calculate the proportion
-  res = res / sum(res)
+  # calculate the proportion; guard against all-zero/NA data (e.g. a group with
+  # no measurements for the selected class after filtering) which would produce
+  # NaN via 0/0 and break downstream colour-scale computation.
+  res_sum = sum(res, na.rm = TRUE)
+  if (res_sum > 0) res = res / res_sum
 
   return(res)
 }
