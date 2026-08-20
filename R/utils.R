@@ -1196,15 +1196,18 @@ get_group_median_table = function(data_table,
 }
 
 get_lipid_class_table = function(table,
-                                 is_lipidyzer_data = FALSE){
+                                 is_lipidyzer_data = FALSE,
+                                 divide_tg = is_lipidyzer_data){
 
   # Get unique lipid classes
-  classes = get_lipid_classes(feature_list = colnames(table), uniques = TRUE)
+  classes = get_lipid_classes(feature_list = colnames(table), uniques = TRUE,
+                              is_lipidyzer_data = is_lipidyzer_data)
 
   # Get a column vector to find easily which columns belong to each lipid group
-  col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE)
+  col_vector = get_lipid_classes(feature_list = colnames(table), uniques = FALSE,
+                                 is_lipidyzer_data = is_lipidyzer_data)
   
-  if(is_lipidyzer_data) {
+  if(divide_tg) {
     table[, col_vector == "TG"] = table[, col_vector == 'TG'] / 3
   }
   
@@ -1223,10 +1226,12 @@ get_lipid_class_table = function(table,
   return(out_table)
 }
 
-normalise_lipid_class = function(lips_table) {
+normalise_lipid_class = function(lips_table, is_lipidyzer_data = FALSE) {
   # Get classes and unique classes for the lipid features
-  classes = get_lipid_classes(feature_list = as.character(colnames(lips_table)), uniques = FALSE)
-  classes_unique = get_lipid_classes(feature_list = as.character(colnames(lips_table)), uniques = TRUE)
+  classes = get_lipid_classes(feature_list = as.character(colnames(lips_table)), uniques = FALSE,
+                              is_lipidyzer_data = is_lipidyzer_data)
+  classes_unique = get_lipid_classes(feature_list = as.character(colnames(lips_table)), uniques = TRUE,
+                                     is_lipidyzer_data = is_lipidyzer_data)
 
   # For each unique lipid class...
   for (lip_class in classes_unique){
@@ -1269,20 +1274,295 @@ impute_na = function(data_table, method) {
 }
 
 
-get_lipid_classes = function(feature_list, uniques = TRUE){
+# Sterol backbone (carbons:double bonds) of a sterol ester "SE x:y/a:b" and the
+# lipid class it belongs to.
+lipid_sterol_esters = c(
+  "27:1" = "CE",
+  "28:1" = "CASE",
+  "28:2" = "BRSE",
+  "28:3" = "EGSE",
+  "28:4" = "DEGSE",
+  "29:1" = "SISE",
+  "29:2" = "STSE"
+)
 
+# Head groups whose chain description starts with a sphingoid base
+lipid_sphingo_heads = c("Cer", "HexCer", "Hex2Cer", "Hex3Cer", "SHexCer", "AHexCer",
+                        "CerP", "SM", "PE-Cer", "PI-Cer", "SPB",
+                        "GM3", "GM1", "GD1a", "GD1b", "GD3", "GT1b", "GQ1b")
 
+# Sphingolipid head groups that carry a subclass suffix ("_NS", "_AP", ...)
+lipid_cer_subclass_heads = c("Cer", "HexCer")
 
-  classes = sapply(feature_list, function(x)
-    strsplit(x = x,
-             split = " ",
-             fixed = TRUE)[[1]][1])
+# Head groups that take an "Ether" prefix when an O-/P- linked chain is present
+lipid_ether_heads = c("PC", "PE", "PS", "PG", "PI", "PA",
+                      "LPC", "LPE", "LPS", "LPG", "LPI", "LPA",
+                      "DG", "TG", "MG", "MGDG", "DGDG")
+
+# Head groups that take an "Ox" prefix when an oxidised chain is present
+lipid_ox_heads = c("FA", "PC", "PE", "PS", "PG", "PI", "PA",
+                   "LPC", "LPE", "LPS", "LPG", "LPI", "LPA",
+                   "DG", "TG", "MG", "MGDG", "DGDG", "BMP", "CL", "DMPE")
+
+get_lipid_classes = function(feature_list, uniques = TRUE, is_lipidyzer_data = FALSE){
+  if (is_lipidyzer_data) {
+    classes = get_lipid_classes.lipidyzer(feature_list = feature_list)
+  } else {
+    classes = get_lipid_classes.general(feature_list = feature_list)
+  }
+
   classes = as.vector(classes)
   if (uniques) {
     return(unique(classes))}
   else{
     return(classes)
   }
+}
+
+get_lipid_classes.lipidyzer = function(feature_list) {
+  classes = sapply(feature_list, function(x)
+    strsplit(x = x,
+             split = " ",
+             fixed = TRUE)[[1]][1])
+  return(as.vector(classes))
+}
+
+get_lipid_classes.general = function(feature_list) {
+  if (length(feature_list) == 0) {
+    return(character(0))
+  }
+
+  # The same name always maps to the same class, so only classify the uniques
+  feature_list = as.character(feature_list)
+  unique_features = unique(feature_list)
+  unique_classes = vapply(X = unique_features,
+                          FUN = get_lipid_class.general,
+                          FUN.VALUE = character(1),
+                          USE.NAMES = FALSE)
+
+  return(unique_classes[match(feature_list, unique_features)])
+}
+
+# Determine the lipid class of a single lipid name written in the MS-DIAL /
+# LIPID MAPS shorthand notation, e.g. "PC 16:0_18:2", "PC O-16:1_18:2;O",
+# "Cer 18:1;O2/24:0(2OH)" or "SE 28:1/18:1". See
+# https://systemsomicslab.github.io/compms/msdial/lipidnomenclature.html
+# The class is built from the head group plus the modifiers that MS-DIAL uses
+# to split a head group into separate classes:
+#   - an "O-" / "P-" (plasmalogen) linked chain    -> "Ether" prefix
+#   - an oxidised chain (";O", ";O2", "(2OH)")     -> "Ox" prefix
+#   - an esterified fatty acid, e.g. "(FA 16:0)"   -> estolide / EO ceramide
+#   - the sphingoid base and N-acyl chain of a ceramide -> "_NS", "_AP", ...
+#   - the sterol backbone of a sterol ester        -> "CE", "CASE", "BRSE", ...
+get_lipid_class.general = function(feature) {
+  feature = trimws(feature)
+
+  # Harmonise the two oxidation notations that MS-DIAL uses (";2O" and ";O2")
+  feature = gsub(";([0-9]+)O", ";O\\1", feature)
+
+  # The head group is everything up to the first space, the chain description
+  # (the "body") is what follows it
+  space_pos = regexpr(" ", feature, fixed = TRUE)
+  if (space_pos == -1) {
+    head = feature
+    body = ""
+  } else {
+    head = substr(feature, 1, space_pos - 1)
+    body = substr(feature, space_pos + 1, nchar(feature))
+  }
+
+  # Names without a chain description, e.g. "CoQ10", "Cholesterol"
+  if (grepl("^CoQ", head)) {
+    return("CoQ")
+  }
+  if (body == "") {
+    return(head)
+  }
+
+  # N-acyl (lyso)phosphatidylethanolamines have their own class; their name
+  # embeds an "(FA x:y)" group that must not be read as an esterified chain
+  if (grepl("^LPE-N", head)) {
+    return("LNAPE")
+  }
+  if (grepl("^PE-N", head)) {
+    return("NAPE")
+  }
+
+  # An "(FA x:y)" group is a fatty acid esterified to one of the chains
+  esterified = grepl("\\(FA [0-9]+:[0-9]+\\)", body)
+  body = gsub("\\(FA[^)]*\\)", "", body)
+
+  # Split the body into its individual chains and parse each of them
+  chains = strsplit(body, split = "[_/]")[[1]]
+  chains = chains[chains != ""]
+  if (length(chains) == 0) {
+    return(head)
+  }
+  parsed = lapply(chains, parse_lipid_chain)
+
+  # Head groups written with a "-" use a "_" in the class name (PE-Cer -> PE_Cer)
+  head_out = gsub("-", "_", head, fixed = TRUE)
+
+  # Sphingolipids: the class follows from the sphingoid base and the N-acyl chain
+  if (head %in% lipid_sphingo_heads) {
+    return(get_lipid_class.sphingolipid(head = head,
+                                        head_out = head_out,
+                                        parsed = parsed,
+                                        esterified = esterified))
+  }
+
+  # Sterol esters: the class follows from the sterol backbone (the first chain)
+  if (head == "SE") {
+    sterol = paste0(parsed[[1]]$carbon, ":", parsed[[1]]$db)
+    if (sterol %in% names(lipid_sterol_esters)) {
+      return(unname(lipid_sterol_esters[sterol]))
+    }
+    return("SE")
+  }
+
+  # Free sterols, either sulfated ("ST 27:1;O;S") or not ("ST 27:1;O")
+  if (head == "ST") {
+    if (grepl(";S", feature, fixed = TRUE)) {
+      return("SSulfate")
+    }
+    if (identical(paste0(parsed[[1]]$carbon, ":", parsed[[1]]$db), "27:1")) {
+      return("Cholesterol")
+    }
+    return("ST")
+  }
+
+  # Triacylglycerol estolides, e.g. "TG 16:0_18:1_16:0;O(FA 16:0)"
+  if (head == "TG" && esterified) {
+    return("TG_EST")
+  }
+
+  # Glycerolipids, glycerophospholipids and fatty acyls: the head group is
+  # prefixed for ether linked and/or oxidised chains
+  prefix = ""
+  if (head %in% lipid_ether_heads &&
+      any(vapply(parsed, function(chain) chain$ether, logical(1)))) {
+    prefix = "Ether"
+  }
+  if (head %in% lipid_ox_heads &&
+      any(vapply(parsed, function(chain) chain$ox > 0 || chain$hydroxy, logical(1)))) {
+    prefix = paste0(prefix, "Ox")
+  }
+
+  return(paste0(prefix, head_out))
+}
+
+# Determine the class of a sphingolipid from its parsed chains. The first chain
+# is the sphingoid base (";O2" = (dihydro)sphingosine, ";O3" = phytosphingosine),
+# the remaining chains are the N-acyl chains.
+get_lipid_class.sphingolipid = function(head, head_out, parsed, esterified) {
+  base = parsed[[1]]
+  acyls = if (length(parsed) > 1) parsed[-1] else list()
+  total_ox = sum(vapply(parsed, function(chain) chain$ox, numeric(1)))
+
+  # Sphingoid bases are named after the base itself
+  if (head == "SPB") {
+    if (base$ox >= 3) {
+      return("PhytoSph")
+    }
+    return(if (isTRUE(base$db == 0)) "DHSph" else "Sph")
+  }
+
+  # Head groups without a subclass suffix
+  if (!head %in% lipid_cer_subclass_heads) {
+    # An esterified fatty acid on a sphingomyelin makes it an acylsphingomyelin
+    if (head == "SM" && esterified) {
+      return("ASM")
+    }
+    return(head_out)
+  }
+
+  # (Hexosyl)ceramides: the subclass is <hydroxylation of the N-acyl chain>
+  # followed by <type of sphingoid base>, e.g. "AP" = alpha-hydroxy acyl +
+  # phytosphingosine
+  if (esterified) {
+    # Esterified omega-hydroxy fatty acid
+    hydroxylation = "EO"
+  } else if (length(acyls) > 0) {
+    if (any(vapply(acyls, function(chain) chain$hydroxy, logical(1)))) {
+      hydroxylation = "A"
+    } else if (any(vapply(acyls, function(chain) chain$ox > 0, logical(1)))) {
+      hydroxylation = "H"
+    } else {
+      hydroxylation = "N"
+    }
+  } else if (total_ox >= 3 && isTRUE(base$carbon > 46)) {
+    # Sum composition: a sphingoid base plus a single N-acyl chain does not get
+    # much past 46 carbons, so an extra oxygen on a longer species is taken to
+    # be the omega hydroxyl that carries the esterified fatty acid
+    hydroxylation = "EO"
+  } else {
+    # Sum composition: the chains are not resolved, so the only clue is whether
+    # there are more oxygens than the two of the sphingoid base
+    hydroxylation = if (total_ox >= 3) "A" else "N"
+  }
+
+  # For a sum composition the oxygens of the base and of the N-acyl chain are
+  # reported together, so the ones of the N-acyl chain have to be taken off
+  # again (an esterified omega-hydroxy chain accounts for two of them)
+  if (length(acyls) > 0) {
+    base_ox = base$ox
+  } else if (hydroxylation == "EO") {
+    base_ox = total_ox - 2
+  } else {
+    base_ox = total_ox - (hydroxylation != "N")
+  }
+
+  if (base_ox >= 3) {
+    base_type = "P"
+  } else if (isTRUE(base$db == 0)) {
+    base_type = "DS"
+  } else {
+    base_type = "S"
+  }
+
+  return(paste0(head_out, "_", hydroxylation, base_type))
+}
+
+# Parse a single chain descriptor, e.g. "18:1", "O-16:0", "d18:1;O2" or
+# "24:0(2OH)", into its ether linkage, oxygen count, hydroxylation, carbon
+# count and number of double bonds.
+parse_lipid_chain = function(chain) {
+  # Ether ("O-") or plasmalogen ("P-") linkage
+  ether = grepl("^[OP]-", chain)
+
+  # Oxygens flagged after a ";" (";O" = 1, ";O2" = 2, ...). The older "d" / "t"
+  # sphingoid base prefixes are the equivalent of ";O2" / ";O3".
+  ox_hits = regmatches(chain, gregexpr(";O[0-9]*", chain))[[1]]
+  if (length(ox_hits) > 0) {
+    ox_counts = suppressWarnings(as.integer(sub(";O", "", ox_hits)))
+    ox_counts[is.na(ox_counts)] = 1
+    ox = sum(ox_counts)
+  } else if (grepl("^d[0-9]", chain)) {
+    ox = 2
+  } else if (grepl("^t[0-9]", chain)) {
+    ox = 3
+  } else {
+    ox = 0
+  }
+
+  # Hydroxylation given between brackets, e.g. "(2OH)" or "(3OH)"
+  hydroxy = grepl("\\([0-9]*OH\\)", chain)
+
+  # Carbon count and number of double bonds
+  carbon = NA_integer_
+  db = NA_integer_
+  numbers = regmatches(chain, regexpr("[0-9]+:[0-9]+", chain))
+  if (length(numbers) > 0) {
+    parts = strsplit(numbers, split = ":", fixed = TRUE)[[1]]
+    carbon = as.integer(parts[1])
+    db = as.integer(parts[2])
+  }
+
+  return(list(ether = ether,
+              ox = ox,
+              hydroxy = hydroxy,
+              carbon = carbon,
+              db = db))
 }
 
 get_feature_metadata <- function(feature_table,
@@ -1298,7 +1578,8 @@ get_feature_metadata <- function(feature_table,
 
 get_feature_metadata.lipidyzer = function(feature_table) {
   feature_table[, 'Lipid class'] = get_lipid_classes(feature_list = rownames(feature_table),
-                                                     uniques = FALSE)
+                                                     uniques = FALSE,
+                                                     is_lipidyzer_data = TRUE)
   # Collect carbon and unsaturation counts
   new_feature_table = list()
   
@@ -1395,8 +1676,11 @@ get_feature_metadata.general = function(feature_table) {
     feature = rownames(feature_table)[i]
     lipid_class = lipid_classes[i]
 
-    # Drop the leading class prefix to keep only the chain description
-    chain_desc = sub(paste0("^\\Q", lipid_class, "\\E\\s+"), "", feature)
+    # Drop the leading head group (everything up to the first space) to keep
+    # only the chain description. The lipid class cannot be used for this: it
+    # can carry a prefix or suffix that is not part of the name (EtherPC, OxPC,
+    # Cer_NS, CASE, ...).
+    chain_desc = sub("^[^ ]+\\s+", "", feature)
 
     # Remove modifiers that are not part of a chain carbon:double-bond descriptor
     chain_desc = gsub("\\([^)]*\\)", "", chain_desc)  # parentheticals, e.g. (2OH)
@@ -2442,11 +2726,12 @@ circle = function(x, y, alpha = 0.95, len = 200){
 }
 
 lipidomics_summary_plot = function(r6, data_table) {
-  groups = get_lipid_classes(colnames(r6$tables$imp_data)[2:length(colnames(r6$tables$imp_data))], uniques = T)
+  is_lipidyzer_data = isTRUE(r6$params$is_lipidyzer_data)
+  groups = get_lipid_classes(colnames(r6$tables$imp_data)[2:length(colnames(r6$tables$imp_data))], uniques = T, is_lipidyzer_data = is_lipidyzer_data)
 
-  plot_table = data.frame(table(base::factor((get_lipid_classes(colnames(data_table), uniques = F)), levels = groups)))
+  plot_table = data.frame(table(base::factor((get_lipid_classes(colnames(data_table), uniques = F, is_lipidyzer_data = is_lipidyzer_data)), levels = groups)))
   names(plot_table) = c("class", "raw")
-  plot_table$imported = table(base::factor((get_lipid_classes(colnames(r6$tables$imp_data)[2:length(colnames(r6$tables$imp_data))], uniques = F)), levels = groups))
+  plot_table$imported = table(base::factor((get_lipid_classes(colnames(r6$tables$imp_data)[2:length(colnames(r6$tables$imp_data))], uniques = F, is_lipidyzer_data = is_lipidyzer_data)), levels = groups))
   plot_table$removed = plot_table$imported - plot_table$raw
 
   absolute_counts = as.data.frame(base::matrix(nrow = 2*nrow(plot_table)))
