@@ -8323,6 +8323,9 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
 
   # Is data numeric or string
   if (is_coercible_to_numeric(groups)) {
+    # Sort the unique groups numerically (keeping their original labels), the
+    # lexicographic sort above is wrong for numbers stored as characters
+    unique_groups = unique_groups[base::order(base::as.numeric(unique_groups))]
     groups = base::as.numeric(groups)
 
     # Is data continuous or discrete
@@ -8333,7 +8336,7 @@ get_color_palette = function(groups, color_palette, reverse_color_palette = F, f
       # If low number of groups, export simple dict
       out_colors = grDevices::colorRampPalette(color_palette)(length(unique_groups))
       if (length(unique_groups) > 1) {
-        out_colors = ggplot2::scale_color_gradientn(colours = color_palette, limits = range(unique_groups))
+        out_colors = ggplot2::scale_color_gradientn(colours = color_palette, limits = range(as.numeric(unique_groups)))
         out_colors = out_colors$rescale(as.numeric(unique_groups))
         out_colors = color_palette[findInterval(out_colors, seq(min(out_colors), max(out_colors), length.out = length(color_palette)))]
       }
