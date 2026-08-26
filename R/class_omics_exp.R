@@ -142,6 +142,9 @@ Omics_exp = R6::R6Class(
         x_label_font_size = 20,
         x_tick_font_size = 15,
         legend_font_size = 15,
+        legend_items = 0,
+        export_width = NULL,
+        export_height = NULL,
         img_format = "png",
         update = T
       ),
@@ -3285,6 +3288,7 @@ Omics_exp = R6::R6Class(
         data_table = data_table[data_table[,p_val_label] <= p_val_threshold,]
       }
 
+      groups = NULL
       if (!is.null(feature_metadata)) {
         if (length(feature_metadata) == 1) {
           if (feature_metadata %in% colnames(data_table)) {
@@ -3297,6 +3301,18 @@ Omics_exp = R6::R6Class(
         } else {
           groups = NULL
         }
+      }
+
+      # Number of legend entries, used to size the exported image. Only the
+      # main plot carries a legend, the violins are drawn without one.
+      if (displayed_plot %in% c('main', 'all')) {
+        if (is.null(groups)) {
+          self$params$volcano_plot$legend_items = 4
+        } else {
+          self$params$volcano_plot$legend_items = length(unique(groups[!is.na(groups)]))
+        }
+      } else {
+        self$params$volcano_plot$legend_items = 0
       }
 
 

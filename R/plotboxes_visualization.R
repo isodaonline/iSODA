@@ -764,6 +764,15 @@ volcano_plot_generate = function(r6, dimensions_obj, input) {
   r6$plot_volcano(width = width,
                   height = height)
 
+  # The exported image has no scrollable legend, so it needs to be tall enough
+  # to show every group (e.g. all lipid classes).
+  export_dimensions = legend_export_dimensions(width = width,
+                                               height = height,
+                                               legend_items = r6$params$volcano_plot$legend_items,
+                                               legend_font_size = as.numeric(r6$params$volcano_plot$legend_font_size))
+  r6$params$volcano_plot$export_width = export_dimensions$width
+  r6$params$volcano_plot$export_height = export_dimensions$height
+
 }
 
 volcano_plot_spawn = function(r6, format, output) {
@@ -772,8 +781,8 @@ volcano_plot_spawn = function(r6, format, output) {
     r6$plots$volcano_plot
     plotly::config(r6$plots$volcano_plot, toImageButtonOptions = list(format= format,
                                                                       filename= timestamped_module_name(r6, 'volcano_plot'),
-                                                                      height= NULL,
-                                                                      width= NULL,
+                                                                      height= r6$params$volcano_plot$export_height,
+                                                                      width= r6$params$volcano_plot$export_width,
                                                                       scale= 1))
   })
 }
