@@ -1078,6 +1078,65 @@ try_plot = function(prefix, r6, dimensions_obj, gen_function, spawn_function, im
 }
 
 
+#' @title Image export dimensions that fit the complete legend
+#'
+#' @description
+#' Plotly clips vertical legends that are taller than the plotting area: on
+#' screen the legend becomes scrollable, but the static image produced by the
+#' camera button has no scrollbar, so every entry below the fold is lost. This
+#' is common in lipidomics, where the number of lipid classes easily exceeds
+#' what fits next to the plot. Returning a taller export size lets plotly
+#' re-render the plot with all legend entries drawn; the width is scaled by the
+#' same factor so the exported image keeps the aspect ratio shown on screen.
+#'
+#' @param width width (pixels) of the plot as displayed.
+#' @param height height (pixels) of the plot as displayed.
+#' @param legend_items number of entries shown in the legend.
+#' @param legend_font_size font size of the legend entries, 0 when the legend
+#'   is hidden.
+#' @param max_pixels largest width or height (pixels) the exported image may
+#'   have.
+#'
+#' @returns list with the width and height (pixels) to use for image export,
+#'   both NULL when the displayed size is unknown or already sufficient (plotly
+#'   then exports at the displayed size).
+#'
+legend_export_dimensions = function(width, height, legend_items, legend_font_size = 15, max_pixels = 4000) {
+
+  no_change = list(width = NULL, height = NULL)
+
+  if (length(width) != 1 || length(height) != 1 || is.na(width) || is.na(height)) {
+    return(no_change)
+  }
+  if (length(legend_items) != 1 || is.na(legend_items) || legend_items < 1) {
+    return(no_change)
+  }
+  if (length(legend_font_size) != 1 || is.na(legend_font_size) || legend_font_size <= 0) {
+    return(no_change)
+  }
+
+  # Legend entry: text line + item gap + trace group gap (10 pixels, each trace
+  # is its own legend group), plus the default plot margins which the legend
+  # cannot grow into.
+  item_height = max(legend_font_size * 1.35, 15) + 20
+  needed_height = legend_items * item_height + 200
+
+  if (needed_height <= height) {
+    return(no_change)
+  }
+
+  # Scale the width along with the height, so the exported image keeps the
+  # aspect ratio of the plot on screen instead of becoming a narrow strip.
+  # Neither side grows beyond max_pixels, to keep the image size sane.
+  scale = min(needed_height / height, max_pixels / height, max_pixels / width)
+  export_height = ceiling(height * scale)
+  export_width = round(width * scale)
+
+  return(list(width = export_width,
+              height = export_height))
+}
+
+
 #----------------------------------------------------- Lipidomics functions ----
 #' @title Check if the imported lipidomics data is lipidyzer data
 #' 
